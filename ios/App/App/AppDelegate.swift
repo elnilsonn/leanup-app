@@ -74,12 +74,12 @@ private struct LiquidGlassTabBar: View {
     @ViewBuilder
     private func barView(bubbleW: CGFloat) -> some View {
         if #available(iOS 26.0, *) {
-            GlassEffectContainer {
-                buttons(bubbleW: bubbleW)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 3)
-                    .glassEffect(in: Capsule())
-            }
+            // Single glass layer for the bar — bubble is a non-glass highlight
+            // (rule: never nest glass inside glass)
+            buttons(bubbleW: bubbleW)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 3)
+                .glassEffect(in: Capsule())
         } else {
             buttons(bubbleW: bubbleW)
                 .padding(.horizontal, 10)
@@ -141,12 +141,14 @@ private struct LiquidGlassTabBar: View {
         }
     }
 
-    // ── 2. WhatsApp-style glass bubble with specular highlight ──────────
+    // ── Active tab bubble (non-glass on iOS 26 to avoid nested glass) ──
     @ViewBuilder
     private func glassBubble(width: CGFloat) -> some View {
         if #available(iOS 26.0, *) {
-            Color.clear
-                .glassEffect(in: Capsule())
+            // Subtle highlight — the bar itself is already glass,
+            // so this must NOT be glass (no nested glass layers)
+            Capsule()
+                .fill(.primary.opacity(scheme == .dark ? 0.18 : 0.10))
                 .frame(width: width, height: 44)
         } else {
             ZStack {
@@ -245,31 +247,41 @@ private struct TabBarHost: View {
     }
 }
 
-// MARK: - Floating Glass Back Button (item 9)
+// MARK: - Floating Glass Back Button
 @available(iOS 15.0, *)
 private struct GlassBackButton: View {
     var onTap: () -> Void
     @Environment(\.colorScheme) private var scheme
+
     var body: some View {
         Button(action: onTap) {
             Image(systemName: "chevron.left")
                 .font(.system(size: 17, weight: .semibold))
                 .foregroundStyle(Color.primary)
                 .frame(width: 42, height: 42)
-                .background { backBg }
         }
         .buttonStyle(.plain)
+        .modifier(GlassCircleModifier(scheme: scheme))
     }
-    @ViewBuilder
-    private var backBg: some View {
+}
+
+// Apply .glassEffect() LAST, per iOS 26 best practices
+@available(iOS 15.0, *)
+private struct GlassCircleModifier: ViewModifier {
+    let scheme: ColorScheme
+
+    func body(content: Content) -> some View {
         if #available(iOS 26.0, *) {
-            Color.clear.glassEffect(in: Circle())
+            content.glassEffect(in: Circle())
         } else {
-            Circle()
-                .fill(scheme == .dark ? Color.white.opacity(0.15) : Color.white.opacity(0.72))
-                .background(.ultraThinMaterial, in: Circle())
-                .overlay(Circle().stroke(Color.white.opacity(0.3), lineWidth: 0.5))
-                .shadow(color: .black.opacity(0.14), radius: 10, y: 3)
+            content
+                .background {
+                    Circle()
+                        .fill(scheme == .dark ? Color.white.opacity(0.15) : Color.white.opacity(0.72))
+                        .background(.ultraThinMaterial, in: Circle())
+                        .overlay(Circle().stroke(Color.white.opacity(0.3), lineWidth: 0.5))
+                        .shadow(color: .black.opacity(0.14), radius: 10, y: 3)
+                }
         }
     }
 }
@@ -720,8 +732,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler {
     private func mountBackButton(on rootVC: UIViewController) {
         guard backButtonVC == nil, #available(iOS 15.0, *) else { return }
         let host = UIHostingController(
-            rootView: GlassBackButton {
-                self.capacitorWebView?.evaluateJavaScript("mobileClosePanelOrBack()")
+            rootView: GlassBackButton { [weak self] in
+                self?.capacitorWebView?.evaluateJavaScript("mobileClosePanelOrBack()")
             }
         )
         configure(overlayVC: host)

@@ -85,12 +85,11 @@ private struct LiquidGlassTabBar: View {
         let idx = clamp(Int(v.location.x / tabW), in: 0..<tabs.count)
 
         if isDragging {
-            // Dragging — show destination preview with haptic tick each step
+            // Dragging — update preview silently (no haptic while sliding)
             if draggedIndex != idx {
                 withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) {
                     draggedIndex = idx
                 }
-                UIImpactFeedbackGenerator(style: .light).impactOccurred()
             }
         } else {
             // Still a press — highlight the touched tab
@@ -344,6 +343,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler {
     private var tabBarHeightConstraint: NSLayoutConstraint?
     private var isCollapsed = false
     private var messageHandlerAdded = false
+    private var edgePanGR: UIScreenEdgePanGestureRecognizer?
 
     private var isPanelOpen = false {
         didSet { animateBackButton(visible: isPanelOpen) }
@@ -393,6 +393,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler {
             self.injectEnhancements(into: wv)
             self.mountTabBar(on: rootVC)
             self.mountBackButton(on: rootVC)
+            self.addEdgeSwipe(to: wv)
+            self.restoreFromUserDefaults(in: wv)
         }
     }
 
@@ -441,6 +443,24 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler {
                 @media (max-width: 768px) {
                     #detailPanel { padding-top: calc(env(safe-area-inset-top) + 12px) !important; }
                 }
+
+                /* ── Fix scroll-selection: remove tap flash, prevent text selection ── */
+                * { -webkit-tap-highlight-color: transparent !important; }
+                body, .mat-row, .per-header, .elec-opt, .bn-item, .stat-box,
+                button, a, label, [onclick] {
+                    -webkit-user-select: none !important;
+                    user-select: none !important;
+                }
+                input, textarea, .nota-inp {
+                    -webkit-user-select: auto !important;
+                    user-select: auto !important;
+                }
+                /* pan-y lets the browser scroll without triggering click on items */
+                #mainContent { touch-action: pan-y !important; }
+                .mat-row, .elec-opt, .per-header { touch-action: manipulation !important; }
+
+                /* ── Panel slide animation ── */
+                #detailPanel { will-change: transform; }
 
                 /* 10. Confirm button styles */
                 .nota-confirm-btn {
@@ -623,6 +643,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler {
 
                 window.saveData = function() {
                     _save.apply(this, arguments);
+                    // Backup to native UserDefaults right after every explicit save
+                    try {
+                        var raw = localStorage.getItem('leanup_v4');
+                        if (raw) window.webkit?.messageHandlers?.nativeUI?.postMessage({ event: 'save', data: raw });
+                    } catch(e) {}
                     var sv = document.getElementById('lu-save-btn');
                     var rs = document.getElementById('lu-reset-btn');
                     // Green success flash on save button
@@ -666,15 +691,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler {
                 ? document.addEventListener('DOMContentLoaded', patchMarkUnsaved)
                 : patchMarkUnsaved();
 
-            // ── 3c. Auto-save on background — prevents data loss ─────────────
-            // Mobile apps must preserve state when the user switches apps.
-            // This saves silently to localStorage without changing the UI state.
+            // ── 3c. Auto-save — prevents data loss on force-quit ────────────
+            // Saves to localStorage AND to native UserDefaults via message.
+            // UserDefaults survives force-quit; localStorage may not always.
             function autoSave() {
                 try {
                     if (typeof materias === 'undefined') return;
                     var notas = {};
                     materias.forEach(function(m) { if (m.nota !== null) notas[m.id] = m.nota; });
-                    localStorage.setItem('leanup_v4', JSON.stringify({
+                    var json = JSON.stringify({
                         notas: notas,
                         electivosSeleccionados: typeof electivosSeleccionados !== 'undefined'
                             ? electivosSeleccionados : {},
@@ -682,13 +707,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler {
                             ? electivosNotas : {},
                         username: typeof username !== 'undefined' ? username : '',
                         darkMode: typeof darkMode !== 'undefined' ? darkMode : false
-                    }));
+                    });
+                    localStorage.setItem('leanup_v4', json);
+                    // Backup to native UserDefaults — survives force-quit
+                    window.webkit?.messageHandlers?.nativeUI?.postMessage({ event: 'save', data: json });
                 } catch(e) {}
             }
             document.addEventListener('visibilitychange', function() {
                 if (document.visibilityState === 'hidden') autoSave();
             });
             window.addEventListener('pagehide', autoSave, { capture: true });
+            // Belt-and-suspenders: save every 30 s while app is open
+            setInterval(autoSave, 30000);
 
             // ── 4/10. Add ✓ confirm button — uses Enter simulation ─────────
             // Works for both regular (saveNota) AND elective (saveElecNota)
@@ -719,7 +749,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler {
             mo.observe(document.documentElement, { childList: true, subtree: true });
             document.querySelectorAll('.nota-widget').forEach(addConfirm);
 
-            // ── 9. Panel open / close → native back button ──────────────────
+            // ── 9. Panel open/close — iOS slide animation + native back btn ──
             function patchPanel() {
                 if (window.__lu_panel) return;
                 if (typeof mobileOpenPanel !== 'function') {
@@ -728,18 +758,88 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler {
                 window.__lu_panel = true;
                 var _open  = window.mobileOpenPanel;
                 var _close = window.mobileClosePanelOrBack;
+
                 window.mobileOpenPanel = function() {
+                    // Prep for slide-in BEFORE the class is added
+                    var dp = document.getElementById('detailPanel');
+                    if (dp) { dp.style.transform = 'translateX(100%)'; dp.style.transition = 'none'; }
                     _open.apply(this, arguments);
+                    // Animate in on the next two frames (ensures class is applied)
+                    if (dp) {
+                        requestAnimationFrame(function() {
+                            requestAnimationFrame(function() {
+                                dp.style.transition = 'transform 0.35s cubic-bezier(0.25,0.46,0.45,0.94)';
+                                dp.style.transform  = 'translateX(0)';
+                                setTimeout(function() { dp.style.transition = ''; dp.style.transform = ''; }, 380);
+                            });
+                        });
+                    }
                     window.webkit?.messageHandlers?.nativeUI?.postMessage({ event: 'panelOpen' });
                 };
+
                 window.mobileClosePanelOrBack = function() {
-                    _close.apply(this, arguments);
-                    window.webkit?.messageHandlers?.nativeUI?.postMessage({ event: 'panelClose' });
+                    var dp = document.getElementById('detailPanel');
+                    if (dp && dp.classList.contains('mobile-open')) {
+                        // Animate out to the right, then let the original fn clean up
+                        dp.style.transition = 'transform 0.28s cubic-bezier(0.4,0,1,1)';
+                        dp.style.transform  = 'translateX(100%)';
+                        var a = arguments;
+                        setTimeout(function() {
+                            dp.style.transition = '';
+                            dp.style.transform  = '';
+                            _close.apply(window, a);
+                        }, 280);
+                        window.webkit?.messageHandlers?.nativeUI?.postMessage({ event: 'panelClose' });
+                    } else {
+                        _close.apply(this, arguments);
+                    }
                 };
             }
             document.readyState === 'loading'
                 ? document.addEventListener('DOMContentLoaded', patchPanel)
                 : patchPanel();
+
+            // ── 6. Haptic feedback on web elements ──────────────────────────
+            function h(s) {
+                window.webkit?.messageHandlers?.nativeUI?.postMessage({ event: 'haptic', style: s });
+            }
+            function addWebHaptics() {
+                // Period accordion headers (malla)
+                document.querySelectorAll('.per-header, .periodo-header').forEach(function(el) {
+                    if (!el.dataset.luh) { el.dataset.luh='1';
+                        el.addEventListener('click', function() { h('rigid'); }, true); }
+                });
+                // Course rows (tap on a materia)
+                document.querySelectorAll('.mat-row').forEach(function(el) {
+                    if (!el.dataset.luh) { el.dataset.luh='1';
+                        el.addEventListener('click', function() { h('medium'); }, true); }
+                });
+                // Elective option rows
+                document.querySelectorAll('.elec-opt, .elec-row').forEach(function(el) {
+                    if (!el.dataset.luh) { el.dataset.luh='1';
+                        el.addEventListener('click', function() { h('medium'); }, true); }
+                });
+                // Dark mode toggle
+                var dt = document.getElementById('darkToggle');
+                if (dt && !dt.dataset.luh) { dt.dataset.luh='1';
+                    dt.addEventListener('change', function() { h('soft'); }, true); }
+                // WhatsApp / email links
+                document.querySelectorAll('a[href*="wa.me"], a[href*="whatsapp"], a[href*="mailto"]').forEach(function(el) {
+                    if (!el.dataset.luh) { el.dataset.luh='1';
+                        el.addEventListener('click', function() { h('medium'); }, true); }
+                });
+                // Copy / prompt buttons in portafolio
+                document.querySelectorAll('[onclick*="copy"], [onclick*="Copy"], .copy-btn, [onclick*="prompt"]').forEach(function(el) {
+                    if (!el.dataset.luh) { el.dataset.luh='1';
+                        el.addEventListener('click', function() { h('light'); }, true); }
+                });
+            }
+            document.readyState === 'loading'
+                ? document.addEventListener('DOMContentLoaded', addWebHaptics)
+                : addWebHaptics();
+            // Re-apply when new content renders (renderMalla, etc.)
+            new MutationObserver(function() { addWebHaptics(); })
+                .observe(document.documentElement, { childList: true, subtree: true });
 
             // ── 5. Scroll → native tab-bar collapse ─────────────────────────
             function setupScroll() {
@@ -884,6 +984,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler {
             case "darkMode":
                 let on = body["on"] as? Bool ?? false
                 self.window?.overrideUserInterfaceStyle = on ? .dark : .light
+            case "save":
+                // Backup web data to UserDefaults — survives force-quit
+                if let data = body["data"] as? String {
+                    let b64 = Data(data.utf8).base64EncodedString()
+                    UserDefaults.standard.set(b64, forKey: "leanup_v4_backup")
+                }
+            case "haptic":
+                self.triggerHaptic(style: body["style"] as? String ?? "medium")
             default: break
             }
         }
@@ -940,6 +1048,108 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler {
         default:            return
         }
         capacitorWebView?.evaluateJavaScript(js)
+    }
+
+    // MARK: Native data backup / restore
+    /// Called once on mount: pushes UserDefaults backup into localStorage so
+    /// loadData() picks it up even after localStorage is wiped by iOS.
+    private func restoreFromUserDefaults(in wv: WKWebView) {
+        guard let b64 = UserDefaults.standard.string(forKey: "leanup_v4_backup") else { return }
+        // atob() decodes base64 → the original JSON string
+        let js = """
+        (function() {
+            try {
+                var json = atob('\(b64)');
+                localStorage.setItem('leanup_v4', json);
+                if (typeof loadData          === 'function') loadData();
+                if (typeof renderMalla       === 'function') renderMalla();
+                if (typeof renderProfesional === 'function') renderProfesional();
+                if (typeof renderSalida      === 'function') renderSalida();
+                if (typeof renderPortafolio  === 'function') renderPortafolio();
+                if (typeof updateAll         === 'function') updateAll();
+            } catch(e) {}
+        })();
+        """
+        wv.evaluateJavaScript(js)
+    }
+
+    // MARK: Haptic feedback
+    private func triggerHaptic(style: String) {
+        switch style {
+        case "light":   UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        case "rigid":   UIImpactFeedbackGenerator(style: .rigid).impactOccurred()
+        case "soft":    UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+        case "select":  UISelectionFeedbackGenerator().selectionChanged()
+        case "success": UINotificationFeedbackGenerator().notificationOccurred(.success)
+        default:        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        }
+    }
+
+    // MARK: Edge swipe to dismiss panel (iOS back-gesture feel)
+    private func addEdgeSwipe(to wv: WKWebView) {
+        wv.allowsBackForwardNavigationGestures = false
+        let gr = UIScreenEdgePanGestureRecognizer(
+            target: self, action: #selector(handleEdgeSwipe(_:)))
+        gr.edges = .left
+        wv.addGestureRecognizer(gr)
+        edgePanGR = gr
+    }
+
+    @objc private func handleEdgeSwipe(_ gr: UIScreenEdgePanGestureRecognizer) {
+        guard isPanelOpen, let wv = capacitorWebView else { return }
+        let tx      = max(0, gr.translation(in: gr.view).x)
+        let vx      = gr.velocity(in: gr.view).x
+        let screenW = UIScreen.main.bounds.width
+
+        switch gr.state {
+        case .changed:
+            wv.evaluateJavaScript("""
+                var dp = document.getElementById('detailPanel');
+                if (dp && dp.classList.contains('mobile-open')) {
+                    dp.style.transition = 'none';
+                    dp.style.transform  = 'translateX(\(tx)px)';
+                }
+            """)
+
+        case .ended:
+            if vx > 400 || tx > screenW * 0.4 {
+                // Commit dismiss — slide out the remaining distance
+                let dur = max(0.12, Double(screenW - tx) / Double(max(vx, 400)))
+                wv.evaluateJavaScript("""
+                    (function() {
+                        var dp = document.getElementById('detailPanel');
+                        if (!dp) return;
+                        dp.style.transition = 'transform \(String(format:"%.2f", dur))s cubic-bezier(0.25,0.46,0.45,0.94)';
+                        dp.style.transform  = 'translateX(100%)';
+                        setTimeout(function() {
+                            dp.style.transition = ''; dp.style.transform = '';
+                            dp.classList.remove('mobile-open');
+                            document.body.classList.remove('panel-open');
+                            document.querySelectorAll('.mat-row').forEach(function(r) { r.classList.remove('selected'); });
+                            window.webkit?.messageHandlers?.nativeUI?.postMessage({ event: 'panelClose' });
+                        }, \(Int(dur * 1000)));
+                    })();
+                """)
+            } else {
+                snapPanelBack(wv: wv)
+            }
+
+        case .cancelled, .failed:
+            snapPanelBack(wv: wv)
+
+        default: break
+        }
+    }
+
+    private func snapPanelBack(wv: WKWebView) {
+        wv.evaluateJavaScript("""
+            var dp = document.getElementById('detailPanel');
+            if (dp) {
+                dp.style.transition = 'transform 0.3s cubic-bezier(0.25,0.46,0.45,0.94)';
+                dp.style.transform  = 'translateX(0)';
+                setTimeout(function() { dp.style.transition = ''; dp.style.transform = ''; }, 320);
+            }
+        """)
     }
 
     // MARK: Helpers

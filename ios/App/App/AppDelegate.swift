@@ -404,59 +404,193 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler {
             `;
             (document.head || document.documentElement).appendChild(s);
 
-            // ── 1. Float glass buttons out of hidden topbar ─────────────────
-            function floatButtons() {
-                var sv = document.getElementById('glassSaveBtn');
-                var rs = document.getElementById('glassResetBtn');
-                if (!sv || !rs || sv.dataset.f) return;
-                sv.dataset.f = rs.dataset.f = '1';
-                document.body.appendChild(rs);
-                document.body.appendChild(sv);
+            // ── 1. Native floating glass buttons (created fresh, no topbar dependency) ──
+            function glassStyle(isDark) {
                 var t = 'calc(env(safe-area-inset-top) + 8px)';
-                var glassBtn = [
+                var bg = isDark
+                    ? 'rgba(255,255,255,0.10)'
+                    : 'rgba(255,255,255,0.65)';
+                var border = isDark
+                    ? '0.5px solid rgba(255,255,255,0.18)'
+                    : '0.5px solid rgba(255,255,255,0.80)';
+                var shadow = isDark
+                    ? '0 4px 24px rgba(0,0,0,0.45),inset 0 1px 0 rgba(255,255,255,0.14)'
+                    : '0 4px 20px rgba(0,0,0,0.12),inset 0 1px 0 rgba(255,255,255,0.75)';
+                return [
+                    'position:fixed','top:'+t,'z-index:600',
                     'width:52px','height:52px','border-radius:50%',
-                    'background:rgba(255,255,255,0.22)',
-                    'backdrop-filter:blur(24px) saturate(180%)',
-                    '-webkit-backdrop-filter:blur(24px) saturate(180%)',
-                    'border:1px solid rgba(255,255,255,0.52)',
-                    'box-shadow:0 4px 20px rgba(0,0,0,0.14),inset 0 1px 0 rgba(255,255,255,0.62)',
-                    'align-items:center','justify-content:center','cursor:pointer'
+                    'display:flex','align-items:center','justify-content:center',
+                    'cursor:pointer',
+                    'background:'+bg,
+                    'backdrop-filter:blur(28px) saturate(180%)',
+                    '-webkit-backdrop-filter:blur(28px) saturate(180%)',
+                    'border:'+border,
+                    'box-shadow:'+shadow,
+                    'transition:background 0.2s,box-shadow 0.2s'
                 ].join(';');
-                sv.style.cssText = 'position:fixed;top:'+t+';right:16px;z-index:600;display:flex;' + glassBtn;
-                rs.style.cssText = 'position:fixed;top:'+t+';right:76px;z-index:600;display:flex;' + glassBtn;
+            }
+
+            function updateBtnStyle(btn, isDark, extraRight) {
+                var base = glassStyle(isDark);
+                btn.style.cssText = base + ';right:' + extraRight;
+            }
+
+            function floatButtons() {
+                if (document.getElementById('lu-save-btn')) return;
+                var isDark = document.body.classList.contains('dark');
+                var iconColor = isDark ? '#009DC4' : '#0046AD';
+
+                // Save button
+                var sv = document.createElement('button');
+                sv.id = 'lu-save-btn';
+                sv.type = 'button';
+                sv.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="'+iconColor+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>';
+                sv.onclick = function() {
+                    if (typeof saveData === 'function') saveData();
+                };
+                updateBtnStyle(sv, isDark, '16px');
+                document.body.appendChild(sv);
+
+                // Reset button
+                var rs = document.createElement('button');
+                rs.id = 'lu-reset-btn';
+                rs.type = 'button';
+                rs.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="'+iconColor+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.51"/></svg>';
+                rs.onclick = function() {
+                    if (typeof resetChanges === 'function') resetChanges();
+                };
+                rs.style.opacity = '0.4';
+                updateBtnStyle(rs, isDark, '76px');
+                rs.style.opacity = '0.4';
+                rs.style.pointerEvents = 'none';
+                document.body.appendChild(rs);
+
+                // Keep original hidden buttons in sync (saveData checks them by id)
+                var origSv = document.getElementById('glassSaveBtn');
+                var origRs = document.getElementById('glassResetBtn');
+                if (origSv) origSv.style.display = 'none';
+                if (origRs) origRs.style.display = 'none';
+
+                // Expose helpers so saveData/resetChanges can still control state
+                window.__lu_setSaveState = function(saved) {
+                    if (saved) {
+                        sv.style.color = 'var(--success)';
+                        rs.style.opacity = '0.4';
+                        rs.style.pointerEvents = 'none';
+                    } else {
+                        sv.style.color = '';
+                        rs.style.opacity = '1';
+                        rs.style.pointerEvents = 'auto';
+                    }
+                };
             }
             document.readyState === 'loading'
                 ? document.addEventListener('DOMContentLoaded', floatButtons)
                 : floatButtons();
 
-            // ── 2. Top gradient — very subtle blur/fade only, no solid color blocking ─
+            // ── 2. Gradients — update color dynamically with dark mode ──────
+            function getGradientColor(isDark) {
+                return isDark
+                    ? 'rgba(13,20,32,0.60)'
+                    : 'rgba(240,244,250,0.55)';
+            }
+            function updateGradients() {
+                var isDark = document.body.classList.contains('dark');
+                var topF = document.getElementById('lu-top-fade');
+                var botF = document.getElementById('lu-bottom-fade');
+                var c = getGradientColor(isDark);
+                var bgC = isDark ? 'rgba(13,20,32,1)' : 'rgba(240,244,250,1)';
+                if (topF) topF.style.background = 'linear-gradient(to bottom, '+c+' 0%, transparent 100%)';
+                if (botF) botF.style.background = 'linear-gradient(to bottom, transparent, '+bgC+')';
+
+                // Also update floating buttons color
+                var sv = document.getElementById('lu-save-btn');
+                var rs = document.getElementById('lu-reset-btn');
+                if (sv) updateBtnStyle(sv, isDark, '16px');
+                if (rs) {
+                    var wasDisabled = rs.style.pointerEvents === 'none';
+                    updateBtnStyle(rs, isDark, '76px');
+                    if (wasDisabled) { rs.style.opacity='0.4'; rs.style.pointerEvents='none'; }
+                }
+                var iconColor = isDark ? '#009DC4' : '#0046AD';
+                [sv, rs].forEach(function(b) {
+                    if (b) b.querySelectorAll('svg').forEach(function(s) {
+                        s.setAttribute('stroke', iconColor);
+                    });
+                });
+            }
             function addGradients() {
                 if (document.getElementById('lu-top-fade')) return;
+                var isDark = document.body.classList.contains('dark');
+                var c = getGradientColor(isDark);
+                var bgC = isDark ? 'rgba(13,20,32,1)' : 'rgba(240,244,250,1)';
+
                 var topF = document.createElement('div');
                 topF.id = 'lu-top-fade';
                 topF.style.cssText = [
                     'position:fixed','top:0','left:0','right:0',
                     'height:calc(env(safe-area-inset-top) + 20px)',
-                    'background:linear-gradient(to bottom, rgba(var(--bg-rgb,240,244,250),0.55) 0%, transparent 100%)',
+                    'background:linear-gradient(to bottom, '+c+' 0%, transparent 100%)',
                     'pointer-events:none','z-index:500'
                 ].join(';');
                 document.body.appendChild(topF);
 
-                // 3. Bottom gradient (at the very bottom, behind tab bar)
                 var botF = document.createElement('div');
                 botF.id = 'lu-bottom-fade';
                 botF.style.cssText = [
-                    'position:fixed','left:0','right:0',
-                    'bottom:0',
+                    'position:fixed','left:0','right:0','bottom:0',
                     'height:calc(env(safe-area-inset-bottom) + 100px)',
-                    'background:linear-gradient(to bottom, transparent, var(--bg))',
+                    'background:linear-gradient(to bottom, transparent, '+bgC+')',
                     'pointer-events:none','z-index:100'
                 ].join(';');
                 document.body.appendChild(botF);
+
+                // Watch body.dark changes → update gradients + buttons
+                new MutationObserver(function(mutations) {
+                    mutations.forEach(function(m) {
+                        if (m.attributeName === 'class') updateGradients();
+                    });
+                }).observe(document.body, { attributes: true });
             }
             document.readyState === 'loading'
                 ? document.addEventListener('DOMContentLoaded', addGradients)
                 : addGradients();
+
+            // ── 3. Patch saveData/resetChanges to drive new native buttons ──
+            function patchSaveReset() {
+                if (window.__lu_sr_patched) return;
+                if (typeof saveData !== 'function' || typeof resetChanges !== 'function') {
+                    setTimeout(patchSaveReset, 250); return;
+                }
+                window.__lu_sr_patched = true;
+                var _save  = window.saveData;
+                var _reset = window.resetChanges;
+                window.saveData = function() {
+                    _save.apply(this, arguments);
+                    // Mark save button with success flash, disable reset
+                    var sv = document.getElementById('lu-save-btn');
+                    var rs = document.getElementById('lu-reset-btn');
+                    if (sv) { sv.style.opacity='0.7'; setTimeout(function(){ sv.style.opacity=''; }, 1200); }
+                    if (rs) { rs.style.opacity='0.4'; rs.style.pointerEvents='none'; }
+                };
+                window.resetChanges = function() {
+                    _reset.apply(this, arguments);
+                    var rs = document.getElementById('lu-reset-btn');
+                    if (rs) { rs.style.opacity='0.4'; rs.style.pointerEvents='none'; }
+                };
+                // markDirty enables the reset button — wrap it too
+                if (typeof markDirty === 'function') {
+                    var _dirty = window.markDirty;
+                    window.markDirty = function() {
+                        _dirty.apply(this, arguments);
+                        var rs = document.getElementById('lu-reset-btn');
+                        if (rs) { rs.style.opacity='1'; rs.style.pointerEvents='auto'; }
+                    };
+                }
+            }
+            document.readyState === 'loading'
+                ? document.addEventListener('DOMContentLoaded', patchSaveReset)
+                : patchSaveReset();
 
             // ── 4/10. Add ✓ confirm button — uses Enter simulation ─────────
             // Works for both regular (saveNota) AND elective (saveElecNota)

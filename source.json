@@ -1,0 +1,25 @@
+{
+  "name": "LeanUp",
+  "identifier": "io.leanup.source",
+  "sourceURL": "https://raw.githubusercontent.com/elnilsonn/leanup-app/main/source.json",
+  "apps": [
+    {
+      "name": "LeanUp",
+      "bundleIdentifier": "io.leanup.app",
+      "developerName": "Nilson Leandro",
+      "subtitle": "Tu guía de carrera UNAD",
+      "localizedDescription": "Gestiona tu malla curricular de Marketing y Negocios Digitales en la UNAD",
+      "iconURL": "https://raw.githubusercontent.com/elnilsonn/leanup-app/main/icon.png",
+      "tintColor": "001B50",
+      "screenshotURLs": [],
+      "versions": [
+        {
+          "version": "1.0",
+          "date": "2026-03-18",
+          "downloadURL": "https://github.com/elnilsonn/leanup-app/releases/download/v1.0/LeanUp-IPA.zip",
+          "size": 5000000
+        }
+      ]
+    }
+  ]
+}

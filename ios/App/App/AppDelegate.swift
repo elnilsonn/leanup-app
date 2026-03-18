@@ -131,6 +131,8 @@ private struct LiquidGlassTabBar: View {
 }
 
 // MARK: - Tab Bar Host (manages state)
+// NOTE: This view is placed in a height-constrained container (not full-screen)
+// so it does NOT intercept touches outside the tab bar area.
 @available(iOS 15.0, *)
 private struct TabBarHost: View {
     @State private var active = "dashboard"
@@ -138,7 +140,7 @@ private struct TabBarHost: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Spacer()
+            Spacer(minLength: 0)
             LiquidGlassTabBar(active: $active, onSelect: onSelect)
                 .padding(.bottom, 10)
         }
@@ -217,10 +219,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         host.view.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            host.view.topAnchor.constraint(equalTo: rootVC.view.topAnchor),
+            // Only cover the bottom 130 pt — this prevents the overlay from
+            // blocking scrolls/taps on the web content above the tab bar.
             host.view.leadingAnchor.constraint(equalTo: rootVC.view.leadingAnchor),
             host.view.trailingAnchor.constraint(equalTo: rootVC.view.trailingAnchor),
             host.view.bottomAnchor.constraint(equalTo: rootVC.view.bottomAnchor),
+            host.view.heightAnchor.constraint(equalToConstant: 130),
         ])
 
         tabBarVC = host

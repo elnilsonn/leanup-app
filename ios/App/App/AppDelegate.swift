@@ -319,16 +319,20 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler {
             rootVC.extendedLayoutIncludesOpaqueBars = true
             // Prevent the scroll view from automatically adding top inset for status bar
             wv.scrollView.contentInsetAdjustmentBehavior = .never
-            // Stretch the WebView's frame to cover the full screen including status bar area
+            // Fix: remove SUPERVIEW constraints that pin webview to safe area, then re-pin to bounds
             if let superview = wv.superview {
+                let existing = superview.constraints.filter {
+                    $0.firstItem === wv || $0.secondItem === wv
+                }
+                NSLayoutConstraint.deactivate(existing)
                 wv.translatesAutoresizingMaskIntoConstraints = false
-                NSLayoutConstraint.deactivate(wv.constraints)
                 NSLayoutConstraint.activate([
                     wv.topAnchor.constraint(equalTo: superview.topAnchor),
                     wv.leadingAnchor.constraint(equalTo: superview.leadingAnchor),
                     wv.trailingAnchor.constraint(equalTo: superview.trailingAnchor),
                     wv.bottomAnchor.constraint(equalTo: superview.bottomAnchor),
                 ])
+                superview.layoutIfNeeded()
             }
 
             self.injectEnhancements(into: wv)
@@ -422,15 +426,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler {
                 ? document.addEventListener('DOMContentLoaded', floatButtons)
                 : floatButtons();
 
-            // ── 2. Top gradient (iOS Settings-style transparent status area) ─
+            // ── 2. Top gradient — very subtle blur/fade only, no solid color blocking ─
             function addGradients() {
                 if (document.getElementById('lu-top-fade')) return;
                 var topF = document.createElement('div');
                 topF.id = 'lu-top-fade';
                 topF.style.cssText = [
                     'position:fixed','top:0','left:0','right:0',
-                    'height:calc(env(safe-area-inset-top) + 40px)',
-                    'background:linear-gradient(to bottom, var(--bg) 55%, transparent)',
+                    'height:calc(env(safe-area-inset-top) + 20px)',
+                    'background:linear-gradient(to bottom, rgba(var(--bg-rgb,240,244,250),0.55) 0%, transparent 100%)',
                     'pointer-events:none','z-index:500'
                 ].join(';');
                 document.body.appendChild(topF);

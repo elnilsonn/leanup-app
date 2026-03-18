@@ -368,8 +368,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler {
                 /* 1. Hide ENTIRE topbar — buttons will be moved to body */
                 .topbar { display: none !important; }
 
-                /* FIX 1: Push content below the status bar (clock/battery) + small breathing room */
-                .main { padding-top: calc(env(safe-area-inset-top) + 12px) !important; }
+                /* FIX 1: Remove any inherited top gap on the flex container */
+                .main { padding-top: 0 !important; }
+
+                /* Push content down inside each section (not a bar — just space within the scroll) */
+                .view { padding-top: calc(env(safe-area-inset-top) + 12px) !important; }
 
                 /* FIX 2: Large iOS-Settings-style glass buttons */
                 .topbar-glass-btn {

@@ -11,6 +11,7 @@ jobs:
         with:
           node-version: 20
       - run: npm install
+      - run: chmod +x node_modules/.bin/cap
       - run: npx cap sync ios
       - uses: maxim-lobanov/setup-xcode@v1
         with:

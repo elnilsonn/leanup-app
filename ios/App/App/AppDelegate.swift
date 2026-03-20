@@ -59,10 +59,8 @@ private struct LiquidGlassTabBar: View {
             let contentW = totalW - innerPad * 2
             let tabW     = contentW / CGFloat(tabs.count)
             let bubbleW  = tabW - 8
-            // Compute correct position from GeometryReader on EVERY render
-            let computedCenter = tabCenter(activeIndex, contentW: contentW)
 
-            barView(bubbleW: bubbleW, computedCenter: computedCenter)
+            barView(bubbleW: bubbleW, contentW: contentW)
                 .highPriorityGesture(
                     DragGesture(minimumDistance: 0, coordinateSpace: .local)
                         .onChanged { v in onDragChanged(v, contentW: contentW, tabW: tabW) }
@@ -70,10 +68,8 @@ private struct LiquidGlassTabBar: View {
                 )
                 .onAppear {
                     guard !hasAppeared else { return }
-                    bubbleCenterX = computedCenter
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-                        bubbleCenterX = computedCenter
-                        withAnimation(.easeOut(duration: 0.2)) {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        withAnimation(.easeOut(duration: 0.15)) {
                             hasAppeared = true
                         }
                     }
@@ -119,7 +115,6 @@ private struct LiquidGlassTabBar: View {
         let dx     = abs(v.location.x - startX)
 
         gestureStartX = nil
-        isDragging    = false
 
         let idx: Int
         if dx < dragThreshold {
@@ -133,21 +128,21 @@ private struct LiquidGlassTabBar: View {
         withAnimation(.spring(response: 0.28, dampingFraction: 0.82)) {
             active = tabs[idx].id
             pressingTab = nil
-            bubbleCenterX = tabCenter(idx, contentW: contentW)
+            isDragging = false  // Inside withAnimation so bubble springs back
         }
         onSelect(tabs[idx].id)
     }
 
     // MARK: Bar container (iOS 26 vs fallback)
     @ViewBuilder
-    private func barView(bubbleW: CGFloat, computedCenter: CGFloat) -> some View {
+    private func barView(bubbleW: CGFloat, contentW: CGFloat) -> some View {
         if #available(iOS 26.0, *) {
-            tabContent(bubbleW: bubbleW, computedCenter: computedCenter)
+            tabContent(bubbleW: bubbleW, contentW: contentW)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 3)
                 .glassEffect(.regular.interactive(true), in: .capsule)
         } else {
-            tabContent(bubbleW: bubbleW, computedCenter: computedCenter)
+            tabContent(bubbleW: bubbleW, contentW: contentW)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 3)
                 .background { fallbackBg }
@@ -156,10 +151,12 @@ private struct LiquidGlassTabBar: View {
 
     // MARK: Tab content — single bubble positioned via continuous offset + icons
     @ViewBuilder
-    private func tabContent(bubbleW: CGFloat, computedCenter: CGFloat) -> some View {
+    private func tabContent(bubbleW: CGFloat, contentW: CGFloat) -> some View {
+        // During drag: use bubbleCenterX (finger tracking)
+        // Otherwise: compute directly from GeometryReader (always correct, no stale state)
+        let bubbleX = isDragging ? bubbleCenterX : tabCenter(activeIndex, contentW: contentW)
+
         ZStack {
-            // Bubble — follows finger directly during drag, springs to tab on release
-            // Before hasAppeared, use computedCenter (from GeometryReader) to avoid wrong position
             Group {
                 if #available(iOS 26.0, *) {
                     Capsule()
@@ -172,8 +169,9 @@ private struct LiquidGlassTabBar: View {
                     activeTabBubble(width: bubbleW)
                 }
             }
-            .position(x: hasAppeared ? bubbleCenterX : computedCenter, y: 26)
+            .position(x: bubbleX, y: 26)
             .opacity(hasAppeared ? 1 : 0)
+            .animation(.spring(response: 0.28, dampingFraction: 0.82), value: active)
             .scaleEffect(pressingTab != nil && pressingTab == active ? 1.10 : 1.0)
 
             // Tab icons — always based on `active`, NOT drag state (prevents flicker)
@@ -565,8 +563,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
                 /* FIX 1: Remove any inherited top gap on the flex container */
                 .main { padding-top: 0 !important; }
 
-                /* Push content down inside each section (not a bar — just space within the scroll) */
-                .view { padding-top: calc(env(safe-area-inset-top) + 12px) !important; }
+                /* Push content down inside each section — enough clearance for native glass buttons */
+                .view { padding-top: calc(env(safe-area-inset-top) + 56px) !important; }
 
                 /* FIX 2: Large iOS-Settings-style glass buttons */
                 .topbar-glass-btn {
@@ -578,7 +576,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
 
                 /* Override the detail-panel topbar-padding (was topbar 56px + safe) */
                 @media (max-width: 768px) {
-                    #detailPanel { padding-top: calc(env(safe-area-inset-top) + 12px) !important; }
+                    #detailPanel { padding-top: calc(env(safe-area-inset-top) + 56px) !important; }
                 }
 
                 /* ── Fix scroll-selection: remove tap flash, prevent text selection ── */
@@ -663,6 +661,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
 
                 /* ── Suppress viewFadeIn during custom push/pop transitions ── */
                 .view.lu-anim-skip { animation: none !important; transition: none !important; }
+
+                /* Extra top padding when views are position:fixed during transitions.
+                   Compensates for .content's 16px top padding lost when escaping normal flow. */
+                .view.lu-fixed-transition {
+                    padding-top: calc(env(safe-area-inset-top) + 72px) !important;
+                }
 
                 /* 10. Confirm button styles */
                 .nota-confirm-btn {
@@ -914,9 +918,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
                 var pushDur = '0.45s';
                 var popDur  = '0.42s';
                 function fixedBase(bg) {
-                    // Include .content's mobile padding (16px 14px) so layout doesn't shift
-                    return 'display:block;position:fixed;top:0;left:0;right:0;bottom:0;overflow-y:auto;background:' + bg + ';animation:none;padding:16px 14px;';
+                    // padding: 0 14px matches .content's horizontal padding
+                    // vertical padding is handled by .lu-fixed-transition CSS class
+                    return 'display:block;position:fixed;top:0;left:0;right:0;bottom:0;overflow-y:auto;background:' + bg + ';animation:none;padding:0 14px;';
                 }
+                function addFixedClass(el) { el.classList.add('lu-fixed-transition'); }
+                function removeFixedClass(el) { el.classList.remove('lu-fixed-transition'); }
                 // Dimming overlay on hub during push (Apple uses ~8% black overlay on the outgoing view)
                 function addDim(el) {
                     var d = document.createElement('div');
@@ -939,8 +946,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
                 }
 
                 window.showView = function(id, el) {
-                    // Clear animation-skip class from previous transitions
-                    document.querySelectorAll('.view.lu-anim-skip').forEach(function(v) { v.classList.remove('lu-anim-skip'); });
+                    // Clear animation-skip ONLY from views that will lose .active
+                    // Removing it from a view that KEEPS .active re-triggers fadeSlideIn
+                    var targetId = 'view-' + id;
+                    document.querySelectorAll('.view.lu-anim-skip').forEach(function(v) {
+                        if (v.id !== targetId) v.classList.remove('lu-anim-skip');
+                    });
 
                     var isSubView = profileSubViews.indexOf(id) >= 0;
                     var goingToHub = (id === 'perfil-hub');
@@ -956,7 +967,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
                             var bg = getBg();
                             var fb = fixedBase(bg);
                             // CRITICAL: Set BOTH views fixed BEFORE _sv() changes classes
-                            // This prevents hub from flashing when it loses .active
+                            addFixedClass(hubView);
+                            addFixedClass(newView);
                             hubView.style.cssText = fb + 'z-index:201;transform:translateX(0)';
                             newView.style.cssText = fb + 'z-index:202;transform:translateX(100%)';
                             _sv.apply(this, [id, el]);
@@ -970,9 +982,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
                             hubView.style.transform  = 'translateX(-33%)';
                             setTimeout(function() {
                                 cleanupExtras();
-                                // Use lu-anim-skip class to prevent fadeSlideIn re-trigger
-                                // Class will be removed on next showView() call
                                 newView.classList.add('lu-anim-skip');
+                                removeFixedClass(newView);
+                                removeFixedClass(hubView);
                                 newView.style.cssText = '';
                                 hubView.style.cssText = '';
                                 _animating = false;
@@ -999,6 +1011,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
                             _animating = true;
                             var bg2 = getBg();
                             var fb2 = fixedBase(bg2);
+                            addFixedClass(curView);
+                            addFixedClass(hubView2);
                             curView.style.cssText  = fb2 + 'z-index:202;transform:translateX(0)';
                             hubView2.style.cssText = fb2 + 'z-index:201;transform:translateX(-33%)';
                             addEdgeShadow(curView);
@@ -1011,12 +1025,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
                             hubView2.style.transition = trans2;
                             hubView2.style.transform  = 'translateX(0)';
                             if (dimEl2) { requestAnimationFrame(function(){ dimEl2.style.transition = 'background ' + popDur + ' ' + appleCurve; dimEl2.style.background = 'rgba(0,0,0,0)'; }); }
-                            var args = arguments;
                             setTimeout(function() {
                                 cleanupExtras();
-                                // Use lu-anim-skip class instead of fragile inline animation:none
-                                hubView2.classList.add('lu-anim-skip');
-                                _sv.apply(window, args);
+                                // Manually swap .active — skip _sv() to avoid scrollTop=0 "refresh"
+                                curView.classList.remove('active');
+                                hubView2.classList.add('active', 'lu-anim-skip');
+                                removeFixedClass(curView);
+                                removeFixedClass(hubView2);
                                 curView.style.cssText = '';
                                 hubView2.style.cssText = '';
                                 _animating = false;
@@ -1548,7 +1563,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
                         if (!v || v === hub) return;
                         var isDark = document.body.classList.contains('dark');
                         var bg = isDark ? '#0d1420' : '#F0F4FA';
-                        var base = 'display:block;position:fixed;top:0;left:0;right:0;bottom:0;overflow-y:auto;background:' + bg + ';animation:none;transition:none;padding:16px 14px;';
+                        var base = 'display:block;position:fixed;top:0;left:0;right:0;bottom:0;overflow-y:auto;background:' + bg + ';animation:none;transition:none;padding:0 14px;';
+                        v.classList.add('lu-fixed-transition');
+                        hub.classList.add('lu-fixed-transition');
                         v.style.cssText = base + 'z-index:202;transform:translateX(0)';
                         hub.style.cssText = base + 'z-index:201;transform:translateX(-33%)';
                     })();
@@ -1580,10 +1597,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
                             hub.style.transform = 'translateX(0)';
                             document.querySelectorAll('.lu-push-dim,.lu-edge-shadow').forEach(function(e){ e.remove(); });
                             setTimeout(function() {
-                                hub.classList.add('lu-anim-skip');
-                                window.__lu_noSubViewAnim = true;
-                                showView('perfil-hub', null);
-                                window.__lu_noSubViewAnim = false;
+                                // Manually swap .active — skip showView to avoid scrollTop=0 refresh
+                                v.classList.remove('active');
+                                hub.classList.add('active', 'lu-anim-skip');
+                                v.classList.remove('lu-fixed-transition');
+                                hub.classList.remove('lu-fixed-transition');
                                 v.style.cssText = '';
                                 hub.style.cssText = '';
                                 window.webkit?.messageHandlers?.nativeUI?.postMessage({ event: 'subViewClose' });
@@ -1626,6 +1644,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
                 hub.style.transform = 'translateX(-33%)';
                 setTimeout(function() {
                     v.classList.add('lu-anim-skip');
+                    v.classList.remove('lu-fixed-transition');
+                    hub.classList.remove('lu-fixed-transition');
                     v.style.cssText = '';
                     hub.style.cssText = '';
                 }, 320);

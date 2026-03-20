@@ -135,13 +135,17 @@ private struct LiquidGlassTabBar: View {
     // MARK: Bar container (iOS 26 vs fallback)
     @ViewBuilder
     private func barView(bubbleW: CGFloat) -> some View {
-        // iOS 26: Use manual frosted background (NOT .glassEffect on the bar).
-        // This allows the active bubble to use .glassEffect() without nesting.
-        // The bubble gets real Liquid Glass with glassEffectID morphing.
-        tabCells(bubbleW: bubbleW)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 3)
-            .background { fallbackBg }
+        if #available(iOS 26.0, *) {
+            tabCells(bubbleW: bubbleW)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 3)
+                .glassEffect(.regular, in: Capsule())
+        } else {
+            tabCells(bubbleW: bubbleW)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 3)
+                .background { fallbackBg }
+        }
     }
 
     // MARK: Tab cells — plain ZStack rows; gesture lives at bar level
@@ -264,20 +268,19 @@ private struct LiquidGlassTabBar: View {
         .animation(.spring(response: 0.15, dampingFraction: 0.65), value: isPressing)
     }
 
-    // MARK: Frosted bar background — used for ALL iOS versions now
-    // (iOS 26 no longer uses .glassEffect() on the bar — that's reserved for the bubble)
+    // MARK: Frosted bar background — used for iOS 15-25 fallback
     @ViewBuilder
     private var fallbackBg: some View {
         ZStack {
-            // Frosted base at 55% opacity
+            // Frosted base at 60% opacity
             Capsule()
                 .fill(.ultraThinMaterial)
-                .opacity(0.55)
+                .opacity(0.60)
 
             Capsule()
                 .fill(scheme == .dark
-                      ? Color(red: 0.05, green: 0.09, blue: 0.16).opacity(0.20)
-                      : Color.white.opacity(0.12))
+                      ? Color(red: 0.05, green: 0.09, blue: 0.16).opacity(0.22)
+                      : Color.white.opacity(0.14))
 
             // Minimal specular top-edge highlight
             LinearGradient(

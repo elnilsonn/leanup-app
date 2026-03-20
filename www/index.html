@@ -1504,7 +1504,10 @@ function selMat(id){
       <div class="panel-sect-title">Calificación</div>
       ${hasNota
         ? `<div id="nota-section-${m.id}"><div style="font-size:28px;font-weight:700;font-family:'IBM Plex Mono';color:${m.nota>=4?'var(--success)':m.nota>=3?'var(--unad-blue)':'var(--danger)'}">${m.nota}<span style="font-size:13px;color:var(--text3);font-weight:400"> / 5.0</span></div>
-           <button class="small-btn" onclick="editNota(${m.id})">Editar nota</button></div>`
+           <div style="display:flex;gap:8px;flex-wrap:wrap">
+             <button class="small-btn" onclick="editNota(${m.id})">Editar nota</button>
+             <button class="small-btn" style="color:var(--danger);border-color:var(--danger)" onclick="resetNota(${m.id})">Limpiar nota</button>
+           </div></div>`
         : `<div id="nota-section-${m.id}"><div class="nota-widget">
              <button type="button" tabindex="-1" class="nota-btn" onclick="adjNota(${m.id},-0.1)">−</button>
              <input class="nota-inp" id="ni-${m.id}" type="number" min="1" max="5" step="0.1" onkeydown="if(event.key==='Enter'){event.preventDefault();saveNota(${m.id})}">
@@ -1594,7 +1597,10 @@ function showElecDetail(grupo,cod){
       <div id="enota-section-${cod}">
       ${hasNota
         ? `<div style="font-size:28px;font-weight:700;font-family:'IBM Plex Mono';color:${nota>=4?'var(--success)':nota>=3?'var(--unad-blue)':'var(--danger)'}">${nota}<span style="font-size:13px;color:var(--text3);font-weight:400"> / 5.0</span></div>
-           <button class="small-btn" onclick="editElecNota('${grupo.replace(/'/g,"\\'")}','${cod}')">Editar nota</button>`
+           <div style="display:flex;gap:8px;flex-wrap:wrap">
+             <button class="small-btn" onclick="editElecNota('${grupo.replace(/'/g,"\\'")}','${cod}')">Editar nota</button>
+             <button class="small-btn" style="color:var(--danger);border-color:var(--danger)" onclick="resetElecNota('${grupo.replace(/'/g,"\\'")}','${cod}')">Limpiar nota</button>
+           </div>`
         : `<div class="nota-widget">
              <button type="button" tabindex="-1" class="nota-btn" onclick="adjElecNota('${grupo.replace(/'/g,"\\'")}','${cod}',-0.1)">−</button>
              <input class="nota-inp" id="eni-${cod}" type="number" min="1" max="5" step="0.1" onkeydown="if(event.key==='Enter'){event.preventDefault();saveElecNota('${grupo.replace(/'/g,"\\'")}','${cod}')}">
@@ -1684,7 +1690,10 @@ function saveNota(id){
   if(notaSection){
     const color=m.nota>=4?'var(--success)':m.nota>=3?'var(--unad-blue)':'var(--danger)';
     notaSection.innerHTML=`<div style="font-size:28px;font-weight:700;font-family:'IBM Plex Mono';color:${color}">${m.nota}<span style="font-size:13px;color:var(--text3);font-weight:400"> / 5.0</span></div>
-      <button class="small-btn" onclick="editNota(${id})">Editar nota</button>`;
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="small-btn" onclick="editNota(${id})">Editar nota</button>
+        <button class="small-btn" style="color:var(--danger);border-color:var(--danger)" onclick="resetNota(${id})">Limpiar nota</button>
+      </div>`;
   }
 
   // Actualizar badge en la lista
@@ -1744,6 +1753,30 @@ function editNota(id){
   // 6. Focus al input
   setTimeout(()=>{const inp=document.getElementById('ni-'+id);if(inp){inp.focus();inp.select();}},20);
 }
+function resetNota(id){
+  const m=materias.find(x=>x.id===id);if(!m)return;
+  m.nota=null;
+  markUnsaved();
+  const notaSection=document.getElementById('nota-section-'+id);
+  if(notaSection){
+    notaSection.innerHTML=`<div class="nota-widget">
+      <button type="button" tabindex="-1" class="nota-btn" onclick="adjNota(${id},-0.1)">−</button>
+      <input class="nota-inp" id="ni-${id}" type="number" min="1" max="5" step="0.1" onkeydown="if(event.key==='Enter'){event.preventDefault();saveNota(${id})}">
+      <button type="button" tabindex="-1" class="nota-btn" onclick="adjNota(${id},0.1)">+</button>
+    </div>
+    <div id="nota-hint-${id}" class="nota-hint">↵ Enter para guardar · Escribe 35 para 3.5</div>`;
+  }
+  const badge=document.querySelector('#mrow-'+id+' .nota-badge');
+  if(badge){badge.className='n-empty nota-badge';badge.textContent='—';}
+  const row=document.getElementById('mrow-'+id);
+  if(row){
+    const tagEstado=row.querySelector('.tag-aprobada,.tag-reprobada,.tag-cursando,.tag-pendiente');
+    if(tagEstado){tagEstado.className='tag tag-pendiente';tagEstado.textContent='Pendiente';}
+  }
+  updateAccHeader(m.per);
+  updateAll();
+  if(document.getElementById('view-profesional').classList.contains('active'))renderProfesional();
+}
 function adjElecNota(grupo,cod,delta){
   const inp=document.getElementById('eni-'+cod);if(!inp)return;
   let v=parseFloat(inp.value);
@@ -1795,6 +1828,26 @@ function editElecNota(grupo,cod){
   delete electivosNotas[nKey];
   markUnsaved();
   setTimeout(()=>{const inp=document.getElementById('eni-'+cod);if(inp){inp.focus();inp.select();}},20);
+}
+
+function resetElecNota(grupo,cod){
+  const nKey=grupo+':::'+cod;
+  delete electivosNotas[nKey];
+  markUnsaved();
+  const gd=electivosData[grupo];
+  const sg2=grupo.replace(/'/g,'&#39;');
+  const elecRow=document.querySelector(`.elec-block[data-grupo="${sg2}"] .mat-row[data-cod="${cod}"]`);
+  if(elecRow){
+    const badge=elecRow.querySelector('.nota-badge');
+    if(badge){badge.className='n-empty nota-badge';badge.textContent='—';}
+    const tagE=elecRow.querySelector('.tag-aprobada,.tag-reprobada,.tag-pendiente');
+    if(tagE){tagE.className='tag tag-pendiente';tagE.textContent='Pendiente';}
+  }
+  const gper=gd?gd.per:null;
+  if(gper)updateAccHeader(gper);
+  updateAll();
+  if(document.getElementById('view-profesional').classList.contains('active'))renderProfesional();
+  showElecDetail(grupo,cod);
 }
 
 /* ── PERIOD ACCORDION ── */

@@ -141,7 +141,7 @@ private struct LiquidGlassTabBar: View {
             tabCells(bubbleW: bubbleW)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 3)
-                .glassEffect(.clear, in: Capsule())
+                .glassEffect(.regular, in: Capsule())
         } else {
             tabCells(bubbleW: bubbleW)
                 .padding(.horizontal, 10)
@@ -189,8 +189,12 @@ private struct LiquidGlassTabBar: View {
         if #available(iOS 26.0, *) {
             // Simple filled highlight inside the glass bar — NOT glass itself
             // (rule: never nest glass inside glass)
+            // White pill — clearly visible like Apple's native floating tab bar
             Capsule()
-                .fill(.primary.opacity(scheme == .dark ? 0.18 : 0.10))
+                .fill(scheme == .dark
+                      ? Color.white.opacity(0.22)
+                      : Color.white.opacity(0.82))
+                .shadow(color: .black.opacity(0.10), radius: 4, y: 2)
                 .frame(width: width, height: 44)
         } else {
             ZStack {
@@ -242,7 +246,7 @@ private struct LiquidGlassTabBar: View {
             Text(tab.label)
                 .font(.system(size: 10, weight: isActive ? .bold : .semibold))
         }
-        .foregroundStyle(isActive ? Color.primary : Color.secondary)
+        .foregroundStyle(isActive ? Color.primary : Color.primary.opacity(0.48))
         // Combine scale effects: press overrides active-scale
         .scaleEffect(isPressing ? 1.06 : (isActive ? 1.04 : 1.0))
         .animation(.spring(response: 0.25, dampingFraction: 0.75), value: isActive)
@@ -256,7 +260,7 @@ private struct LiquidGlassTabBar: View {
             // Very light frosted base — extra transparent
             Capsule()
                 .fill(.ultraThinMaterial)
-                .opacity(0.50)
+                .opacity(0.60)
 
             Capsule()
                 .fill(scheme == .dark
@@ -810,8 +814,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
                 if (document.visibilityState === 'hidden') autoSave();
             });
             window.addEventListener('pagehide', autoSave, { capture: true });
-            // Belt-and-suspenders: save every 30 s while app is open
-            setInterval(autoSave, 30000);
 
             // ── 4/10. Add ✓ confirm button — uses Enter simulation ─────────
             // Works for both regular (saveNota) AND elective (saveElecNota)
@@ -873,15 +875,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
                 window.mobileClosePanelOrBack = function() {
                     var dp = document.getElementById('detailPanel');
                     if (dp && dp.classList.contains('mobile-open')) {
-                        // Apple-style fast dismiss: 0.20s with Apple back-gesture curve
-                        dp.style.transition = 'transform 0.20s cubic-bezier(0.32,0.72,0,1)';
+                        // Apple-style dismiss: 0.32s with Apple back-gesture curve
+                        dp.style.transition = 'transform 0.32s cubic-bezier(0.32,0.72,0,1)';
                         dp.style.transform  = 'translateX(100%)';
                         var a = arguments;
                         setTimeout(function() {
                             dp.style.transition = '';
                             dp.style.transform  = '';
                             _close.apply(window, a);
-                        }, 220);
+                        }, 340);
                         window.webkit?.messageHandlers?.nativeUI?.postMessage({ event: 'panelClose' });
                     } else {
                         _close.apply(this, arguments);
@@ -892,22 +894,61 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
                 ? document.addEventListener('DOMContentLoaded', patchPanel)
                 : patchPanel();
 
-            // ── 9b. Patch showView — detect profile sub-view navigation ─────
+            // ── 9b. Patch showView — detect profile sub-view navigation + slide animation ──
             function patchShowView() {
                 if (window.__lu_sv_patched) return;
                 if (typeof showView !== 'function') { setTimeout(patchShowView, 250); return; }
                 window.__lu_sv_patched = true;
                 var _sv = window.showView;
                 var profileSubViews = ['profesional', 'salida', 'portafolio'];
+                var _isSubViewActive = false;
+
                 window.showView = function(id, el) {
-                    // Check if we're entering a profile sub-view
-                    if (profileSubViews.indexOf(id) >= 0) {
+                    var isSubView = profileSubViews.indexOf(id) >= 0;
+
+                    if (isSubView) {
+                        // Entering sub-view: call _sv (activates view), then slide in from right
+                        _sv.apply(this, arguments);
+                        var newView = document.getElementById('view-' + id);
+                        if (newView) {
+                            newView.style.transform = 'translateX(100%)';
+                            newView.style.transition = 'none';
+                            requestAnimationFrame(function() {
+                                requestAnimationFrame(function() {
+                                    newView.style.transition = 'transform 0.32s cubic-bezier(0.25,0.46,0.45,0.94)';
+                                    newView.style.transform  = 'translateX(0)';
+                                    setTimeout(function() {
+                                        newView.style.transition = '';
+                                        newView.style.transform  = '';
+                                    }, 340);
+                                });
+                            });
+                        }
+                        _isSubViewActive = true;
                         window.webkit?.messageHandlers?.nativeUI?.postMessage({ event: 'subViewOpen' });
                     } else {
-                        // Navigating away from sub-view (to hub, dashboard, etc.)
+                        // Leaving sub-view: animate out if not already handled by edge swipe
+                        if (_isSubViewActive && !window.__lu_noSubViewAnim) {
+                            var curView = document.querySelector('.view.active');
+                            _isSubViewActive = false;
+                            if (curView) {
+                                curView.style.transition = 'transform 0.32s cubic-bezier(0.32,0.72,0,1)';
+                                curView.style.transform  = 'translateX(100%)';
+                                var args = arguments;
+                                setTimeout(function() {
+                                    curView.style.transition = '';
+                                    curView.style.transform  = '';
+                                    _sv.apply(window, args);
+                                }, 320);
+                            } else {
+                                _sv.apply(this, arguments);
+                            }
+                        } else {
+                            _isSubViewActive = false;
+                            _sv.apply(this, arguments);
+                        }
                         window.webkit?.messageHandlers?.nativeUI?.postMessage({ event: 'subViewClose' });
                     }
-                    _sv.apply(this, arguments);
                 };
             }
             document.readyState === 'loading'
@@ -1174,18 +1215,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
         }
     }
 
-    // MARK: Scroll collapse
-    private func handleScroll(delta: CGFloat, scrollTop: CGFloat) {
-        let shouldCollapse = delta > 0 && scrollTop > 60
-        let shouldExpand   = delta < 0 || scrollTop < 20
-        if shouldCollapse && !isCollapsed {
-            isCollapsed = true
-            setTabBarHeight(56)
-        } else if shouldExpand && isCollapsed {
-            isCollapsed = false
-            setTabBarHeight(105)
-        }
-    }
+    // MARK: Scroll collapse (disabled — pill stays fixed)
+    private func handleScroll(delta: CGFloat, scrollTop: CGFloat) { }
 
     private func setTabBarHeight(_ h: CGFloat) {
         guard let c = tabBarHeightConstraint, let r = rootVC else { return }
@@ -1349,7 +1380,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
                             v.style.transform = 'translateX(100%)';
                             setTimeout(function() {
                                 v.style.transition = ''; v.style.transform = '';
+                                window.__lu_noSubViewAnim = true;
                                 showView('perfil-hub', null);
+                                window.__lu_noSubViewAnim = false;
                                 window.webkit?.messageHandlers?.nativeUI?.postMessage({ event: 'subViewClose' });
                             }, \(Int(dur * 1000)));
                         })();

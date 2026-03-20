@@ -574,11 +574,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
                     font-size: 20px !important;
                 }
 
-                /* Override the detail-panel topbar-padding (was topbar 56px + safe) */
-                @media (max-width: 768px) {
-                    #detailPanel { padding-top: calc(env(safe-area-inset-top) + 56px) !important; }
-                }
-
                 /* ── Fix scroll-selection: remove tap flash, prevent text selection ── */
                 * { -webkit-tap-highlight-color: transparent !important; }
                 body, .mat-row, .per-header, .elec-opt, .bn-item, .stat-box,
@@ -907,7 +902,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
                 var _sv = window.showView;
                 var profileSubViews = ['profesional', 'salida', 'portafolio'];
                 var profileSubViewIds = ['view-profesional', 'view-salida', 'view-portafolio'];
-                var _isSubViewActive = false;
+                if (typeof window.__lu_subActive === 'undefined') window.__lu_subActive = false;
                 var _animating = false;
 
                 function getBg() {
@@ -915,8 +910,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
                 }
                 // Apple push/pop curve (matches UINavigationController)
                 var appleCurve = 'cubic-bezier(0.28,0.11,0.32,1)';
-                var pushDur = '0.45s';
-                var popDur  = '0.42s';
+                var pushDur = '0.38s';
+                var popDur  = '0.35s';
                 function fixedBase(bg) {
                     // padding: 0 14px matches .content's horizontal padding
                     // vertical padding is handled by .lu-fixed-transition CSS class
@@ -988,23 +983,23 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
                                 newView.style.cssText = '';
                                 hubView.style.cssText = '';
                                 _animating = false;
-                            }, 470);
+                            }, 400);
                         } else {
                             _sv.apply(this, [id, el]);
                             _animating = false;
                         }
-                        _isSubViewActive = true;
+                        window.__lu_subActive = true;
                         window.webkit?.messageHandlers?.nativeUI?.postMessage({ event: 'subViewOpen' });
 
                     } else if (isSubView) {
                         _sv.apply(this, arguments);
-                        _isSubViewActive = true;
+                        window.__lu_subActive = true;
 
-                    } else if (_isSubViewActive && !window.__lu_noSubViewAnim && goingToHub) {
+                    } else if (window.__lu_subActive && !window.__lu_noSubViewAnim && goingToHub) {
                         // POP: current sub-view slides out right, hub parallax slides in from left
                         var curView = document.querySelector('.view.active');
                         var hubView2 = document.getElementById('view-perfil-hub');
-                        _isSubViewActive = false;
+                        window.__lu_subActive = false;
                         if (curView && hubView2 && curView !== hubView2
                                 && profileSubViewIds.indexOf(curView.id) >= 0) {
                             if (_animating) return;
@@ -1035,14 +1030,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
                                 curView.style.cssText = '';
                                 hubView2.style.cssText = '';
                                 _animating = false;
-                            }, 440);
+                            }, 370);
                         } else {
                             _sv.apply(this, arguments);
                         }
                         window.webkit?.messageHandlers?.nativeUI?.postMessage({ event: 'subViewClose' });
 
                     } else {
-                        _isSubViewActive = false;
+                        window.__lu_subActive = false;
                         _sv.apply(this, arguments);
                         if (!isSubView) {
                             window.webkit?.messageHandlers?.nativeUI?.postMessage({ event: 'subViewClose' });
@@ -1568,6 +1563,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
                         hub.classList.add('lu-fixed-transition');
                         v.style.cssText = base + 'z-index:202;transform:translateX(0)';
                         hub.style.cssText = base + 'z-index:201;transform:translateX(-33%)';
+                        var d = document.createElement('div');
+                        d.className = 'lu-push-dim';
+                        d.style.cssText = 'position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.08);pointer-events:none;z-index:999;';
+                        hub.appendChild(d);
+                        var sh = document.createElement('div');
+                        sh.className = 'lu-edge-shadow';
+                        sh.style.cssText = 'position:absolute;top:0;left:-20px;width:20px;bottom:0;background:linear-gradient(to right,transparent,rgba(0,0,0,0.12));pointer-events:none;z-index:1000;';
+                        v.appendChild(sh);
                     })();
                 """)
             case .changed:
@@ -1579,6 +1582,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
                         var progress = Math.min(1, \(tx) / \(screenW));
                         v.style.transform = 'translateX(\(tx)px)';
                         hub.style.transform = 'translateX(' + (-33 * (1 - progress)) + '%)';
+                        var dim = hub.querySelector('.lu-push-dim');
+                        if (dim) dim.style.background = 'rgba(0,0,0,' + (0.08 * (1 - progress)).toFixed(3) + ')';
                     })();
                 """)
             case .ended:
@@ -1595,15 +1600,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
                             v.style.transform = 'translateX(100%)';
                             hub.style.transition = 'transform ' + d + ' ' + c;
                             hub.style.transform = 'translateX(0)';
-                            document.querySelectorAll('.lu-push-dim,.lu-edge-shadow').forEach(function(e){ e.remove(); });
+                            var dim = hub.querySelector('.lu-push-dim');
+                            if (dim) { dim.style.transition = 'background ' + d + ' ' + c; dim.style.background = 'rgba(0,0,0,0)'; }
                             setTimeout(function() {
-                                // Manually swap .active — skip showView to avoid scrollTop=0 refresh
+                                document.querySelectorAll('.lu-push-dim,.lu-edge-shadow').forEach(function(e){ e.remove(); });
                                 v.classList.remove('active');
                                 hub.classList.add('active', 'lu-anim-skip');
                                 v.classList.remove('lu-fixed-transition');
                                 hub.classList.remove('lu-fixed-transition');
                                 v.style.cssText = '';
                                 hub.style.cssText = '';
+                                window.__lu_subActive = false;
                                 window.webkit?.messageHandlers?.nativeUI?.postMessage({ event: 'subViewClose' });
                             }, \(Int(dur * 1000)));
                         })();
@@ -1642,7 +1649,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
                 v.style.transform = 'translateX(0)';
                 hub.style.transition = 'transform ' + d + ' ' + c;
                 hub.style.transform = 'translateX(-33%)';
+                var dim = hub.querySelector('.lu-push-dim');
+                if (dim) { dim.style.transition = 'background ' + d + ' ' + c; dim.style.background = 'rgba(0,0,0,0.08)'; }
                 setTimeout(function() {
+                    document.querySelectorAll('.lu-push-dim,.lu-edge-shadow').forEach(function(e){ e.remove(); });
                     v.classList.add('lu-anim-skip');
                     v.classList.remove('lu-fixed-transition');
                     hub.classList.remove('lu-fixed-transition');

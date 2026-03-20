@@ -246,6 +246,10 @@ body.dark .topbar-glass-btn:active{background:rgba(255,255,255,0.15)}
 .slider-tgl::before{content:'';position:absolute;height:16px;width:16px;left:3px;bottom:3px;background:var(--text3);border-radius:50%;transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1),background 0.25s}
 input:checked+.slider-tgl{background:var(--unad-blue);border-color:var(--unad-blue)}
 input:checked+.slider-tgl::before{transform:translateX(20px);background:#fff}
+.theme-selector{display:flex;background:var(--bg4);border-radius:10px;padding:2px;gap:2px;border:1px solid var(--border)}
+.theme-opt{padding:6px 12px;border:none;background:transparent;border-radius:8px;font-size:12px;font-weight:600;color:var(--text3);cursor:pointer;transition:all 0.2s cubic-bezier(0.25,0.46,0.45,0.94);white-space:nowrap}
+.theme-opt.active{background:var(--bg2);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,0.08)}
+body.dark .theme-opt.active{background:var(--bg3);box-shadow:0 1px 3px rgba(0,0,0,0.2)}
 .contact-btn{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:9px;text-decoration:none;font-size:13px;font-weight:600;font-family:'Sora',sans-serif;transition:all 0.15s;border:1px solid transparent;margin-right:10px;margin-top:8px}
 .c-wa{background:rgba(37,211,102,0.1);color:#1a9a47;border-color:rgba(37,211,102,0.3)}
 .c-wa:hover{background:rgba(37,211,102,0.18)}
@@ -752,8 +756,12 @@ body.dark .bn-more-item.active svg{color:var(--unad-gold)}
       <div class="cfg-card">
         <div class="sect-title"><span class="gold-dot"></span>Apariencia</div>
         <div class="toggle-row">
-          <div><div class="tgl-lbl">Modo oscuro</div><div class="tgl-sub">Cambia la interfaz a colores oscuros</div></div>
-          <label class="switch"><input type="checkbox" id="darkToggle" onchange="toggleDark(this.checked)"><span class="slider-tgl"></span></label>
+          <div><div class="tgl-lbl">Tema</div><div class="tgl-sub">Elige el modo de apariencia de la app</div></div>
+          <div class="theme-selector" id="themeSelector">
+            <button class="theme-opt active" data-theme="light" onclick="setTheme('light')">Claro</button>
+            <button class="theme-opt" data-theme="dark" onclick="setTheme('dark')">Oscuro</button>
+            <button class="theme-opt" data-theme="system" onclick="setTheme('system')">Sistema</button>
+          </div>
         </div>
       </div>
       <div class="cfg-card">
@@ -1197,6 +1205,7 @@ const electivosData={
 /* ── STATE ── */
 let username='Usuario';
 let darkMode=false;
+let themeMode='light'; // 'light' | 'dark' | 'system'
 let hasUnsaved=false;
 let electivosSeleccionados={};
 let electivosNotas={};
@@ -1208,7 +1217,7 @@ let periodos=[...new Set(materias.map(m=>m.per))].sort((a,b)=>a-b);
 function saveData(){
   const notas={};
   materias.forEach(m=>{if(m.nota!==null)notas[m.id]=m.nota;});
-  localStorage.setItem(SAVE_KEY,JSON.stringify({notas,electivosSeleccionados,electivosNotas,username,darkMode}));
+  localStorage.setItem(SAVE_KEY,JSON.stringify({notas,electivosSeleccionados,electivosNotas,username,darkMode,themeMode}));
   const btn=document.getElementById('saveBtn');
   btn.textContent='✓ Guardado';btn.classList.add('saved');btn.classList.remove('unsaved');
   hasUnsaved=false;
@@ -1231,7 +1240,8 @@ function loadData(){
       });
     });
     if(d.username){username=d.username;document.getElementById('greetName').textContent=username;document.getElementById('cfgName').value=username;}
-    if(d.darkMode){darkMode=true;document.body.classList.add('dark');document.getElementById('darkToggle').checked=true;}
+    if(d.themeMode){themeMode=d.themeMode;applyTheme(themeMode);}
+    else if(d.darkMode){themeMode='dark';applyTheme('dark');}
   }catch(e){}
 }
 function markUnsaved(){
@@ -2101,6 +2111,33 @@ function toggleDark(on){
   document.body.classList.toggle('dark',on);
   markUnsaved();
 }
+function setTheme(mode){
+  themeMode=mode;
+  applyTheme(mode);
+  markUnsaved();
+}
+function applyTheme(mode){
+  // Update selector UI
+  document.querySelectorAll('.theme-opt').forEach(function(b){
+    b.classList.toggle('active',b.dataset.theme===mode);
+  });
+  var isDark;
+  if(mode==='system'){
+    isDark=window.matchMedia('(prefers-color-scheme: dark)').matches;
+  } else {
+    isDark=(mode==='dark');
+  }
+  darkMode=isDark;
+  document.body.classList.toggle('dark',isDark);
+  // Notify native side
+  try{
+    window.webkit?.messageHandlers?.nativeUI?.postMessage({event:'darkMode',on:isDark,mode:mode});
+  }catch(e){}
+}
+// Listen for system theme changes when in 'system' mode
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',function(e){
+  if(themeMode==='system') applyTheme('system');
+});
 function saveUsername(){
   const v=document.getElementById('cfgName').value.trim();
   if(!v)return;

@@ -68,8 +68,10 @@ private struct LiquidGlassTabBar: View {
                 )
                 .onAppear {
                     guard !hasAppeared else { return }
-                    hasAppeared = true
+                    // Set position immediately (no animation) before marking appeared
                     bubbleCenterX = tabCenter(activeIndex, contentW: contentW)
+                    // Mark appeared on next frame so the bubble renders at the right position
+                    DispatchQueue.main.async { hasAppeared = true }
                 }
         }
         .frame(height: 58)
@@ -138,7 +140,7 @@ private struct LiquidGlassTabBar: View {
             tabContent(bubbleW: bubbleW)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 3)
-                .glassEffect(.regular, in: Capsule())
+                .glassEffect(.regular.interactive(true), in: .capsule)
         } else {
             tabContent(bubbleW: bubbleW)
                 .padding(.horizontal, 10)
@@ -157,15 +159,16 @@ private struct LiquidGlassTabBar: View {
                     // Filled capsule — bar already has .glassEffect, no nesting allowed
                     Capsule()
                         .fill(scheme == .dark
-                              ? Color.black.opacity(0.28)
-                              : Color(white: 0.90).opacity(0.88))
-                        .shadow(color: .black.opacity(0.10), radius: 4, y: 2)
+                              ? Color.white.opacity(0.12)
+                              : Color.white.opacity(0.72))
+                        .shadow(color: .black.opacity(0.06), radius: 4, y: 2)
                         .frame(width: bubbleW, height: 44)
                 } else {
                     activeTabBubble(width: bubbleW)
                 }
             }
             .position(x: bubbleCenterX, y: 26)
+            .opacity(hasAppeared ? 1 : 0)
             .scaleEffect(pressingTab != nil && pressingTab == active ? 1.10 : 1.0)
 
             // Tab icons — always based on `active`, NOT drag state (prevents flicker)
@@ -791,7 +794,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
                         electivosNotas: typeof electivosNotas !== 'undefined'
                             ? electivosNotas : {},
                         username: typeof username !== 'undefined' ? username : '',
-                        darkMode: typeof darkMode !== 'undefined' ? darkMode : false
+                        darkMode: typeof darkMode !== 'undefined' ? darkMode : false,
+                        themeMode: typeof themeMode !== 'undefined' ? themeMode : 'light'
                     });
                     localStorage.setItem('leanup_v4', json);
                     // Backup to native UserDefaults — survives force-quit
@@ -883,25 +887,23 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
                 : patchPanel();
 
             // ── 9b. Patch showView — Apple push/pop with parallax via position:fixed ──
-            // Key insight: .view siblings can't visually overlap without position:fixed.
-            // Both views are lifted to fixed during animation, then restored.
-            // Hub MUST get display:block explicitly — it loses .active (and thus CSS display:block).
+            // Both views use position:fixed during animation so they can overlap visually.
+            // animation:none inline prevents CSS fadeSlideIn from re-triggering on cleanup.
             function patchShowView() {
                 if (window.__lu_sv_patched) return;
                 if (typeof showView !== 'function') { setTimeout(patchShowView, 250); return; }
                 window.__lu_sv_patched = true;
                 var _sv = window.showView;
                 var profileSubViews = ['profesional', 'salida', 'portafolio'];
-                // Used to verify the current view is actually a profile subview before POP animation
                 var profileSubViewIds = ['view-profesional', 'view-salida', 'view-portafolio'];
                 var _isSubViewActive = false;
+                var _animating = false;
 
                 function getBg() {
                     return document.body.classList.contains('dark') ? '#0d1420' : '#F0F4FA';
                 }
-                // display:block MUST be included — views without .active have display:none from CSS
                 function fixedBase(bg) {
-                    return 'display:block;position:fixed;top:0;left:0;right:0;bottom:calc(env(safe-area-inset-bottom)+88px);overflow-y:auto;background:' + bg + ';';
+                    return 'display:block;position:fixed;top:0;left:0;right:0;bottom:0;overflow-y:auto;background:' + bg + ';animation:none;';
                 }
 
                 window.showView = function(id, el) {
@@ -909,81 +911,88 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
                     var goingToHub = (id === 'perfil-hub');
 
                     if (isSubView && !window.__lu_noSubViewAnim) {
-                        // PUSH: new view slides in from right, hub parallax-slides to left
+                        // PUSH: new view slides in from right, hub parallax to left
+                        if (_animating) return; // prevent double-tap
+                        _animating = true;
                         var hubView = document.getElementById('view-perfil-hub');
                         var newView = document.getElementById('view-' + id);
-
-                        // Add lu-anim-skip BEFORE _sv so viewFadeIn is suppressed when .active is added
-                        if (newView) newView.classList.add('lu-anim-skip');
-                        _sv.apply(this, [id, el]);  // hub loses .active, newView gets .active
 
                         if (newView && hubView) {
                             var bg = getBg();
                             var fb = fixedBase(bg);
+                            // Position new view offscreen with animation:none BEFORE _sv
                             newView.style.cssText = fb + 'z-index:202;transform:translateX(100%)';
-                            // Hub lost .active → display:none via CSS. fixedBase includes display:block.
+                            _sv.apply(this, [id, el]); // hub loses .active, newView gets .active
+                            // Hub needs display:block (lost .active → display:none from CSS)
                             hubView.style.cssText = fb + 'z-index:201;transform:translateX(0)';
-                            void newView.offsetWidth;  // force reflow
-                            var dur = '0.30s', curve = 'cubic-bezier(0.32,0.72,0,1)';
-                            newView.style.transition = 'transform ' + dur + ' ' + curve;
+                            void newView.offsetWidth; // force reflow
+                            var trans = 'transform 0.38s cubic-bezier(0.32,0.72,0,1)';
+                            newView.style.transition = trans;
                             newView.style.transform  = 'translateX(0)';
-                            hubView.style.transition = 'transform ' + dur + ' ' + curve;
-                            hubView.style.transform  = 'translateX(-30%)';
+                            hubView.style.transition = trans;
+                            hubView.style.transform  = 'translateX(-33%)';
                             setTimeout(function() {
-                                // newView has .active → display:block from CSS after clearing inline
-                                newView.style.cssText = '';
-                                newView.classList.remove('lu-anim-skip');
-                                // hub has no .active → display:none from CSS after clearing inline ✓
+                                // newView has .active → CSS gives display:block
+                                // Keep animation:none to prevent fadeSlideIn flash
+                                newView.style.cssText = 'animation:none';
                                 hubView.style.cssText = '';
-                            }, 330);
-                        } else if (newView) {
-                            newView.classList.remove('lu-anim-skip');
+                                // Remove animation:none after browser paints the settled state
+                                requestAnimationFrame(function() {
+                                    requestAnimationFrame(function() {
+                                        newView.style.animation = '';
+                                        _animating = false;
+                                    });
+                                });
+                            }, 400);
+                        } else {
+                            _sv.apply(this, [id, el]);
+                            _animating = false;
                         }
                         _isSubViewActive = true;
                         window.webkit?.messageHandlers?.nativeUI?.postMessage({ event: 'subViewOpen' });
 
                     } else if (isSubView) {
-                        // Animation suppressed (e.g., edge swipe already animated)
                         _sv.apply(this, arguments);
                         _isSubViewActive = true;
 
                     } else if (_isSubViewActive && !window.__lu_noSubViewAnim && goingToHub) {
-                        // POP: user explicitly navigates back to hub (back button)
-                        // Only animate if the currently active view is actually a profile subview
+                        // POP: current sub-view slides out right, hub parallax slides in from left
                         var curView = document.querySelector('.view.active');
                         var hubView2 = document.getElementById('view-perfil-hub');
                         _isSubViewActive = false;
                         if (curView && hubView2 && curView !== hubView2
                                 && profileSubViewIds.indexOf(curView.id) >= 0) {
+                            if (_animating) return; // prevent double-tap
+                            _animating = true;
                             var bg2 = getBg();
                             var fb2 = fixedBase(bg2);
                             curView.style.cssText  = fb2 + 'z-index:202;transform:translateX(0)';
-                            // Hub has no .active → fixedBase includes display:block to make it visible
-                            hubView2.style.cssText = fb2 + 'z-index:201;transform:translateX(-30%)';
+                            hubView2.style.cssText = fb2 + 'z-index:201;transform:translateX(-33%)';
                             void curView.offsetWidth;
-                            var dur2 = '0.40s', curve2 = 'cubic-bezier(0.32,0.72,0,1)';
-                            curView.style.transition  = 'transform ' + dur2 + ' ' + curve2;
+                            var trans2 = 'transform 0.38s cubic-bezier(0.32,0.72,0,1)';
+                            curView.style.transition  = trans2;
                             curView.style.transform   = 'translateX(100%)';
-                            hubView2.style.transition = 'transform ' + dur2 + ' ' + curve2;
+                            hubView2.style.transition = trans2;
                             hubView2.style.transform  = 'translateX(0)';
                             var args = arguments;
                             setTimeout(function() {
-                                // Suppress viewFadeIn on hub, then _sv activates it
-                                hubView2.classList.add('lu-anim-skip');
-                                hubView2.style.cssText = '';  // remove fixed; hub has no .active → display:none
-                                _sv.apply(window, args);      // hub gets .active → display:block (suppressed anim)
-                                curView.style.cssText = '';   // curView lost .active in _sv → display:none ✓
+                                // Hub gets animation:none inline to prevent fadeSlideIn
+                                hubView2.style.cssText = 'animation:none';
+                                _sv.apply(window, args); // hub gets .active
+                                curView.style.cssText = ''; // curView lost .active → display:none
                                 requestAnimationFrame(function() {
-                                    hubView2.classList.remove('lu-anim-skip');
+                                    requestAnimationFrame(function() {
+                                        hubView2.style.animation = '';
+                                        _animating = false;
+                                    });
                                 });
-                            }, 420);
+                            }, 400);
                         } else {
                             _sv.apply(this, arguments);
                         }
                         window.webkit?.messageHandlers?.nativeUI?.postMessage({ event: 'subViewClose' });
 
                     } else {
-                        // Regular tab switch or suppressed navigation — always immediate
                         _isSubViewActive = false;
                         _sv.apply(this, arguments);
                         if (!isSubView) {
@@ -1096,17 +1105,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
                 if (window.__lu_dark) return;
                 if (typeof toggleDark !== 'function') { setTimeout(patchDark, 250); return; }
                 window.__lu_dark = true;
-                var _td = window.toggleDark;
-                window.toggleDark = function(on) {
-                    _td.apply(this, arguments);
-                    window.webkit?.messageHandlers?.nativeUI?.postMessage({ event: 'darkMode', on: on });
-                };
+                // Sync initial theme state to native
                 try {
                     var saved = localStorage.getItem('leanup_v4');
                     if (saved) {
                         var d = JSON.parse(saved);
-                        if (d.darkMode) {
-                            window.webkit?.messageHandlers?.nativeUI?.postMessage({ event: 'darkMode', on: true });
+                        var mode = d.themeMode || (d.darkMode ? 'dark' : 'light');
+                        if (mode === 'system') {
+                            window.webkit?.messageHandlers?.nativeUI?.postMessage({ event: 'darkMode', on: false, mode: 'system' });
+                        } else if (mode === 'dark') {
+                            window.webkit?.messageHandlers?.nativeUI?.postMessage({ event: 'darkMode', on: true, mode: 'dark' });
                         }
                     }
                 } catch(e) {}
@@ -1248,8 +1256,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
             case "panelOpen":  self.isPanelOpen = true
             case "panelClose": self.isPanelOpen = false
             case "darkMode":
-                let on = body["on"] as? Bool ?? false
-                self.window?.overrideUserInterfaceStyle = on ? .dark : .light
+                let mode = body["mode"] as? String ?? ""
+                if mode == "system" {
+                    self.window?.overrideUserInterfaceStyle = .unspecified
+                } else {
+                    let on = body["on"] as? Bool ?? false
+                    self.window?.overrideUserInterfaceStyle = on ? .dark : .light
+                }
             case "save":
                 // Backup web data to UserDefaults — survives force-quit
                 if let data = body["data"] as? String {
@@ -1293,8 +1306,23 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
     private func handleTab(_ id: String) {
         // Dismiss keyboard if a web input is focused (e.g., nota editing)
         capacitorWebView?.evaluateJavaScript("document.activeElement?.blur()")
+
+        // Close web panel if open (remove mobile-open class + body.panel-open)
+        if isPanelOpen {
+            isPanelOpen = false
+            capacitorWebView?.evaluateJavaScript("""
+                (function() {
+                    var dp = document.getElementById('detailPanel');
+                    if (dp) { dp.classList.remove('mobile-open'); dp.style.transition=''; dp.style.transform=''; }
+                    document.body.classList.remove('panel-open');
+                    document.querySelectorAll('.mat-row').forEach(function(r){ r.classList.remove('selected'); });
+                })();
+            """)
+        }
+
+        // Close profile sub-view state
         if isProfileSubViewOpen { isProfileSubViewOpen = false }
-        if isPanelOpen { isPanelOpen = false }
+
         webGo(id)
     }
 
@@ -1438,9 +1466,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
                         if (!v || v === hub) return;
                         var isDark = document.body.classList.contains('dark');
                         var bg = isDark ? '#0d1420' : '#F0F4FA';
-                        var base = 'display:block;position:fixed;top:0;left:0;right:0;bottom:calc(env(safe-area-inset-bottom)+88px);overflow-y:auto;background:' + bg + ';transition:none;';
+                        var base = 'display:block;position:fixed;top:0;left:0;right:0;bottom:0;overflow-y:auto;background:' + bg + ';animation:none;transition:none;';
                         v.style.cssText = base + 'z-index:202;transform:translateX(0)';
-                        hub.style.cssText = base + 'z-index:201;transform:translateX(-30%)';
+                        hub.style.cssText = base + 'z-index:201;transform:translateX(-33%)';
                     })();
                 """)
             case .changed:
@@ -1451,7 +1479,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
                         if (!v || v === hub) return;
                         var progress = Math.min(1, \(tx) / \(screenW));
                         v.style.transform = 'translateX(\(tx)px)';
-                        hub.style.transform = 'translateX(' + (-30 * (1 - progress)) + '%)';
+                        hub.style.transform = 'translateX(' + (-33 * (1 - progress)) + '%)';
                     })();
                 """)
             case .ended:
@@ -1470,13 +1498,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
                             hub.style.transition = 'transform ' + d + ' ' + c;
                             hub.style.transform = 'translateX(0)';
                             setTimeout(function() {
-                                hub.classList.add('lu-anim-skip');
-                                hub.style.cssText = '';  // remove fixed; hub still lacks .active
+                                hub.style.cssText = 'animation:none';
                                 window.__lu_noSubViewAnim = true;
-                                showView('perfil-hub', null);  // hub gets .active (anim suppressed)
+                                showView('perfil-hub', null);
                                 window.__lu_noSubViewAnim = false;
-                                v.style.cssText = '';   // v lost .active in showView → display:none ✓
-                                requestAnimationFrame(function() { hub.classList.remove('lu-anim-skip'); });
+                                v.style.cssText = '';
+                                requestAnimationFrame(function() {
+                                    requestAnimationFrame(function() {
+                                        hub.style.animation = '';
+                                    });
+                                });
                                 window.webkit?.messageHandlers?.nativeUI?.postMessage({ event: 'subViewClose' });
                             }, \(Int(dur * 1000)));
                         })();
@@ -1510,15 +1541,21 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
                 var v = document.querySelector('.view.active');
                 var hub = document.getElementById('view-perfil-hub');
                 if (!v || v === hub) return;
-                var d = '0.25s', c = 'cubic-bezier(0.32,0.72,0,1)';
+                var d = '0.30s', c = 'cubic-bezier(0.32,0.72,0,1)';
                 v.style.transition = 'transform ' + d + ' ' + c;
                 v.style.transform = 'translateX(0)';
                 hub.style.transition = 'transform ' + d + ' ' + c;
-                hub.style.transform = 'translateX(-30%)';
+                hub.style.transform = 'translateX(-33%)';
                 setTimeout(function() {
-                    v.style.cssText = '';
+                    // Keep animation:none to prevent CSS fadeSlideIn flash
+                    v.style.cssText = 'animation:none';
                     hub.style.cssText = '';
-                }, 280);
+                    requestAnimationFrame(function() {
+                        requestAnimationFrame(function() {
+                            v.style.animation = '';
+                        });
+                    });
+                }, 320);
             })();
         """)
     }

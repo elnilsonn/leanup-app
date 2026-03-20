@@ -158,7 +158,7 @@ private struct LiquidGlassTabBar: View {
                     Capsule()
                         .fill(scheme == .dark
                               ? Color.black.opacity(0.28)
-                              : Color(red: 0.80, green: 0.83, blue: 0.89).opacity(0.88))
+                              : Color(white: 0.90).opacity(0.88))
                         .shadow(color: .black.opacity(0.10), radius: 4, y: 2)
                         .frame(width: bubbleW, height: 44)
                 } else {
@@ -883,52 +883,58 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
                 : patchPanel();
 
             // ── 9b. Patch showView — Apple push/pop with parallax via position:fixed ──
-            // Key insight: .view elements are normal-flow siblings and can't visually overlap
-            // without position:fixed. We fix both views during animation, then restore.
+            // Key insight: .view siblings can't visually overlap without position:fixed.
+            // Both views are lifted to fixed during animation, then restored.
+            // Hub MUST get display:block explicitly — it loses .active (and thus CSS display:block).
             function patchShowView() {
                 if (window.__lu_sv_patched) return;
                 if (typeof showView !== 'function') { setTimeout(patchShowView, 250); return; }
                 window.__lu_sv_patched = true;
                 var _sv = window.showView;
                 var profileSubViews = ['profesional', 'salida', 'portafolio'];
+                // Used to verify the current view is actually a profile subview before POP animation
+                var profileSubViewIds = ['view-profesional', 'view-salida', 'view-portafolio'];
                 var _isSubViewActive = false;
 
                 function getBg() {
                     return document.body.classList.contains('dark') ? '#0d1420' : '#F0F4FA';
                 }
+                // display:block MUST be included — views without .active have display:none from CSS
                 function fixedBase(bg) {
-                    return 'position:fixed;top:0;left:0;right:0;bottom:calc(env(safe-area-inset-bottom)+88px);overflow-y:auto;background:' + bg + ';';
+                    return 'display:block;position:fixed;top:0;left:0;right:0;bottom:calc(env(safe-area-inset-bottom)+88px);overflow-y:auto;background:' + bg + ';';
                 }
 
                 window.showView = function(id, el) {
                     var isSubView = profileSubViews.indexOf(id) >= 0;
+                    var goingToHub = (id === 'perfil-hub');
 
                     if (isSubView && !window.__lu_noSubViewAnim) {
                         // PUSH: new view slides in from right, hub parallax-slides to left
                         var hubView = document.getElementById('view-perfil-hub');
                         var newView = document.getElementById('view-' + id);
 
-                        // Suppress CSS viewFadeIn on new view before _sv adds .active
+                        // Add lu-anim-skip BEFORE _sv so viewFadeIn is suppressed when .active is added
                         if (newView) newView.classList.add('lu-anim-skip');
                         _sv.apply(this, [id, el]);  // hub loses .active, newView gets .active
-                        // newView is now display:block (has .active) but animation is suppressed
 
                         if (newView && hubView) {
                             var bg = getBg();
                             var fb = fixedBase(bg);
-                            // Both views fixed so they can overlay each other
                             newView.style.cssText = fb + 'z-index:202;transform:translateX(100%)';
-                            hubView.style.cssText  = fb + 'z-index:201;transform:translateX(0)';
-                            void newView.offsetWidth;  // force reflow before animating
+                            // Hub lost .active → display:none via CSS. fixedBase includes display:block.
+                            hubView.style.cssText = fb + 'z-index:201;transform:translateX(0)';
+                            void newView.offsetWidth;  // force reflow
                             var dur = '0.30s', curve = 'cubic-bezier(0.32,0.72,0,1)';
                             newView.style.transition = 'transform ' + dur + ' ' + curve;
                             newView.style.transform  = 'translateX(0)';
                             hubView.style.transition = 'transform ' + dur + ' ' + curve;
                             hubView.style.transform  = 'translateX(-30%)';
                             setTimeout(function() {
+                                // newView has .active → display:block from CSS after clearing inline
                                 newView.style.cssText = '';
-                                hubView.style.cssText = '';
                                 newView.classList.remove('lu-anim-skip');
+                                // hub has no .active → display:none from CSS after clearing inline ✓
+                                hubView.style.cssText = '';
                             }, 330);
                         } else if (newView) {
                             newView.classList.remove('lu-anim-skip');
@@ -937,45 +943,52 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
                         window.webkit?.messageHandlers?.nativeUI?.postMessage({ event: 'subViewOpen' });
 
                     } else if (isSubView) {
+                        // Animation suppressed (e.g., edge swipe already animated)
                         _sv.apply(this, arguments);
                         _isSubViewActive = true;
 
-                    } else {
-                        // POP or tab switch
-                        if (_isSubViewActive && !window.__lu_noSubViewAnim) {
-                            var curView = document.querySelector('.view.active');
-                            var hubView2 = document.getElementById('view-perfil-hub');
-                            _isSubViewActive = false;
-                            if (curView && hubView2 && curView !== hubView2) {
-                                var bg2 = getBg();
-                                var fb2 = fixedBase(bg2);
-                                curView.style.cssText  = fb2 + 'z-index:202;transform:translateX(0)';
-                                hubView2.style.cssText = fb2 + 'z-index:201;transform:translateX(-30%)';
-                                void curView.offsetWidth;
-                                var dur2 = '0.40s', curve2 = 'cubic-bezier(0.32,0.72,0,1)';
-                                curView.style.transition  = 'transform ' + dur2 + ' ' + curve2;
-                                curView.style.transform   = 'translateX(100%)';
-                                hubView2.style.transition = 'transform ' + dur2 + ' ' + curve2;
-                                hubView2.style.transform  = 'translateX(0)';
-                                var args = arguments;
-                                setTimeout(function() {
-                                    curView.style.cssText  = '';
-                                    // Suppress animation on hub before _sv activates it
-                                    hubView2.classList.add('lu-anim-skip');
-                                    hubView2.style.cssText = '';
-                                    _sv.apply(window, args);
-                                    requestAnimationFrame(function() {
-                                        hubView2.classList.remove('lu-anim-skip');
-                                    });
-                                }, 420);
-                            } else {
-                                _sv.apply(this, arguments);
-                            }
+                    } else if (_isSubViewActive && !window.__lu_noSubViewAnim && goingToHub) {
+                        // POP: user explicitly navigates back to hub (back button)
+                        // Only animate if the currently active view is actually a profile subview
+                        var curView = document.querySelector('.view.active');
+                        var hubView2 = document.getElementById('view-perfil-hub');
+                        _isSubViewActive = false;
+                        if (curView && hubView2 && curView !== hubView2
+                                && profileSubViewIds.indexOf(curView.id) >= 0) {
+                            var bg2 = getBg();
+                            var fb2 = fixedBase(bg2);
+                            curView.style.cssText  = fb2 + 'z-index:202;transform:translateX(0)';
+                            // Hub has no .active → fixedBase includes display:block to make it visible
+                            hubView2.style.cssText = fb2 + 'z-index:201;transform:translateX(-30%)';
+                            void curView.offsetWidth;
+                            var dur2 = '0.40s', curve2 = 'cubic-bezier(0.32,0.72,0,1)';
+                            curView.style.transition  = 'transform ' + dur2 + ' ' + curve2;
+                            curView.style.transform   = 'translateX(100%)';
+                            hubView2.style.transition = 'transform ' + dur2 + ' ' + curve2;
+                            hubView2.style.transform  = 'translateX(0)';
+                            var args = arguments;
+                            setTimeout(function() {
+                                // Suppress viewFadeIn on hub, then _sv activates it
+                                hubView2.classList.add('lu-anim-skip');
+                                hubView2.style.cssText = '';  // remove fixed; hub has no .active → display:none
+                                _sv.apply(window, args);      // hub gets .active → display:block (suppressed anim)
+                                curView.style.cssText = '';   // curView lost .active in _sv → display:none ✓
+                                requestAnimationFrame(function() {
+                                    hubView2.classList.remove('lu-anim-skip');
+                                });
+                            }, 420);
                         } else {
-                            _isSubViewActive = false;
                             _sv.apply(this, arguments);
                         }
                         window.webkit?.messageHandlers?.nativeUI?.postMessage({ event: 'subViewClose' });
+
+                    } else {
+                        // Regular tab switch or suppressed navigation — always immediate
+                        _isSubViewActive = false;
+                        _sv.apply(this, arguments);
+                        if (!isSubView) {
+                            window.webkit?.messageHandlers?.nativeUI?.postMessage({ event: 'subViewClose' });
+                        }
                     }
                 };
             }
@@ -1278,9 +1291,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
 
     // MARK: Tab navigation
     private func handleTab(_ id: String) {
-        // Close profile sub-view state when switching tabs
+        // Dismiss keyboard if a web input is focused (e.g., nota editing)
+        capacitorWebView?.evaluateJavaScript("document.activeElement?.blur()")
         if isProfileSubViewOpen { isProfileSubViewOpen = false }
-        // Close panel if open
         if isPanelOpen { isPanelOpen = false }
         webGo(id)
     }
@@ -1417,6 +1430,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
             switch gr.state {
             case .began:
                 // Set up fixed positioning on both views at gesture start (not every frame)
+                // Hub MUST have display:block — it has no .active class (display:none from CSS)
                 wv.evaluateJavaScript("""
                     (function() {
                         var v = document.querySelector('.view.active');
@@ -1424,7 +1438,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
                         if (!v || v === hub) return;
                         var isDark = document.body.classList.contains('dark');
                         var bg = isDark ? '#0d1420' : '#F0F4FA';
-                        var base = 'position:fixed;top:0;left:0;right:0;bottom:calc(env(safe-area-inset-bottom)+88px);overflow-y:auto;background:' + bg + ';transition:none;';
+                        var base = 'display:block;position:fixed;top:0;left:0;right:0;bottom:calc(env(safe-area-inset-bottom)+88px);overflow-y:auto;background:' + bg + ';transition:none;';
                         v.style.cssText = base + 'z-index:202;transform:translateX(0)';
                         hub.style.cssText = base + 'z-index:201;transform:translateX(-30%)';
                     })();
@@ -1450,17 +1464,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
                             if (!v || v === hub) return;
                             var d = '\(String(format:"%.2f", dur))s';
                             var c = 'cubic-bezier(0.32,0.72,0,1)';
+                            // Animate v out, hub in — hub already has display:block from .began
                             v.style.transition = 'transform ' + d + ' ' + c;
                             v.style.transform = 'translateX(100%)';
                             hub.style.transition = 'transform ' + d + ' ' + c;
                             hub.style.transform = 'translateX(0)';
                             setTimeout(function() {
-                                v.style.cssText = '';
                                 hub.classList.add('lu-anim-skip');
-                                hub.style.cssText = '';
+                                hub.style.cssText = '';  // remove fixed; hub still lacks .active
                                 window.__lu_noSubViewAnim = true;
-                                showView('perfil-hub', null);
+                                showView('perfil-hub', null);  // hub gets .active (anim suppressed)
                                 window.__lu_noSubViewAnim = false;
+                                v.style.cssText = '';   // v lost .active in showView → display:none ✓
                                 requestAnimationFrame(function() { hub.classList.remove('lu-anim-skip'); });
                                 window.webkit?.messageHandlers?.nativeUI?.postMessage({ event: 'subViewClose' });
                             }, \(Int(dur * 1000)));

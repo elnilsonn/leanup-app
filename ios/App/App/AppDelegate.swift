@@ -154,11 +154,11 @@ private struct LiquidGlassTabBar: View {
             // Bubble — follows finger directly during drag, springs to tab on release
             Group {
                 if #available(iOS 26.0, *) {
-                    // White filled capsule — bar already has .glassEffect, no nesting
+                    // Filled capsule — bar already has .glassEffect, no nesting allowed
                     Capsule()
                         .fill(scheme == .dark
-                              ? Color.white.opacity(0.22)
-                              : Color.white.opacity(0.82))
+                              ? Color.black.opacity(0.28)
+                              : Color(red: 0.80, green: 0.83, blue: 0.89).opacity(0.88))
                         .shadow(color: .black.opacity(0.10), radius: 4, y: 2)
                         .frame(width: bubbleW, height: 44)
                 } else {
@@ -651,6 +651,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
                 /* ── Panel slide animation ── */
                 #detailPanel { will-change: transform; }
 
+                /* ── Suppress viewFadeIn during custom push/pop transitions ── */
+                .view.lu-anim-skip { animation: none !important; transition: none !important; }
+
                 /* 10. Confirm button styles */
                 .nota-confirm-btn {
                     background: rgba(0,70,173,0.12) !important;
@@ -879,7 +882,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
                 ? document.addEventListener('DOMContentLoaded', patchPanel)
                 : patchPanel();
 
-            // ── 9b. Patch showView — Apple-style push/pop with parallax ──
+            // ── 9b. Patch showView — Apple push/pop with parallax via position:fixed ──
+            // Key insight: .view elements are normal-flow siblings and can't visually overlap
+            // without position:fixed. We fix both views during animation, then restore.
             function patchShowView() {
                 if (window.__lu_sv_patched) return;
                 if (typeof showView !== 'function') { setTimeout(patchShowView, 250); return; }
@@ -888,64 +893,80 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
                 var profileSubViews = ['profesional', 'salida', 'portafolio'];
                 var _isSubViewActive = false;
 
+                function getBg() {
+                    return document.body.classList.contains('dark') ? '#0d1420' : '#F0F4FA';
+                }
+                function fixedBase(bg) {
+                    return 'position:fixed;top:0;left:0;right:0;bottom:calc(env(safe-area-inset-bottom)+88px);overflow-y:auto;background:' + bg + ';';
+                }
+
                 window.showView = function(id, el) {
                     var isSubView = profileSubViews.indexOf(id) >= 0;
 
                     if (isSubView && !window.__lu_noSubViewAnim) {
-                        // Push: new view slides in from right, hub parallax-slides to left
+                        // PUSH: new view slides in from right, hub parallax-slides to left
                         var hubView = document.getElementById('view-perfil-hub');
-                        _sv.apply(this, arguments);
                         var newView = document.getElementById('view-' + id);
+
+                        // Suppress CSS viewFadeIn on new view before _sv adds .active
+                        if (newView) newView.classList.add('lu-anim-skip');
+                        _sv.apply(this, [id, el]);  // hub loses .active, newView gets .active
+                        // newView is now display:block (has .active) but animation is suppressed
+
                         if (newView && hubView) {
-                            hubView.classList.add('active');
-                            hubView.style.transition = 'none';
-                            hubView.style.transform = 'translateX(0)';
-                            hubView.style.zIndex = '1';
-                            newView.style.zIndex = '2';
-                            newView.style.transition = 'none';
-                            newView.style.transform = 'translateX(100%)';
-                            void newView.offsetWidth;
-                            var dur = '0.30s';
-                            var curve = 'cubic-bezier(0.32,0.72,0,1)';
+                            var bg = getBg();
+                            var fb = fixedBase(bg);
+                            // Both views fixed so they can overlay each other
+                            newView.style.cssText = fb + 'z-index:202;transform:translateX(100%)';
+                            hubView.style.cssText  = fb + 'z-index:201;transform:translateX(0)';
+                            void newView.offsetWidth;  // force reflow before animating
+                            var dur = '0.30s', curve = 'cubic-bezier(0.32,0.72,0,1)';
                             newView.style.transition = 'transform ' + dur + ' ' + curve;
-                            newView.style.transform = 'translateX(0)';
+                            newView.style.transform  = 'translateX(0)';
                             hubView.style.transition = 'transform ' + dur + ' ' + curve;
-                            hubView.style.transform = 'translateX(-30%)';
+                            hubView.style.transform  = 'translateX(-30%)';
                             setTimeout(function() {
-                                newView.style.transition = ''; newView.style.transform = ''; newView.style.zIndex = '';
-                                hubView.classList.remove('active');
-                                hubView.style.transition = ''; hubView.style.transform = ''; hubView.style.zIndex = '';
-                            }, 320);
+                                newView.style.cssText = '';
+                                hubView.style.cssText = '';
+                                newView.classList.remove('lu-anim-skip');
+                            }, 330);
+                        } else if (newView) {
+                            newView.classList.remove('lu-anim-skip');
                         }
                         _isSubViewActive = true;
                         window.webkit?.messageHandlers?.nativeUI?.postMessage({ event: 'subViewOpen' });
+
                     } else if (isSubView) {
                         _sv.apply(this, arguments);
                         _isSubViewActive = true;
+
                     } else {
-                        // Pop: current sub-view slides right, hub parallax-slides from left
+                        // POP or tab switch
                         if (_isSubViewActive && !window.__lu_noSubViewAnim) {
                             var curView = document.querySelector('.view.active');
                             var hubView2 = document.getElementById('view-perfil-hub');
                             _isSubViewActive = false;
-                            if (curView && hubView2) {
-                                hubView2.classList.add('active');
-                                hubView2.style.transition = 'none';
-                                hubView2.style.transform = 'translateX(-30%)';
-                                hubView2.style.zIndex = '1';
-                                curView.style.zIndex = '2';
+                            if (curView && hubView2 && curView !== hubView2) {
+                                var bg2 = getBg();
+                                var fb2 = fixedBase(bg2);
+                                curView.style.cssText  = fb2 + 'z-index:202;transform:translateX(0)';
+                                hubView2.style.cssText = fb2 + 'z-index:201;transform:translateX(-30%)';
                                 void curView.offsetWidth;
-                                var dur2 = '0.40s';
-                                var curve2 = 'cubic-bezier(0.32,0.72,0,1)';
-                                curView.style.transition = 'transform ' + dur2 + ' ' + curve2;
-                                curView.style.transform = 'translateX(100%)';
+                                var dur2 = '0.40s', curve2 = 'cubic-bezier(0.32,0.72,0,1)';
+                                curView.style.transition  = 'transform ' + dur2 + ' ' + curve2;
+                                curView.style.transform   = 'translateX(100%)';
                                 hubView2.style.transition = 'transform ' + dur2 + ' ' + curve2;
-                                hubView2.style.transform = 'translateX(0)';
+                                hubView2.style.transform  = 'translateX(0)';
                                 var args = arguments;
                                 setTimeout(function() {
-                                    curView.style.transition = ''; curView.style.transform = ''; curView.style.zIndex = '';
-                                    hubView2.style.transition = ''; hubView2.style.transform = ''; hubView2.style.zIndex = '';
+                                    curView.style.cssText  = '';
+                                    // Suppress animation on hub before _sv activates it
+                                    hubView2.classList.add('lu-anim-skip');
+                                    hubView2.style.cssText = '';
                                     _sv.apply(window, args);
+                                    requestAnimationFrame(function() {
+                                        hubView2.classList.remove('lu-anim-skip');
+                                    });
                                 }, 420);
                             } else {
                                 _sv.apply(this, arguments);
@@ -1392,24 +1413,31 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
             }
 
         } else if isProfileSubViewOpen {
-            // ── Profile sub-view dismiss — hub visible underneath with parallax ──
+            // ── Profile sub-view dismiss — both views fixed so they can overlay ──
             switch gr.state {
+            case .began:
+                // Set up fixed positioning on both views at gesture start (not every frame)
+                wv.evaluateJavaScript("""
+                    (function() {
+                        var v = document.querySelector('.view.active');
+                        var hub = document.getElementById('view-perfil-hub');
+                        if (!v || v === hub) return;
+                        var isDark = document.body.classList.contains('dark');
+                        var bg = isDark ? '#0d1420' : '#F0F4FA';
+                        var base = 'position:fixed;top:0;left:0;right:0;bottom:calc(env(safe-area-inset-bottom)+88px);overflow-y:auto;background:' + bg + ';transition:none;';
+                        v.style.cssText = base + 'z-index:202;transform:translateX(0)';
+                        hub.style.cssText = base + 'z-index:201;transform:translateX(-30%)';
+                    })();
+                """)
             case .changed:
                 wv.evaluateJavaScript("""
                     (function() {
                         var v = document.querySelector('.view.active');
                         var hub = document.getElementById('view-perfil-hub');
-                        if (!v) return;
-                        if (hub) {
-                            hub.classList.add('active');
-                            hub.style.transition = 'none';
-                            hub.style.zIndex = '1';
-                            var progress = Math.min(1, \(tx) / \(screenW));
-                            hub.style.transform = 'translateX(' + (-30 * (1 - progress)) + '%)';
-                        }
-                        v.style.zIndex = '2';
-                        v.style.transition = 'none';
+                        if (!v || v === hub) return;
+                        var progress = Math.min(1, \(tx) / \(screenW));
                         v.style.transform = 'translateX(\(tx)px)';
+                        hub.style.transform = 'translateX(' + (-30 * (1 - progress)) + '%)';
                     })();
                 """)
             case .ended:
@@ -1419,21 +1447,21 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
                         (function() {
                             var v = document.querySelector('.view.active');
                             var hub = document.getElementById('view-perfil-hub');
-                            if (!v) return;
+                            if (!v || v === hub) return;
                             var d = '\(String(format:"%.2f", dur))s';
                             var c = 'cubic-bezier(0.32,0.72,0,1)';
                             v.style.transition = 'transform ' + d + ' ' + c;
                             v.style.transform = 'translateX(100%)';
-                            if (hub) {
-                                hub.style.transition = 'transform ' + d + ' ' + c;
-                                hub.style.transform = 'translateX(0)';
-                            }
+                            hub.style.transition = 'transform ' + d + ' ' + c;
+                            hub.style.transform = 'translateX(0)';
                             setTimeout(function() {
-                                v.style.transition = ''; v.style.transform = ''; v.style.zIndex = '';
-                                if (hub) { hub.style.transition = ''; hub.style.transform = ''; hub.style.zIndex = ''; }
+                                v.style.cssText = '';
+                                hub.classList.add('lu-anim-skip');
+                                hub.style.cssText = '';
                                 window.__lu_noSubViewAnim = true;
                                 showView('perfil-hub', null);
                                 window.__lu_noSubViewAnim = false;
+                                requestAnimationFrame(function() { hub.classList.remove('lu-anim-skip'); });
                                 window.webkit?.messageHandlers?.nativeUI?.postMessage({ event: 'subViewClose' });
                             }, \(Int(dur * 1000)));
                         })();
@@ -1461,25 +1489,20 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
     }
 
     private func snapViewBack(wv: WKWebView) {
+        // Snap both fixed-positioned views back to their original positions
         wv.evaluateJavaScript("""
             (function() {
                 var v = document.querySelector('.view.active');
                 var hub = document.getElementById('view-perfil-hub');
+                if (!v || v === hub) return;
                 var d = '0.25s', c = 'cubic-bezier(0.32,0.72,0,1)';
-                if (v) {
-                    v.style.transition = 'transform ' + d + ' ' + c;
-                    v.style.transform = 'translateX(0)';
-                }
-                if (hub && hub.classList.contains('active') && hub !== v) {
-                    hub.style.transition = 'transform ' + d + ' ' + c;
-                    hub.style.transform = 'translateX(-30%)';
-                }
+                v.style.transition = 'transform ' + d + ' ' + c;
+                v.style.transform = 'translateX(0)';
+                hub.style.transition = 'transform ' + d + ' ' + c;
+                hub.style.transform = 'translateX(-30%)';
                 setTimeout(function() {
-                    if (v) { v.style.transition = ''; v.style.transform = ''; v.style.zIndex = ''; }
-                    if (hub && hub !== v) {
-                        hub.classList.remove('active');
-                        hub.style.transition = ''; hub.style.transform = ''; hub.style.zIndex = '';
-                    }
+                    v.style.cssText = '';
+                    hub.style.cssText = '';
                 }, 280);
             })();
         """)

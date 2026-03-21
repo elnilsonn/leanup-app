@@ -379,11 +379,12 @@ body.dark .theme-opt.active{background:var(--bg3);box-shadow:0 1px 3px rgba(0,0,
     top:0;left:0;right:0;bottom:0;
     z-index:900;
     background:var(--bg);
-    overflow-y:scroll;
-    -webkit-overflow-scrolling:touch;
-    overscroll-behavior-y:contain;
+    overflow:hidden;
     padding:0;
     margin:0;
+    contain:layout paint;
+    backface-visibility:hidden;
+    -webkit-backface-visibility:hidden;
   }
   #detailPanel .detail-panel{
     border-radius:0;
@@ -391,12 +392,23 @@ body.dark .theme-opt.active{background:var(--bg3);box-shadow:0 1px 3px rgba(0,0,
     border-left:none;
     box-shadow:none;
     margin:0;
+    height:100%;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior-y:contain;
     /* Top: safe area + topbar + extra breathing room. Bottom: bottom-nav + safe area */
     padding-top:calc(env(safe-area-inset-top) + 72px);
     padding-bottom:calc(env(safe-area-inset-bottom) + 64px);
     padding-left:16px;
     padding-right:16px;
-    min-height:0;
+    min-height:100%;
+    backface-visibility:hidden;
+    -webkit-backface-visibility:hidden;
+  }
+  #detailPanel.lu-panel-gesture,
+  #detailPanel.lu-panel-gesture .detail-panel{
+    will-change:transform;
+    transform:translateZ(0);
   }
 }
 .cfg-gear-btn{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;cursor:pointer;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);transition:all 0.15s}
@@ -2315,7 +2327,10 @@ function mobileOpenPanel(){
   if(!dp)return;
   dp.classList.add('mobile-open');
   document.body.classList.add('panel-open');
-  requestAnimationFrame(()=>{ dp.scrollTop=0; });
+  requestAnimationFrame(()=>{
+    const sc=dp.querySelector('.detail-panel');
+    if(sc)sc.scrollTop=0;
+  });
 }
 function mobileClosePanelOrBack(){
   const dp=document.getElementById('detailPanel');

@@ -863,14 +863,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
                 window.mobileOpenPanel = function() {
                     // Prep for slide-in BEFORE the class is added
                     var dp = document.getElementById('detailPanel');
-                    if (dp) { dp.style.transform = 'translateX(100%)'; dp.style.transition = 'none'; }
+                    if (dp) {
+                        dp.classList.remove('lu-panel-gesture');
+                        dp.style.transform = 'translate3d(100%,0,0)';
+                        dp.style.transition = 'none';
+                    }
                     _open.apply(this, arguments);
                     // Animate in on the next two frames (ensures class is applied)
                     if (dp) {
                         requestAnimationFrame(function() {
                             requestAnimationFrame(function() {
                                 dp.style.transition = 'transform 0.30s cubic-bezier(0.32,0.72,0,1)';
-                                dp.style.transform  = 'translateX(0)';
+                                dp.style.transform  = 'translate3d(0,0,0)';
                                 setTimeout(function() { dp.style.transition = ''; dp.style.transform = ''; }, 320);
                             });
                         });
@@ -882,8 +886,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
                     var dp = document.getElementById('detailPanel');
                     if (dp && dp.classList.contains('mobile-open')) {
                         // Apple-style dismiss: 0.40s with Apple back-gesture curve
+                        dp.classList.remove('lu-panel-gesture');
                         dp.style.transition = 'transform 0.40s cubic-bezier(0.32,0.72,0,1)';
-                        dp.style.transform  = 'translateX(100%)';
+                        dp.style.transform  = 'translate3d(100%,0,0)';
                         var a = arguments;
                         setTimeout(function() {
                             dp.style.transition = '';
@@ -1526,12 +1531,21 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
         if isPanelOpen {
             // ── Panel dismiss (materia detail) ──
             switch gr.state {
+            case .began:
+                wv.evaluateJavaScript("""
+                    var dp = document.getElementById('detailPanel');
+                    if (dp && dp.classList.contains('mobile-open')) {
+                        dp.classList.add('lu-panel-gesture');
+                        dp.style.transition = 'none';
+                        dp.style.transform  = 'translate3d(0,0,0)';
+                    }
+                """)
             case .changed:
                 wv.evaluateJavaScript("""
                     var dp = document.getElementById('detailPanel');
                     if (dp && dp.classList.contains('mobile-open')) {
                         dp.style.transition = 'none';
-                        dp.style.transform  = 'translateX(\(tx)px)';
+                        dp.style.transform  = 'translate3d(\(tx)px,0,0)';
                     }
                 """)
             case .ended:
@@ -1541,9 +1555,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
                         (function() {
                             var dp = document.getElementById('detailPanel');
                             if (!dp) return;
+                            dp.classList.add('lu-panel-gesture');
                             dp.style.transition = 'transform \(String(format:"%.2f", dur))s cubic-bezier(0.32,0.72,0,1)';
-                            dp.style.transform  = 'translateX(100%)';
+                            dp.style.transform  = 'translate3d(100%,0,0)';
                             setTimeout(function() {
+                                dp.classList.remove('lu-panel-gesture');
                                 dp.style.transition = ''; dp.style.transform = '';
                                 dp.classList.remove('mobile-open');
                                 document.body.classList.remove('panel-open');
@@ -1645,9 +1661,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
         wv.evaluateJavaScript("""
             var dp = document.getElementById('detailPanel');
             if (dp) {
+                dp.classList.add('lu-panel-gesture');
                 dp.style.transition = 'transform 0.25s cubic-bezier(0.32,0.72,0,1)';
-                dp.style.transform  = 'translateX(0)';
-                setTimeout(function() { dp.style.transition = ''; dp.style.transform = ''; }, 280);
+                dp.style.transform  = 'translate3d(0,0,0)';
+                setTimeout(function() {
+                    dp.classList.remove('lu-panel-gesture');
+                    dp.style.transition = '';
+                    dp.style.transform = '';
+                }, 280);
             }
         """)
     }

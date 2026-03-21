@@ -1395,36 +1395,122 @@ body.dark .malla-summary-card{
 }
 .malla-summary-meta div:last-child{text-align:right}
 .malla-summary-meta div:last-child strong{color:var(--unad-blue)}
-.malla-toolbar{margin-bottom:18px}
-.malla-search{max-width:520px}
-.malla-period-list{display:flex;flex-direction:column;gap:44px}
-.malla-acc.malla-period-section{
-  position:relative;
-  margin-bottom:0;
-  padding-left:18px;
-}
-.malla-period-watermark{
-  position:absolute;
-  top:-34px;
-  left:-2px;
-  font-family:'Manrope','Sora',sans-serif;
-  font-size:10rem;
-  line-height:0.9;
+.malla-toolbar{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.malla-search{max-width:520px;flex:1}
+.malla-jump-btn{
+  border:none;
+  height:48px;
+  padding:0 18px;
+  border-radius:999px;
+  background:rgba(255,255,255,0.78);
+  color:var(--unad-blue);
+  font-size:12px;
   font-weight:800;
-  letter-spacing:-0.12em;
-  color:rgba(0,70,173,0.05);
-  pointer-events:none;
-  user-select:none;
+  letter-spacing:0.12em;
+  text-transform:uppercase;
+  box-shadow:0 14px 28px rgba(12,24,48,0.08);
 }
-body.dark .malla-period-watermark{color:rgba(255,255,255,0.04)}
+body.dark .malla-jump-btn{background:rgba(24,32,44,0.82)}
+.malla-rail{
+  position:sticky;
+  top:calc(var(--safe-top, 0px) + 12px);
+  z-index:10;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin-bottom:18px;
+  padding:14px;
+  border-radius:24px;
+  background:linear-gradient(180deg, rgba(255,255,255,0.88), rgba(250,246,242,0.92));
+  border:1px solid rgba(255,255,255,0.65);
+  box-shadow:0 20px 40px rgba(12,24,48,0.08);
+  backdrop-filter:blur(16px);
+}
+body.dark .malla-rail{
+  background:linear-gradient(180deg, rgba(24,32,44,0.88), rgba(20,27,37,0.92));
+  border-color:rgba(255,255,255,0.06);
+}
+.malla-chip-row{
+  display:flex;
+  gap:10px;
+  overflow-x:auto;
+  scrollbar-width:none;
+  -ms-overflow-style:none;
+}
+.malla-chip-row::-webkit-scrollbar{display:none}
+.malla-chip{
+  flex:0 0 auto;
+  border:none;
+  border-radius:999px;
+  padding:10px 16px;
+  background:rgba(0,70,173,0.06);
+  color:var(--text2);
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  transition:transform .16s cubic-bezier(0.4,0,0.2,1), background .16s cubic-bezier(0.4,0,0.2,1), color .16s cubic-bezier(0.4,0,0.2,1), box-shadow .16s cubic-bezier(0.4,0,0.2,1);
+}
+.malla-chip.active{
+  background:linear-gradient(135deg, rgba(0,70,173,0.14), rgba(0,157,196,0.14));
+  color:var(--unad-blue);
+  box-shadow:0 10px 20px rgba(0,70,173,0.10);
+}
+.malla-chip.muted{background:rgba(120,107,95,0.08)}
+.malla-chip:active{transform:scale(.97)}
+.malla-active-panel{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:14px;
+  align-items:end;
+  margin-bottom:16px;
+  padding:18px 20px;
+  border-radius:28px;
+  background:linear-gradient(180deg, rgba(255,255,255,0.92), rgba(251,247,243,0.96));
+  border:1px solid rgba(255,255,255,0.66);
+  box-shadow:var(--shadow);
+}
+body.dark .malla-active-panel{
+  background:linear-gradient(180deg, rgba(24,32,44,0.92), rgba(20,27,37,0.96));
+  border-color:rgba(255,255,255,0.06);
+}
+.malla-active-kicker{
+  font-size:11px;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:0.18em;
+  color:var(--text3);
+}
+.malla-active-title{
+  margin-top:6px;
+  font-family:'Manrope','Sora',sans-serif;
+  font-size:34px;
+  line-height:0.95;
+  letter-spacing:-0.08em;
+}
+.malla-active-meta{
+  margin-top:8px;
+  font-size:13px;
+  color:var(--text2);
+}
+.malla-active-side{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+}
+.malla-period-list{display:flex;flex-direction:column;gap:14px}
+.malla-acc.malla-period-section{
+  margin-bottom:0;
+  padding-left:0;
+}
 .malla-acc-header.malla-period-head{
-  position:relative;
-  z-index:1;
   display:flex;
   align-items:flex-start;
   justify-content:space-between;
   gap:16px;
-  padding:0;
+  padding:0 6px;
   background:transparent;
   box-shadow:none;
   border:none;
@@ -1436,15 +1522,12 @@ body.dark .malla-period-watermark{color:rgba(255,255,255,0.04)}
 }
 .malla-period-title{
   font-family:'Manrope','Sora',sans-serif;
-  font-size:38px;
+  font-size:24px;
   line-height:0.94;
   letter-spacing:-0.08em;
   color:var(--text);
 }
-.malla-period-meta{
-  font-size:13px;
-  color:var(--text2);
-}
+.malla-period-meta{font-size:12px;color:var(--text2)}
 .malla-period-stats{
   display:flex;
   align-items:center;
@@ -1469,20 +1552,18 @@ body.dark .malla-period-watermark{color:rgba(255,255,255,0.04)}
 .malla-status-chip.active{background:rgba(0,70,173,0.10);color:var(--unad-blue)}
 .malla-status-chip.pending{background:rgba(120,107,95,0.10);color:var(--text3)}
 .malla-acc-body{
-  position:relative;
-  z-index:1;
-  padding:14px 0 0;
+  padding:8px 0 0;
   display:grid!important;
-  gap:18px;
+  gap:12px;
   max-height:none!important;
   opacity:1!important;
   overflow:visible;
 }
 .mat-row.malla-course-card{
   display:block;
-  padding:26px 24px 20px;
+  padding:18px 18px 16px;
   margin-bottom:0;
-  border-radius:30px;
+  border-radius:24px;
   background:linear-gradient(180deg, rgba(255,255,255,0.94), rgba(251,248,245,0.98));
 }
 body.dark .mat-row.malla-course-card{
@@ -1503,22 +1584,23 @@ body.dark .mat-row.malla-course-card.is-future{
   justify-content:space-between;
   gap:14px;
 }
-.malla-card-bottom{margin-top:18px;align-items:flex-end}
+.malla-card-bottom{margin-top:14px;align-items:flex-end}
 .mat-row.malla-course-card .mat-nombre{
-  font-size:clamp(26px,2.5vw,42px);
-  line-height:1;
+  font-size:clamp(20px,2vw,30px);
+  line-height:1.02;
   letter-spacing:-0.06em;
-  max-width:78%;
+  max-width:82%;
 }
 .malla-card-mark{
-  width:34px;
+  min-width:34px;
   height:34px;
   border-radius:50%;
   display:flex;
   align-items:center;
   justify-content:center;
   flex-shrink:0;
-  font-size:17px;
+  padding:0 10px;
+  font-size:13px;
   font-weight:800;
   color:#fff;
 }
@@ -1529,7 +1611,7 @@ body.dark .mat-row.malla-course-card.is-future{
 .malla-card-meta{
   display:flex;
   align-items:center;
-  gap:10px;
+  gap:8px;
   flex-wrap:wrap;
 }
 .malla-credit-pill{
@@ -1550,19 +1632,15 @@ body.dark .mat-row.malla-course-card.is-future{
   text-transform:uppercase;
   color:var(--text3);
 }
-.malla-card-state{
-  font-size:13px;
-  font-weight:800;
-  white-space:nowrap;
-}
+.malla-card-state{font-size:12px;font-weight:800;white-space:nowrap}
 .malla-card-state.aprobada{color:var(--success)}
 .malla-card-state.reprobada{color:var(--danger)}
 .malla-card-state.cursando{color:var(--unad-blue)}
 .malla-card-state.pendiente{color:var(--text3)}
 .malla-card-accent{
-  height:4px;
+  height:3px;
   border-radius:999px;
-  margin-top:16px;
+  margin-top:12px;
   background:rgba(120,107,95,0.10);
   overflow:hidden;
 }
@@ -1577,8 +1655,8 @@ body.dark .mat-row.malla-course-card.is-future{
 .malla-card-accent.pendiente>span{width:0}
 .elec-block.malla-elec-block{
   margin-bottom:0;
-  padding:20px;
-  border-radius:28px;
+  padding:16px;
+  border-radius:24px;
   border:none;
   background:linear-gradient(180deg, rgba(244,238,232,0.94), rgba(255,255,255,0.90));
   box-shadow:0 18px 38px rgba(39,24,12,0.05);
@@ -1591,7 +1669,7 @@ body.dark .elec-block.malla-elec-block{
   align-items:flex-start;
   justify-content:space-between;
   gap:16px;
-  margin-bottom:14px;
+  margin-bottom:12px;
 }
 .malla-elec-kicker{
   font-size:10px;
@@ -1630,6 +1708,19 @@ body.dark .elec-opt{background:rgba(255,255,255,0.04)}
   letter-spacing:0.18em;
   color:var(--unad-blue);
   margin-bottom:8px;
+}
+.malla-empty{
+  padding:24px;
+  border-radius:24px;
+  background:rgba(255,255,255,0.74);
+  color:var(--text2);
+  text-align:center;
+  border:1px solid rgba(255,255,255,0.66);
+  box-shadow:0 18px 30px rgba(12,24,48,0.05);
+}
+body.dark .malla-empty{
+  background:rgba(24,32,44,0.78);
+  border-color:rgba(255,255,255,0.06);
 }
 @media(max-width:1024px){
   .malla-hero{grid-template-columns:1fr}
@@ -1707,33 +1798,47 @@ body.dark .elec-opt{background:rgba(255,255,255,0.04)}
     gap:18px;
     margin-bottom:20px;
   }
+  .malla-toolbar{
+    flex-direction:column;
+    align-items:stretch;
+  }
+  .malla-jump-btn{
+    width:100%;
+    height:44px;
+  }
+  .malla-rail{
+    top:calc(var(--safe-top, 0px) + 8px);
+    padding:12px;
+    border-radius:20px;
+  }
+  .malla-active-panel{
+    grid-template-columns:1fr;
+    padding:16px;
+    border-radius:22px;
+  }
+  .malla-active-title{font-size:28px}
+  .malla-active-side{justify-content:flex-start}
   .malla-summary-card{
     padding:22px;
     border-radius:28px;
   }
   .malla-summary-value span{font-size:58px}
   .malla-summary-meta strong{font-size:28px}
-  .malla-toolbar{margin-bottom:10px}
-  .malla-period-list{gap:34px}
+  .malla-period-list{gap:12px}
   .malla-acc.malla-period-section{padding-left:0}
-  .malla-period-watermark{
-    left:-4px;
-    top:-20px;
-    font-size:7.8rem;
-  }
-  .malla-period-title{font-size:24px}
+  .malla-period-title{font-size:20px}
   .malla-acc-header.malla-period-head{gap:10px}
   .malla-status-chip{padding:7px 10px}
   .mat-row.malla-course-card{
-    padding:22px 20px 18px;
+    padding:18px 16px 16px;
     border-radius:26px;
   }
   .mat-row.malla-course-card .mat-nombre{
     font-size:20px;
-    max-width:74%;
+    max-width:100%;
   }
   .malla-card-mark{
-    width:28px;
+    min-width:28px;
     height:28px;
     font-size:14px;
   }
@@ -1922,9 +2027,17 @@ body.dark .elec-opt{background:rgba(255,255,255,0.04)}
           <span class="search-icon">🔍</span>
           <input class="search-inp" id="mallaSearch" type="text" placeholder="Buscar materia por nombre o descripción..." oninput="renderMalla()">
         </div>
+        <button class="malla-jump-btn" type="button" onclick="focusCurrentMallaPeriod()">Periodo actual</button>
+      </div>
+      <div class="malla-rail">
+        <div id="mallaPeriodTabs" class="malla-chip-row"></div>
+        <div id="mallaFilterTabs" class="malla-chip-row"></div>
       </div>
       <div class="malla-grid">
-        <div id="mallaList" class="malla-period-list"></div>
+        <div>
+          <div id="mallaActivePanel" class="malla-active-panel"></div>
+          <div id="mallaList" class="malla-period-list"></div>
+        </div>
       </div>
     </div>
 
@@ -2468,6 +2581,8 @@ let electivosNotas={};
 let openPers={sal:new Set([1]),li:new Set([1]),po:new Set([1])};
 let openMalla=new Set([1]);
 let periodos=[...new Set(materias.map(m=>m.per))].sort((a,b)=>a-b);
+let mallaPeriodFocus=null;
+let mallaFilter='all';
 
 /* ── SAVE / LOAD ── */
 function saveData(){
@@ -2938,6 +3053,11 @@ function getMallaPeriodStatus(p,totalCount,apro,repro,currentPeriod){
   if(p<=currentPeriod||graded>0)return {label:'En curso',className:'active'};
   return {label:'Pendiente',className:'pending'};
 }
+function ensureMallaState(){
+  const currentPeriod=getDashboardCurrentPeriod();
+  if(!mallaPeriodFocus||!periodos.includes(mallaPeriodFocus))mallaPeriodFocus=currentPeriod;
+  if(!['all','pending','current','approved','failed','elective'].includes(mallaFilter))mallaFilter='all';
+}
 function getMallaPeriodSummaryHTML(apro,repro){
   let html='';
   if(apro>0)html+=`<span class="malla-stat-chip done">${apro} aprobada${apro>1?'s':''}</span>`;
@@ -2996,28 +3116,117 @@ function getMallaElectivaBlockHTML(grupo,data,currentPeriod){
   html+=`</section>`;
   return html;
 }
+function getMallaFilterDefs(){
+  return [
+    {id:'all',label:'Todo'},
+    {id:'pending',label:'Pendientes'},
+    {id:'current',label:'En curso'},
+    {id:'approved',label:'Aprobadas'},
+    {id:'failed',label:'Reprobadas'},
+    {id:'elective',label:'Electivas'}
+  ];
+}
+function matchesMallaFilter(period,note,isElectiva,currentPeriod){
+  if(mallaFilter==='all')return true;
+  if(mallaFilter==='elective')return !!isElectiva;
+  if(mallaFilter==='approved')return typeof note==='number'&&note>=3;
+  if(mallaFilter==='failed')return typeof note==='number'&&note<3;
+  if(mallaFilter==='current')return period===currentPeriod&&note===null;
+  if(mallaFilter==='pending')return note===null&&period!==currentPeriod;
+  return true;
+}
+function getPeriodCreditsForView(p){
+  const ms=materias.filter(m=>m.per===p);
+  const elecs=Object.entries(electivosData).filter(([_,v])=>v.per===p);
+  return ms.reduce((a,m)=>a+m.cr,0)+elecs.reduce((a,[,data])=>a+((data.opciones[0]&&data.opciones[0].cr)||3),0);
+}
+function renderMallaControls(currentPeriod){
+  const periodTabs=document.getElementById('mallaPeriodTabs');
+  const filterTabs=document.getElementById('mallaFilterTabs');
+  if(periodTabs){
+    periodTabs.innerHTML=periodos.map(p=>{
+      const total=materias.filter(m=>m.per===p).length+Object.entries(electivosData).filter(([_,v])=>v.per===p).length;
+      const apro=materias.filter(m=>m.per===p&&m.nota!==null&&m.nota>=3).length;
+      const repro=materias.filter(m=>m.per===p&&m.nota!==null&&m.nota<3).length;
+      const status=getMallaPeriodStatus(p,total,apro,repro,currentPeriod);
+      return `<button type="button" class="malla-chip ${p===mallaPeriodFocus?'active':''}" onclick="setMallaPeriod(${p})">P${p} · ${status.label}</button>`;
+    }).join('');
+  }
+  if(filterTabs){
+    filterTabs.innerHTML=getMallaFilterDefs().map(f=>`<button type="button" class="malla-chip muted ${mallaFilter===f.id?'active':''}" onclick="setMallaFilter('${f.id}')">${f.label}</button>`).join('');
+  }
+}
+function renderMallaActivePanel(period,apro,repro,currentPeriod,totalItems){
+  const panel=document.getElementById('mallaActivePanel');
+  if(!panel)return;
+  const status=getMallaPeriodStatus(period,totalItems,apro,repro,currentPeriod);
+  panel.innerHTML=`<div>
+    <div class="malla-active-kicker">Vista rápida</div>
+    <div class="malla-active-title">Periodo ${period}</div>
+    <div class="malla-active-meta">${totalItems} materias y electivas · ${getPeriodCreditsForView(period)} créditos en foco</div>
+  </div>
+  <div class="malla-active-side">
+    ${getMallaPeriodSummaryHTML(apro,repro)||'<span class="malla-stat-chip">Sin notas aún</span>'}
+    <span class="malla-status-chip ${status.className}">${status.label}</span>
+  </div>`;
+}
+function setMallaPeriod(period){
+  mallaPeriodFocus=period;
+  renderMalla();
+}
+function setMallaFilter(filterId){
+  mallaFilter=filterId;
+  renderMalla();
+}
+function focusCurrentMallaPeriod(){
+  mallaPeriodFocus=getDashboardCurrentPeriod();
+  renderMalla();
+}
 
 function renderMalla(){
+  ensureMallaState();
   const q=(document.getElementById('mallaSearch')||{}).value||'';
   const sq=q.toLowerCase().trim();
   const currentPeriod=getDashboardCurrentPeriod();
+  renderMallaControls(currentPeriod);
   let html='';
-  periodos.forEach(p=>{
+  let hasAny=false;
+  const periodsToRender=sq?periodos:[mallaPeriodFocus];
+  periodsToRender.forEach(p=>{
     const ms=materias.filter(m=>m.per===p);
-    const filtered=sq?ms.filter(m=>m.nombre.toLowerCase().includes(sq)||m.d.toLowerCase().includes(sq)):ms;
+    const filtered=ms.filter(m=>{
+      const matchesSearch=!sq||m.nombre.toLowerCase().includes(sq)||m.d.toLowerCase().includes(sq);
+      return matchesSearch&&matchesMallaFilter(m.per,m.nota,false,currentPeriod);
+    });
     const elecs=Object.entries(electivosData).filter(([k,v])=>v.per===p);
-    if(!filtered.length&&!elecs.length)return;
+    const visibleElecs=elecs.filter(([grupo,data])=>{
+      const selectedCod=electivosSeleccionados[grupo];
+      if(selectedCod){
+        const selected=data.opciones.find(op=>op.cod===selectedCod);
+        if(!selected)return mallaFilter==='elective'||mallaFilter==='all';
+        const note=electivosNotas[grupo+':::'+selected.cod] ?? null;
+        const matchesSearch=!sq||selected.nombre.toLowerCase().includes(sq)||(selected.d||'').toLowerCase().includes(sq)||grupo.toLowerCase().includes(sq);
+        return matchesSearch&&matchesMallaFilter(data.per,note,true,currentPeriod);
+      }
+      const anyMatches=data.opciones.some(op=>{
+        const matchesSearch=!sq||op.nombre.toLowerCase().includes(sq)||(op.d||'').toLowerCase().includes(sq)||grupo.toLowerCase().includes(sq);
+        return matchesSearch;
+      });
+      return anyMatches&&(mallaFilter==='all'||mallaFilter==='elective'||mallaFilter==='pending');
+    });
+    if(!filtered.length&&!visibleElecs.length)return;
+    hasAny=true;
     const apro=ms.filter(m=>m.nota!==null&&m.nota>=3).length;
     const repro=ms.filter(m=>m.nota!==null&&m.nota<3).length;
-    const elecCredits=elecs.reduce((a,[,data])=>a+((data.opciones[0]&&data.opciones[0].cr)||3),0);
-    const totalCount=ms.length+Object.entries(electivosData).filter(([_,v])=>v.per===p).length;
+    const elecCredits=visibleElecs.reduce((a,[,data])=>a+((data.opciones[0]&&data.opciones[0].cr)||3),0);
+    const totalCount=filtered.length+visibleElecs.length;
     const periodStatus=getMallaPeriodStatus(p,totalCount,apro,repro,currentPeriod);
+    if(!sq&&p===mallaPeriodFocus)renderMallaActivePanel(p,apro,repro,currentPeriod,ms.length+elecs.length);
     html+=`<section class="malla-acc malla-period-section" data-per="${p}">
-      <div class="malla-period-watermark">${String(p).padStart(2,'0')}</div>
       <div class="malla-acc-header malla-period-head">
         <div class="malla-period-copy">
           <span class="malla-period-title">Periodo ${p}</span>
-          <span class="malla-period-meta">${ms.length} materias · ${(ms.reduce((a,m)=>a+m.cr,0)+elecCredits)} créditos</span>
+          <span class="malla-period-meta">${filtered.length} visibles · ${(filtered.reduce((a,m)=>a+m.cr,0)+elecCredits)} créditos</span>
           <div class="malla-period-stats" data-period-summary="${p}">${getMallaPeriodSummaryHTML(apro,repro)}</div>
         </div>
         <div class="malla-status-chip ${periodStatus.className}">${periodStatus.label}</div>
@@ -3026,13 +3235,13 @@ function renderMalla(){
     filtered.forEach(m=>{
       html+=getMallaCourseCardHTML(m,currentPeriod,false,'');
     });
-    if(!sq){
-      elecs.forEach(([grupo,data])=>{
-        html+=getMallaElectivaBlockHTML(grupo,data,currentPeriod);
-      });
-    }
+    visibleElecs.forEach(([grupo,data])=>{
+      html+=getMallaElectivaBlockHTML(grupo,data,currentPeriod);
+    });
     html+=`</div></section>`;
   });
+  if(!sq)renderMallaActivePanel(mallaPeriodFocus,materias.filter(m=>m.per===mallaPeriodFocus&&m.nota!==null&&m.nota>=3).length,materias.filter(m=>m.per===mallaPeriodFocus&&m.nota!==null&&m.nota<3).length,currentPeriod,materias.filter(m=>m.per===mallaPeriodFocus).length+Object.entries(electivosData).filter(([_,v])=>v.per===mallaPeriodFocus).length);
+  if(!hasAny)html=`<div class="malla-empty">No encontré materias para este filtro. Prueba con otro periodo o cambia el filtro rápido.</div>`;
   document.getElementById('mallaList').innerHTML=html;
 }
 function selMat(id){
@@ -3848,4 +4057,3 @@ if('serviceWorker' in navigator){
 </script>
 </body>
 </html>
-

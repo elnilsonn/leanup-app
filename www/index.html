@@ -1344,13 +1344,27 @@ function tipoTag(t){
   const m={'Teórica':'tag-teorica','Práctica':'tag-practica','Lectura':'tag-lectura','Números':'tag-numeros'};
   return `<span class="tag ${m[t]||''}" style="margin-right:3px">${t}</span>`;
 }
+function prepareViewActivation(id){
+  const target=document.getElementById('view-'+id);
+  if(!target)return null;
+  const skip=window.__lu_skipViewFadeOnce===true;
+  window.__lu_skipViewFadeOnce=false;
+  if(skip){
+    target.classList.add('lu-anim-skip');
+    requestAnimationFrame(()=>{
+      requestAnimationFrame(()=>{ target.classList.remove('lu-anim-skip'); });
+    });
+  }
+  return target;
+}
 function showViewGear(){
   if(isMobileProfileMode()){
     cleanupProfileOverlayState({notify:true});
   }
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  document.getElementById('view-config').classList.add('active');
+  const configView=prepareViewActivation('config');
+  if(configView)configView.classList.add('active');
   document.getElementById('topbarTitle').textContent='Configuración';
   document.getElementById('gearBtn').classList.add('active');
   maybeResetMainContentScroll();
@@ -1548,7 +1562,8 @@ function showView(id,el){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('gearBtn').classList.remove('active');
-  document.getElementById('view-'+id).classList.add('active');
+  const targetView=prepareViewActivation(id);
+  if(targetView)targetView.classList.add('active');
   if(el)el.classList.add('active');
   const t={dashboard:'Dashboard',malla:'Malla Curricular','perfil-hub':'Perfil',profesional:'Perfil Profesional',salida:'Salida Laboral',portafolio:'Portafolio',config:'Configuración'};
   document.getElementById('topbarTitle').textContent=t[id]||id;

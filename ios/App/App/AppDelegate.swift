@@ -1445,10 +1445,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
     private func webGo(_ id: String) {
         let js: String
         switch id {
-        case "dashboard": js = "showView('dashboard',null);"
-        case "malla":     js = "showView('malla',null);"
-        case "perfil":    js = "showView('perfil-hub',null);"
-        case "config":    js = "showViewGear();"
+        case "dashboard": js = "window.__lu_skipViewFadeOnce=true;showView('dashboard',null);"
+        case "malla":     js = "window.__lu_skipViewFadeOnce=true;showView('malla',null);"
+        case "perfil":    js = "window.__lu_skipViewFadeOnce=true;showView('perfil-hub',null);"
+        case "config":    js = "window.__lu_skipViewFadeOnce=true;showViewGear();"
         default:          return
         }
         capacitorWebView?.evaluateJavaScript(js)

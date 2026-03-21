@@ -24,7 +24,7 @@
   %22orientation%22:%22portrait%22,
   %22icons%22:[{%22src%22:%22data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20512%20512'%3E%3Crect%20width='512'%20height='512'%20rx='80'%20fill='%23001B50'/%3E%3Ctext%20x='80'%20y='340'%20font-family='Arial'%20font-weight='900'%20font-size='220'%20fill='white'%3EL%3C/text%3E%3Ctext%20x='230'%20y='340'%20font-family='Arial'%20font-weight='900'%20font-size='220'%20fill='%23FFB81C'%3EU%3C/text%3E%3C/svg%3E%22,%22sizes%22:%22512x512%22,%22type%22:%22image/svg+xml%22}]
 }">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@600;700;800&family=Sora:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -624,1894 +624,6 @@ body.dark .bn-more-item.active svg{color:var(--unad-gold)}
   .bottom-nav{display:none!important}
   .topbar-glass-btn{display:none!important}
 }
-
-/* —— Editorial redesign —— */
-:root{
-  --bg:#fcf8f4;
-  --bg2:#ffffff;
-  --bg3:#f5f0ea;
-  --bg4:#e7ded5;
-  --text:#191515;
-  --text2:#5f5960;
-  --text3:#8d8790;
-  --border:#ece2da;
-  --border2:#d8cabd;
-  --shadow:0 24px 56px rgba(39,24,12,0.07);
-  --editorial-sheen:rgba(255,255,255,0.72);
-  --editorial-blue:#0046AD;
-  --editorial-blue-soft:#dfe7ff;
-  --editorial-gold:rgba(255,184,28,0.18);
-}
-body.dark{
-  --bg:#11141b;
-  --bg2:#171d27;
-  --bg3:#1c2430;
-  --bg4:#273241;
-  --text:#f4efe9;
-  --text2:#b3acb4;
-  --text3:#867f88;
-  --border:#2a3340;
-  --border2:#3b4452;
-  --shadow:0 28px 60px rgba(0,0,0,0.28);
-  --editorial-sheen:rgba(255,255,255,0.06);
-  --editorial-blue-soft:rgba(79,120,224,0.18);
-  --editorial-gold:rgba(255,184,28,0.12);
-}
-body{
-  font-family:'Inter',sans-serif;
-  background:
-    radial-gradient(circle at top left, rgba(255,184,28,0.12), transparent 26%),
-    radial-gradient(circle at top right, rgba(0,70,173,0.10), transparent 28%),
-    linear-gradient(180deg, rgba(255,255,255,0.55), transparent 20%),
-    var(--bg);
-  color:var(--text);
-}
-body::before{
-  content:'';
-  position:fixed;
-  inset:0;
-  pointer-events:none;
-  background:
-    linear-gradient(135deg, rgba(255,255,255,0.12), transparent 32%),
-    radial-gradient(circle at 20% 0%, rgba(255,255,255,0.30), transparent 20%);
-  opacity:.7;
-}
-.logo-mark,.h2,.sect-title,.topbar-title,.panel-name,.perfil-hub-title,.about-version,.dash-title,.dash-section-title,.mat-nombre,.tl-rank{
-  font-family:'Manrope','Sora',sans-serif;
-}
-.sidebar{
-  background:linear-gradient(180deg,#101c37 0%,#0b1428 100%);
-  border-right:1px solid rgba(255,255,255,0.06);
-}
-.logo-area{padding:24px 20px 20px;border-bottom:1px solid rgba(255,255,255,0.05)}
-.logo-mark{font-size:28px;font-weight:800;letter-spacing:-1.1px}
-.logo-sub{font-family:'Inter',sans-serif;font-size:10px;letter-spacing:1.2px;color:rgba(255,255,255,0.42)}
-.nav{padding:14px 10px}
-.nav-sect{color:rgba(255,255,255,0.26)}
-.nav-item{
-  padding:12px 14px;
-  margin-bottom:6px;
-  border-radius:18px;
-  border-left:none;
-  font-family:'Inter',sans-serif;
-  color:rgba(255,255,255,0.58);
-}
-.nav-item:hover{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.88)}
-.nav-item.active{
-  background:linear-gradient(180deg, rgba(255,255,255,0.13), rgba(255,255,255,0.06));
-  color:#fff;
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,0.08), 0 12px 24px rgba(0,0,0,0.12);
-}
-.nav-item.active .nav-icon{color:var(--unad-gold)}
-.sidebar-footer{border-top:1px solid rgba(255,255,255,0.05)}
-.prog-bar{height:6px;background:rgba(255,255,255,0.08)}
-.prog-fill{background:linear-gradient(90deg,var(--unad-gold),#ffe1a1)}
-.unad-badge{
-  background:rgba(255,255,255,0.05);
-  border:1px solid rgba(255,255,255,0.06);
-  border-radius:16px;
-}
-.main{background:transparent}
-.topbar{
-  height:64px;
-  padding:0 28px;
-  background:rgba(252,248,244,0.76);
-  backdrop-filter:blur(22px) saturate(150%);
-  -webkit-backdrop-filter:blur(22px) saturate(150%);
-  border-bottom:1px solid rgba(255,255,255,0.5);
-  box-shadow:none;
-}
-body.dark .topbar{
-  background:rgba(17,20,27,0.72);
-  border-bottom:1px solid rgba(255,255,255,0.06);
-}
-.topbar-title{
-  font-size:16px;
-  font-weight:800;
-  letter-spacing:-0.02em;
-}
-.content{padding:34px 34px 42px}
-.view>.h2{
-  font-size:38px;
-  line-height:1.02;
-  letter-spacing:-0.05em;
-  margin-bottom:8px;
-}
-.view>.sub{
-  font-size:15px;
-  color:var(--text2);
-  max-width:880px;
-  margin-bottom:28px;
-}
-.card,.cfg-card,.detail-panel,.li-card,.sal-card,.por-card,.perfil-hub-card{
-  background:linear-gradient(180deg, rgba(255,255,255,0.90), rgba(252,249,247,0.96));
-  border:1px solid rgba(255,255,255,0.62);
-  border-radius:28px;
-  box-shadow:var(--shadow);
-}
-body.dark .card,
-body.dark .cfg-card,
-body.dark .detail-panel,
-body.dark .li-card,
-body.dark .sal-card,
-body.dark .por-card,
-body.dark .perfil-hub-card{
-  background:linear-gradient(180deg, rgba(28,36,48,0.92), rgba(23,29,39,0.96));
-  border-color:rgba(255,255,255,0.06);
-}
-.card,.cfg-card,.detail-panel{padding:24px}
-.sect-title{
-  font-size:11px;
-  letter-spacing:0.2em;
-  text-transform:uppercase;
-  color:var(--unad-blue);
-  margin-bottom:18px;
-  padding-bottom:0;
-  border-bottom:none;
-}
-.sect-title .gold-dot{
-  width:8px;
-  height:8px;
-  background:var(--unad-gold);
-}
-.search-wrap{margin-bottom:18px}
-.search-icon{left:16px;color:var(--text3)}
-.search-inp,
-.cfg-inp{
-  background:rgba(255,255,255,0.7);
-  border:1px solid rgba(255,255,255,0.56);
-  border-radius:18px;
-  padding:14px 16px 14px 42px;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,0.38);
-  font-family:'Inter',sans-serif;
-}
-.cfg-inp{padding-left:16px}
-body.dark .search-inp,
-body.dark .cfg-inp{
-  background:rgba(255,255,255,0.04);
-  border-color:rgba(255,255,255,0.06);
-}
-.search-inp:focus,
-.cfg-inp:focus{
-  border-color:rgba(0,70,173,0.28);
-  box-shadow:0 0 0 4px rgba(0,70,173,0.08);
-}
-.btn,
-.copy-btn,
-.small-btn,
-.change-btn,
-.contact-btn{
-  border-radius:999px;
-  font-family:'Inter',sans-serif;
-  font-weight:700;
-}
-.btn-save{
-  background:linear-gradient(135deg,var(--unad-blue),#0059d8);
-  border-color:transparent;
-}
-.btn-reset{
-  background:rgba(255,255,255,0.6);
-  border-color:rgba(255,255,255,0.45);
-}
-.mat-row,
-.malla-acc-header,
-.per-header{
-  border:none;
-  border-left:none;
-  border-radius:24px;
-  box-shadow:0 16px 34px rgba(39,24,12,0.06);
-}
-.malla-acc-header,
-.per-header{
-  padding:16px 20px;
-  background:linear-gradient(180deg, rgba(255,255,255,0.84), rgba(245,240,234,0.92));
-}
-body.dark .malla-acc-header,
-body.dark .per-header{
-  background:linear-gradient(180deg, rgba(28,36,48,0.92), rgba(23,29,39,0.98));
-}
-.malla-acc-header:hover,
-.per-header:hover{
-  border-color:transparent;
-  transform:translateY(-1px);
-}
-.malla-acc-body{padding:14px 6px 8px}
-.mat-row{
-  padding:16px 18px;
-  margin-bottom:10px;
-  background:linear-gradient(180deg, rgba(255,255,255,0.92), rgba(248,243,238,0.98));
-}
-body.dark .mat-row{background:linear-gradient(180deg, rgba(28,36,48,0.94), rgba(23,29,39,0.98))}
-.mat-row:hover{
-  transform:translateY(-2px);
-  border-left-color:transparent;
-  background:linear-gradient(180deg, rgba(255,255,255,0.96), rgba(249,245,241,1));
-}
-.mat-row.selected{
-  transform:translateY(-1px);
-  border-left-color:transparent;
-  background:linear-gradient(180deg, rgba(227,236,255,0.92), rgba(255,255,255,0.96));
-  box-shadow:0 0 0 1px rgba(0,70,173,0.12),0 18px 38px rgba(0,70,173,0.08);
-}
-.nota-badge,
-.radio,
-.theme-selector,
-.theme-opt.active,
-.chip,
-.tag,
-.perfil-hub-icon,
-.dash-trend-badge{
-  border-radius:999px;
-}
-.nota-badge,
-.radio,
-.chip,
-.tag{
-  border:none;
-}
-.perfil-hub-grid{gap:16px;margin-top:10px}
-.perfil-hub-card{
-  padding:22px 24px;
-  gap:18px;
-}
-.perfil-hub-card:hover{
-  border-color:rgba(255,255,255,0.62);
-  box-shadow:0 20px 44px rgba(0,70,173,0.10);
-}
-.perfil-hub-icon{
-  width:56px;
-  height:56px;
-  background:linear-gradient(135deg, rgba(255,184,28,0.16), rgba(0,70,173,0.10));
-}
-.perfil-hub-title{font-size:20px;font-weight:800;letter-spacing:-0.03em}
-.perfil-hub-desc{font-size:14px;line-height:1.55}
-.perfil-hub-arrow{font-size:20px;color:var(--unad-blue)}
-.li-card,.sal-card,.por-card{
-  padding:18px 20px;
-  margin-bottom:12px;
-}
-.li-text{
-  border-left:none;
-  padding-left:0;
-  color:var(--text2);
-}
-.sal-roles,
-.about-box{
-  background:rgba(255,255,255,0.48);
-  border:none;
-  border-radius:20px;
-  padding:14px 16px;
-}
-body.dark .sal-roles,
-body.dark .about-box{background:rgba(255,255,255,0.04)}
-.copy-btn,
-.small-btn,
-.change-btn{
-  background:rgba(255,255,255,0.65);
-  border:1px solid rgba(255,255,255,0.52);
-  color:var(--text);
-}
-body.dark .copy-btn,
-body.dark .small-btn,
-body.dark .change-btn{
-  background:rgba(255,255,255,0.05);
-  border-color:rgba(255,255,255,0.06);
-  color:var(--text);
-}
-.theme-selector{
-  padding:4px;
-  gap:4px;
-  background:rgba(255,255,255,0.55);
-  border:1px solid rgba(255,255,255,0.48);
-}
-body.dark .theme-selector{
-  background:rgba(255,255,255,0.04);
-  border-color:rgba(255,255,255,0.06);
-}
-.theme-opt{
-  border-radius:999px;
-  padding:9px 16px;
-  font-family:'Inter',sans-serif;
-}
-.theme-opt.active{
-  background:linear-gradient(135deg, rgba(255,255,255,0.96), rgba(244,238,232,0.96));
-  box-shadow:0 10px 18px rgba(32,18,8,0.07);
-}
-body.dark .theme-opt.active{
-  background:rgba(255,255,255,0.08);
-  box-shadow:none;
-}
-#detailPanel .detail-panel,
-#profilePanel .profile-detail-panel{
-  background:linear-gradient(180deg, rgba(255,255,255,0.92), rgba(248,243,238,0.98));
-}
-body.dark #detailPanel .detail-panel,
-body.dark #profilePanel .profile-detail-panel{
-  background:linear-gradient(180deg, rgba(28,36,48,0.95), rgba(23,29,39,0.98));
-}
-.info-box{
-  background:rgba(255,255,255,0.6);
-  border-left:none;
-  border-radius:18px;
-}
-body.dark .info-box{background:rgba(255,255,255,0.05)}
-.bottom-nav{
-  background:rgba(255,255,255,0.72);
-  border:1px solid rgba(255,255,255,0.48);
-  box-shadow:0 12px 28px rgba(39,24,12,0.10), inset 0 1px 0 rgba(255,255,255,0.66);
-}
-body.dark .bottom-nav{
-  background:rgba(21,28,38,0.78);
-  border-color:rgba(255,255,255,0.06);
-}
-.bn-item{font-family:'Inter',sans-serif}
-.bn-label{font-size:10px;letter-spacing:0.14em;text-transform:uppercase}
-
-/* Dashboard */
-.dash-hero{
-  position:relative;
-  min-height:320px;
-  margin-bottom:28px;
-  padding:38px 34px;
-  border-radius:38px;
-  overflow:hidden;
-  background:
-    radial-gradient(circle at top left, rgba(255,184,28,0.16), transparent 26%),
-    linear-gradient(135deg, rgba(255,255,255,0.72), rgba(244,236,228,0.98));
-  border:1px solid rgba(255,255,255,0.62);
-  box-shadow:var(--shadow);
-}
-body.dark .dash-hero{
-  background:
-    radial-gradient(circle at top left, rgba(255,184,28,0.14), transparent 24%),
-    linear-gradient(135deg, rgba(28,36,48,0.96), rgba(20,24,33,0.98));
-  border-color:rgba(255,255,255,0.06);
-}
-.dash-hero-copy{
-  position:relative;
-  z-index:1;
-  max-width:560px;
-  display:flex;
-  flex-direction:column;
-  justify-content:flex-end;
-  min-height:244px;
-}
-.dash-kicker,
-.dash-overline{
-  font-size:11px;
-  font-weight:800;
-  letter-spacing:0.22em;
-  text-transform:uppercase;
-  color:var(--unad-blue);
-}
-.dash-title{
-  margin-top:18px;
-  font-size:clamp(38px,5vw,64px);
-  line-height:0.95;
-  letter-spacing:-0.07em;
-}
-.greet-link{
-  cursor:pointer;
-  position:relative;
-  display:inline-block;
-}
-.greet-link::after{
-  content:'';
-  position:absolute;
-  left:0;right:0;bottom:-4px;
-  height:4px;
-  border-radius:999px;
-  background:linear-gradient(90deg, rgba(255,184,28,0.95), rgba(0,70,173,0.18));
-}
-.dash-subtitle{
-  margin-top:14px;
-  font-size:17px;
-  line-height:1.6;
-  max-width:520px;
-  color:var(--text2);
-}
-.dash-hero-art{
-  position:absolute;
-  inset:0;
-  pointer-events:none;
-}
-.dash-orb{
-  position:absolute;
-  border-radius:50%;
-  filter:blur(2px);
-}
-.dash-orb-a{
-  width:180px;
-  height:180px;
-  right:-34px;
-  top:24px;
-  background:radial-gradient(circle, rgba(255,255,255,0.58), rgba(255,255,255,0));
-}
-.dash-orb-b{
-  width:130px;
-  height:130px;
-  left:44%;
-  bottom:-18px;
-  background:radial-gradient(circle, rgba(255,184,28,0.18), rgba(255,184,28,0));
-}
-.dash-frame{
-  position:absolute;
-  border:6px solid rgba(207,185,159,0.46);
-  background:rgba(255,255,255,0.25);
-  box-shadow:0 16px 32px rgba(65,46,21,0.08);
-}
-.dash-frame-main{
-  right:58px;
-  bottom:50px;
-  width:172px;
-  height:138px;
-}
-.dash-frame-mini{
-  right:248px;
-  bottom:84px;
-  width:52px;
-  height:96px;
-  border-width:4px;
-}
-.dash-summary-card{
-  margin-bottom:36px;
-  padding:28px 30px;
-  border-radius:32px;
-  background:linear-gradient(180deg, rgba(255,255,255,0.94), rgba(252,249,247,0.98));
-  border:1px solid rgba(255,255,255,0.64);
-  box-shadow:var(--shadow);
-}
-body.dark .dash-summary-card{
-  background:linear-gradient(180deg, rgba(28,36,48,0.95), rgba(23,29,39,0.98));
-  border-color:rgba(255,255,255,0.06);
-}
-.dash-summary-top,
-.dash-summary-bottom{
-  display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap:24px;
-}
-.dash-score-wrap{margin-top:10px}
-.dash-score{
-  font-size:72px;
-  line-height:0.92;
-  font-family:'Manrope','Sora',sans-serif;
-  font-weight:800;
-  letter-spacing:-0.08em;
-}
-.dash-score-note{
-  margin-top:10px;
-  font-size:16px;
-  color:var(--text2);
-}
-.dash-trend-badge{
-  width:76px;
-  height:76px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background:var(--editorial-blue-soft);
-  color:var(--unad-blue);
-  flex-shrink:0;
-}
-.dash-trend-badge svg{width:32px;height:32px}
-.dash-summary-divider{
-  height:1px;
-  margin:24px 0;
-  background:linear-gradient(90deg, transparent, rgba(83,67,53,0.18), transparent);
-}
-.dash-progress-spotlight{
-  min-width:180px;
-}
-.dash-progress-number{
-  font-size:54px;
-  line-height:0.95;
-  font-family:'Manrope','Sora',sans-serif;
-  font-weight:800;
-  letter-spacing:-0.08em;
-}
-.dash-progress-label{
-  margin-top:10px;
-  font-size:12px;
-  font-weight:800;
-  letter-spacing:0.18em;
-  text-transform:uppercase;
-  color:var(--text2);
-}
-.dash-progress-meta{flex:1;min-width:0}
-.dash-progress-row{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  font-size:14px;
-  color:var(--text2);
-}
-.dash-progress-row strong{font-family:'IBM Plex Mono',monospace;color:var(--text)}
-.dash-progress-muted{
-  margin-top:10px;
-  font-size:12px;
-  color:var(--text3);
-}
-.dash-progress-bar{
-  margin-top:16px;
-  height:10px;
-  border-radius:999px;
-  background:rgba(120,107,95,0.10);
-}
-.dash-progress-bar .bar-fill{
-  background:linear-gradient(90deg, var(--unad-blue), #2f79ff);
-}
-.dash-section{margin-top:28px}
-.dash-section-head{
-  display:flex;
-  align-items:flex-end;
-  justify-content:space-between;
-  gap:18px;
-  margin-bottom:18px;
-}
-.dash-section-title{
-  margin-top:6px;
-  font-size:34px;
-  line-height:1;
-  letter-spacing:-0.06em;
-}
-.dash-section-note{
-  font-size:12px;
-  font-weight:700;
-  letter-spacing:0.14em;
-  text-transform:uppercase;
-  color:var(--text3);
-}
-.dash-period-strip{
-  display:grid;
-  grid-template-columns:repeat(3,minmax(0,1fr));
-  gap:18px;
-}
-.period-card{
-  padding:22px;
-  border-radius:28px;
-  background:linear-gradient(180deg, rgba(246,241,236,0.96), rgba(255,255,255,0.92));
-  border:1px solid rgba(255,255,255,0.6);
-  box-shadow:0 20px 44px rgba(39,24,12,0.06);
-}
-body.dark .period-card{
-  background:linear-gradient(180deg, rgba(28,36,48,0.95), rgba(23,29,39,0.98));
-  border-color:rgba(255,255,255,0.06);
-}
-.period-card.current{
-  background:linear-gradient(180deg, rgba(231,237,255,0.96), rgba(255,255,255,0.94));
-}
-body.dark .period-card.current{
-  background:linear-gradient(180deg, rgba(32,42,60,0.98), rgba(23,29,39,0.98));
-}
-.period-card-top,
-.period-card-line{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-}
-.period-card-top{margin-bottom:18px}
-.period-card-title{
-  font-family:'Manrope','Sora',sans-serif;
-  font-size:22px;
-  font-weight:800;
-  letter-spacing:-0.05em;
-}
-.period-card-badge{
-  padding:6px 10px;
-  border-radius:999px;
-  font-size:10px;
-  font-weight:800;
-  letter-spacing:0.16em;
-  text-transform:uppercase;
-}
-.period-card-badge.active{background:rgba(0,70,173,0.10);color:var(--unad-blue)}
-.period-card-badge.done{background:rgba(0,168,107,0.10);color:var(--success)}
-.period-card-badge.idle{background:rgba(120,107,95,0.10);color:var(--text2)}
-.period-card-line{
-  font-size:14px;
-  color:var(--text2);
-  margin-bottom:10px;
-}
-.period-card-line strong{color:var(--text);font-family:'IBM Plex Mono',monospace}
-.period-card-progress{
-  height:8px;
-  border-radius:999px;
-  background:rgba(120,107,95,0.10);
-  overflow:hidden;
-}
-.period-card-progress .bar-fill{height:100%;background:linear-gradient(90deg,var(--unad-blue),#2f79ff)}
-.period-card-foot{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  margin-top:14px;
-  font-size:12px;
-  color:var(--text3);
-}
-.dash-activity-list{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:18px 22px;
-}
-.dash-activity-item{
-  display:flex;
-  align-items:flex-start;
-  gap:18px;
-}
-.activity-thumb{
-  width:96px;
-  height:120px;
-  border-radius:24px;
-  display:flex;
-  align-items:flex-end;
-  justify-content:flex-start;
-  padding:16px;
-  flex-shrink:0;
-  color:#fff;
-  font-family:'Manrope','Sora',sans-serif;
-  font-size:30px;
-  font-weight:800;
-  letter-spacing:-0.06em;
-  box-shadow:0 18px 30px rgba(39,24,12,0.10);
-}
-.activity-thumb.tone-1{background:linear-gradient(180deg, #f6edd2, #d2dcca); color:#1c1b1b}
-.activity-thumb.tone-2{background:linear-gradient(180deg, #2c6e7f, #152733)}
-.activity-thumb.tone-3{background:linear-gradient(180deg, #6d7bf2, #223467)}
-.activity-thumb.tone-4{background:linear-gradient(180deg, #d9ccb8, #8c7156)}
-.activity-copy{padding-top:8px}
-.activity-kicker{
-  font-size:11px;
-  font-weight:800;
-  letter-spacing:0.18em;
-  text-transform:uppercase;
-  color:var(--unad-blue);
-}
-.activity-title{
-  margin-top:8px;
-  font-family:'Manrope','Sora',sans-serif;
-  font-size:18px;
-  line-height:1.16;
-  letter-spacing:-0.05em;
-}
-.activity-meta{
-  margin-top:6px;
-  font-size:14px;
-  color:var(--text2);
-  line-height:1.55;
-}
-.activity-status{
-  margin-top:8px;
-  font-size:13px;
-  color:var(--text3);
-}
-
-/* Malla */
-.malla-hero{
-  display:grid;
-  grid-template-columns:minmax(0,1fr) minmax(300px,380px);
-  gap:24px;
-  align-items:end;
-  margin-bottom:26px;
-}
-.malla-hero-copy .h2{margin-bottom:8px}
-.malla-hero-copy .sub{margin-bottom:0;max-width:620px}
-.malla-summary-card{
-  padding:24px 26px;
-  border-radius:32px;
-  background:linear-gradient(180deg, rgba(255,255,255,0.94), rgba(252,249,247,0.98));
-  border:1px solid rgba(255,255,255,0.62);
-  box-shadow:var(--shadow);
-}
-body.dark .malla-summary-card{
-  background:linear-gradient(180deg, rgba(28,36,48,0.95), rgba(23,29,39,0.98));
-  border-color:rgba(255,255,255,0.06);
-}
-.malla-summary-kicker{
-  font-size:11px;
-  font-weight:800;
-  text-transform:uppercase;
-  letter-spacing:0.22em;
-  color:var(--unad-blue);
-}
-.malla-summary-top{margin-top:10px}
-.malla-summary-value{
-  font-family:'Manrope','Sora',sans-serif;
-  font-size:24px;
-  font-weight:700;
-  color:var(--text);
-}
-.malla-summary-value span{
-  font-size:72px;
-  line-height:0.92;
-  letter-spacing:-0.08em;
-  color:var(--unad-blue);
-}
-.malla-summary-value small{
-  font-size:16px;
-  font-family:'Inter',sans-serif;
-  font-weight:700;
-  color:var(--text);
-}
-.malla-summary-track{
-  margin-top:22px;
-  height:12px;
-  border-radius:999px;
-  background:rgba(120,107,95,0.10);
-  overflow:hidden;
-}
-.malla-summary-fill{
-  height:100%;
-  border-radius:999px;
-  background:linear-gradient(90deg, var(--unad-blue), #1f60db);
-  transition:width 0.6s cubic-bezier(0.25,0.46,0.45,0.94);
-}
-.malla-summary-meta{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:16px;
-  margin-top:20px;
-}
-.malla-summary-meta>div{
-  display:flex;
-  flex-direction:column;
-  justify-content:flex-start;
-}
-.malla-summary-meta span{
-  display:block;
-  font-size:11px;
-  font-weight:800;
-  text-transform:uppercase;
-  letter-spacing:0.16em;
-  color:var(--text3);
-}
-.malla-summary-meta strong{
-  display:flex;
-  align-items:baseline;
-  gap:6px;
-  margin-top:6px;
-  font-family:'Manrope','Sora',sans-serif;
-  font-size:34px;
-  line-height:0.95;
-  letter-spacing:-0.06em;
-  color:var(--text);
-}
-.malla-summary-meta strong span,
-.malla-summary-meta strong em{
-  font:inherit;
-  font-style:normal;
-  letter-spacing:inherit;
-  line-height:inherit;
-}
-.malla-summary-meta div:last-child{
-  align-items:flex-end;
-  text-align:right;
-}
-.malla-summary-meta div:last-child strong{color:var(--unad-blue)}
-.malla-toolbar{display:flex;align-items:center;gap:12px;margin-bottom:14px}
-.malla-search{max-width:520px;flex:1}
-.malla-jump-btn{
-  border:none;
-  height:48px;
-  padding:0 18px;
-  border-radius:999px;
-  background:rgba(255,255,255,0.78);
-  color:var(--unad-blue);
-  font-size:12px;
-  font-weight:800;
-  letter-spacing:0.12em;
-  text-transform:uppercase;
-  box-shadow:0 14px 28px rgba(12,24,48,0.08);
-}
-body.dark .malla-jump-btn{background:rgba(24,32,44,0.82)}
-.malla-rail{
-  position:sticky;
-  top:calc(var(--safe-top, 0px) + 12px);
-  z-index:10;
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-  margin-bottom:18px;
-  padding:14px;
-  border-radius:24px;
-  background:linear-gradient(180deg, rgba(255,255,255,0.88), rgba(250,246,242,0.92));
-  border:1px solid rgba(255,255,255,0.65);
-  box-shadow:0 20px 40px rgba(12,24,48,0.08);
-  backdrop-filter:blur(16px);
-}
-body.dark .malla-rail{
-  background:linear-gradient(180deg, rgba(24,32,44,0.88), rgba(20,27,37,0.92));
-  border-color:rgba(255,255,255,0.06);
-}
-.malla-chip-row{
-  display:flex;
-  gap:10px;
-  overflow-x:auto;
-  scrollbar-width:none;
-  -ms-overflow-style:none;
-}
-.malla-chip-row::-webkit-scrollbar{display:none}
-.malla-chip{
-  flex:0 0 auto;
-  border:none;
-  border-radius:999px;
-  padding:10px 16px;
-  background:rgba(0,70,173,0.06);
-  color:var(--text2);
-  font-size:11px;
-  font-weight:800;
-  letter-spacing:0.14em;
-  text-transform:uppercase;
-  transition:transform .16s cubic-bezier(0.4,0,0.2,1), background .16s cubic-bezier(0.4,0,0.2,1), color .16s cubic-bezier(0.4,0,0.2,1), box-shadow .16s cubic-bezier(0.4,0,0.2,1);
-}
-.malla-chip.active{
-  background:linear-gradient(135deg, rgba(0,70,173,0.14), rgba(0,157,196,0.14));
-  color:var(--unad-blue);
-  box-shadow:0 10px 20px rgba(0,70,173,0.10);
-}
-.malla-chip.muted{background:rgba(120,107,95,0.08)}
-.malla-chip:active{transform:scale(.97)}
-.malla-period-list{display:flex;flex-direction:column;gap:14px}
-.malla-acc.malla-period-section{
-  position:relative;
-  margin-bottom:0;
-  padding-left:0;
-}
-.malla-period-watermark{
-  position:absolute;
-  inset:18px -8px -18px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-family:'Manrope','Sora',sans-serif;
-  font-size:min(92vw, 520px);
-  line-height:0.72;
-  font-weight:800;
-  letter-spacing:-0.18em;
-  color:rgba(0,70,173,0.045);
-  pointer-events:none;
-  user-select:none;
-  z-index:0;
-  transform:rotate(-11deg) scaleX(1.16);
-  transform-origin:center;
-}
-body.dark .malla-period-watermark{color:rgba(255,255,255,0.04)}
-.malla-acc-header.malla-period-head{
-  position:relative;
-  z-index:1;
-  display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap:16px;
-  padding:0 6px;
-  background:transparent;
-  box-shadow:none;
-  border:none;
-}
-.malla-period-copy{
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
-.malla-period-title{
-  font-family:'Manrope','Sora',sans-serif;
-  font-size:24px;
-  line-height:0.94;
-  letter-spacing:-0.08em;
-  color:var(--text);
-}
-.malla-period-meta{font-size:12px;color:var(--text2)}
-.malla-period-stats{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  flex-wrap:wrap;
-}
-.malla-stat-chip,
-.malla-status-chip{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  padding:8px 12px;
-  border-radius:999px;
-  font-size:10px;
-  font-weight:800;
-  text-transform:uppercase;
-  letter-spacing:0.18em;
-}
-.malla-stat-chip.done{background:rgba(0,168,107,0.10);color:var(--success)}
-.malla-stat-chip.fail{background:rgba(201,43,43,0.08);color:var(--danger)}
-.malla-status-chip.done{background:rgba(0,70,173,0.10);color:var(--unad-blue)}
-.malla-status-chip.active{background:rgba(0,70,173,0.10);color:var(--unad-blue)}
-.malla-status-chip.pending{background:rgba(120,107,95,0.10);color:var(--text3)}
-.malla-acc-body{
-  position:relative;
-  z-index:1;
-  padding:8px 0 0;
-  display:grid!important;
-  gap:12px;
-  max-height:none!important;
-  opacity:1!important;
-  overflow:visible;
-}
-.mat-row.malla-course-card{
-  display:block;
-  padding:18px 18px 16px;
-  margin-bottom:0;
-  border-radius:24px;
-  background:linear-gradient(180deg, rgba(255,255,255,0.94), rgba(251,248,245,0.98));
-}
-body.dark .mat-row.malla-course-card{
-  background:linear-gradient(180deg, rgba(28,36,48,0.95), rgba(23,29,39,0.98));
-}
-.mat-row.malla-course-card.is-future{
-  opacity:0.58;
-  background:linear-gradient(180deg, rgba(245,240,234,0.72), rgba(255,255,255,0.84));
-  box-shadow:inset 0 0 0 1px rgba(120,107,95,0.12);
-}
-body.dark .mat-row.malla-course-card.is-future{
-  background:linear-gradient(180deg, rgba(28,36,48,0.55), rgba(23,29,39,0.72));
-}
-.malla-card-top,
-.malla-card-bottom{
-  display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap:14px;
-}
-.malla-card-bottom{margin-top:14px;align-items:flex-end}
-.mat-row.malla-course-card .mat-nombre{
-  font-size:clamp(20px,2vw,30px);
-  line-height:1.02;
-  letter-spacing:-0.06em;
-  max-width:82%;
-}
-.malla-card-mark{
-  min-width:34px;
-  height:34px;
-  border-radius:50%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  flex-shrink:0;
-  padding:0 10px;
-  font-size:13px;
-  font-weight:800;
-  color:#fff;
-}
-.malla-card-mark.aprobada{background:var(--success)}
-.malla-card-mark.reprobada{background:var(--danger)}
-.malla-card-mark.cursando{background:var(--unad-blue)}
-.malla-card-mark.pendiente{background:rgba(120,107,95,0.18);color:var(--text2)}
-.malla-card-meta{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  flex-wrap:wrap;
-}
-.malla-credit-pill{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  padding:7px 12px;
-  border-radius:999px;
-  background:rgba(0,70,173,0.08);
-  color:var(--unad-blue);
-  font-size:12px;
-  font-weight:800;
-}
-.malla-code{
-  font-size:11px;
-  font-weight:600;
-  letter-spacing:0.08em;
-  text-transform:uppercase;
-  color:var(--text3);
-}
-.malla-card-state{font-size:12px;font-weight:800;white-space:nowrap}
-.malla-card-state.aprobada{color:var(--success)}
-.malla-card-state.reprobada{color:var(--danger)}
-.malla-card-state.cursando{color:var(--unad-blue)}
-.malla-card-state.pendiente{color:var(--text3)}
-.malla-card-accent{
-  height:3px;
-  border-radius:999px;
-  margin-top:12px;
-  background:rgba(120,107,95,0.10);
-  overflow:hidden;
-}
-.malla-card-accent>span{
-  display:block;
-  height:100%;
-  border-radius:999px;
-}
-.malla-card-accent.aprobada>span{width:100%;background:var(--success)}
-.malla-card-accent.reprobada>span{width:100%;background:var(--danger)}
-.malla-card-accent.cursando>span{width:68%;background:var(--unad-blue)}
-.malla-card-accent.pendiente>span{width:0}
-.elec-block.malla-elec-block{
-  margin-bottom:0;
-  padding:16px;
-  border-radius:24px;
-  border:none;
-  background:linear-gradient(180deg, rgba(244,238,232,0.94), rgba(255,255,255,0.90));
-  box-shadow:0 18px 38px rgba(39,24,12,0.05);
-}
-body.dark .elec-block.malla-elec-block{
-  background:linear-gradient(180deg, rgba(28,36,48,0.92), rgba(23,29,39,0.98));
-}
-.malla-elec-head{
-  display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap:16px;
-  margin-bottom:12px;
-}
-.malla-elec-kicker{
-  font-size:10px;
-  font-weight:800;
-  text-transform:uppercase;
-  letter-spacing:0.18em;
-  color:var(--unad-blue);
-}
-.malla-elec-title{
-  margin-top:6px;
-  font-family:'Manrope','Sora',sans-serif;
-  font-size:20px;
-  line-height:1.05;
-  letter-spacing:-0.04em;
-}
-.elec-opt{
-  padding:14px 16px;
-  border:none;
-  border-radius:18px;
-  background:rgba(255,255,255,0.58);
-  margin-top:8px;
-}
-body.dark .elec-opt{background:rgba(255,255,255,0.04)}
-.elec-opt .radio{background:rgba(0,70,173,0.08)}
-.malla-detail-intro{
-  display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap:12px;
-  margin-bottom:12px;
-}
-.malla-detail-kicker{
-  font-size:11px;
-  font-weight:800;
-  text-transform:uppercase;
-  letter-spacing:0.18em;
-  color:var(--unad-blue);
-  margin-bottom:8px;
-}
-.malla-empty{
-  padding:24px;
-  border-radius:24px;
-  background:rgba(255,255,255,0.74);
-  color:var(--text2);
-  text-align:center;
-  border:1px solid rgba(255,255,255,0.66);
-  box-shadow:0 18px 30px rgba(12,24,48,0.05);
-}
-body.dark .malla-empty{
-  background:rgba(24,32,44,0.78);
-  border-color:rgba(255,255,255,0.06);
-}
-
-/* Perfil hub */
-.profile-hub-shell{display:flex;flex-direction:column;gap:24px}
-.profile-hub-hero{
-  position:relative;
-  min-height:320px;
-  border-radius:34px;
-  overflow:hidden;
-  padding:26px 26px 22px;
-  background:
-    radial-gradient(circle at 18% 28%, rgba(255,184,28,0.20), transparent 30%),
-    radial-gradient(circle at 82% 18%, rgba(0,70,173,0.08), transparent 24%),
-    linear-gradient(180deg, rgba(246,222,206,0.92), rgba(252,249,246,0.98) 72%);
-  box-shadow:0 24px 48px rgba(39,24,12,0.08);
-}
-body.dark .profile-hub-hero{
-  background:
-    radial-gradient(circle at 18% 28%, rgba(255,184,28,0.10), transparent 30%),
-    radial-gradient(circle at 82% 18%, rgba(0,157,196,0.10), transparent 24%),
-    linear-gradient(180deg, rgba(27,34,46,0.96), rgba(20,27,37,0.98) 72%);
-}
-.profile-hub-hero::before{
-  content:'';
-  position:absolute;
-  right:78px;
-  top:28px;
-  width:102px;
-  height:182px;
-  border-radius:999px;
-  background:linear-gradient(180deg, rgba(255,255,255,0.96), rgba(255,255,255,0.82));
-  box-shadow:0 18px 40px rgba(255,255,255,0.3);
-}
-.profile-hub-hero::after{
-  content:'';
-  position:absolute;
-  left:38px;
-  bottom:32px;
-  width:152px;
-  height:180px;
-  border-radius:46% 54% 38% 62% / 28% 42% 58% 72%;
-  background:
-    linear-gradient(180deg, rgba(166,205,182,0.88), rgba(166,205,182,0.12)),
-    radial-gradient(circle at 70% 20%, rgba(255,255,255,0.34), transparent 28%);
-  filter:blur(0.2px);
-  opacity:0.9;
-}
-.profile-hub-copy{
-  position:relative;
-  z-index:1;
-  min-height:260px;
-  display:flex;
-  flex-direction:column;
-  justify-content:flex-end;
-  max-width:360px;
-}
-.profile-hub-kicker{
-  font-size:11px;
-  font-weight:800;
-  letter-spacing:0.24em;
-  text-transform:uppercase;
-  color:var(--unad-blue);
-}
-.profile-hub-display{
-  margin-top:10px;
-  font-family:'Manrope','Sora',sans-serif;
-  font-size:clamp(62px,8vw,104px);
-  line-height:0.84;
-  letter-spacing:-0.1em;
-  text-transform:uppercase;
-  text-shadow:2px 2px 0 rgba(28,27,27,0.18);
-}
-.profile-hub-deck{
-  display:grid;
-  grid-template-columns:1fr;
-  gap:20px;
-}
-.profile-hub-panel{
-  position:relative;
-  overflow:hidden;
-  padding:28px;
-  display:flex;
-  flex-direction:column;
-  gap:16px;
-}
-.profile-hub-panel.is-highlight{
-  color:#fff;
-  background:linear-gradient(135deg, var(--unad-blue), #2f79ff);
-  box-shadow:0 24px 42px rgba(0,70,173,0.18);
-}
-body.dark .profile-hub-panel.is-highlight{
-  background:linear-gradient(135deg, #0d49b8, #2a6bf3);
-}
-.profile-hub-panel.is-highlight::after{
-  content:'';
-  position:absolute;
-  right:-64px;
-  bottom:-84px;
-  width:220px;
-  height:220px;
-  border-radius:50%;
-  background:rgba(255,255,255,0.08);
-  filter:blur(10px);
-}
-.profile-hub-panel-head{
-  display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap:16px;
-  margin-bottom:10px;
-}
-.profile-hub-panel-icon{
-  width:64px;
-  height:64px;
-  border-radius:22px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:30px;
-  background:rgba(0,70,173,0.08);
-  color:var(--unad-blue);
-  flex-shrink:0;
-}
-.profile-hub-panel.is-highlight .profile-hub-panel-icon{
-  background:rgba(255,255,255,0.14);
-  color:#fff;
-}
-.profile-hub-panel-arrow{
-  font-size:24px;
-  color:var(--text3);
-}
-.profile-hub-panel.is-highlight .profile-hub-panel-arrow{color:rgba(255,255,255,0.65)}
-.profile-hub-panel-title{
-  font-family:'Manrope','Sora',sans-serif;
-  font-size:clamp(28px,3vw,42px);
-  line-height:0.96;
-  letter-spacing:-0.06em;
-}
-.profile-hub-panel-desc{
-  font-size:16px;
-  line-height:1.65;
-  color:var(--text2);
-  max-width:540px;
-}
-.profile-hub-panel.is-highlight .profile-hub-panel-desc{color:rgba(255,255,255,0.82)}
-.profile-hub-card-foot,
-.profile-hub-card-dots{
-  margin-top:auto;
-  display:flex;
-  align-items:center;
-  gap:10px;
-  flex-wrap:wrap;
-}
-.profile-hub-dot{
-  height:6px;
-  border-radius:999px;
-  background:rgba(120,107,95,0.16);
-}
-.profile-hub-dot.is-active{
-  width:42px;
-  background:var(--unad-blue);
-}
-.profile-hub-dot:not(.is-active){width:14px}
-.profile-hub-card-pill{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  width:28px;
-  height:28px;
-  border-radius:999px;
-  background:rgba(120,107,95,0.10);
-  color:var(--text2);
-  font-size:12px;
-}
-.profile-hub-card-label{
-  font-size:11px;
-  font-weight:800;
-  letter-spacing:0.18em;
-  text-transform:uppercase;
-  color:var(--text3);
-}
-.profile-hub-stats{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:16px;
-}
-.profile-hub-stat{
-  padding:22px 20px;
-  border-radius:24px;
-  background:linear-gradient(180deg, rgba(246,241,236,0.92), rgba(255,255,255,0.88));
-  box-shadow:0 18px 30px rgba(39,24,12,0.05);
-}
-body.dark .profile-hub-stat{
-  background:linear-gradient(180deg, rgba(28,36,48,0.94), rgba(23,29,39,0.98));
-}
-.profile-hub-stat-label{
-  font-size:10px;
-  font-weight:800;
-  letter-spacing:0.16em;
-  text-transform:uppercase;
-  color:var(--text3);
-}
-.profile-hub-stat-value{
-  margin-top:8px;
-  font-family:'Manrope','Sora',sans-serif;
-  font-size:20px;
-  font-weight:800;
-  letter-spacing:-0.05em;
-}
-.profile-hub-stat-track{
-  width:100%;
-  height:4px;
-  margin-top:16px;
-  border-radius:999px;
-  background:rgba(120,107,95,0.12);
-  overflow:hidden;
-}
-.profile-hub-stat-fill{
-  height:100%;
-  border-radius:999px;
-  background:linear-gradient(90deg, var(--unad-blue), #2f79ff);
-}
-.profile-hub-activity-bars{
-  display:flex;
-  align-items:flex-end;
-  gap:4px;
-  margin-top:16px;
-  height:24px;
-}
-.profile-hub-activity-bars span{
-  width:5px;
-  border-radius:999px;
-  background:rgba(0,70,173,0.18);
-}
-.profile-hub-activity-bars[data-level="low"] span:nth-child(1){height:10px;background:rgba(0,70,173,0.5)}
-.profile-hub-activity-bars[data-level="medium"] span:nth-child(1){height:10px;background:rgba(0,70,173,0.35)}
-.profile-hub-activity-bars[data-level="medium"] span:nth-child(2){height:16px;background:rgba(0,70,173,0.55)}
-.profile-hub-activity-bars[data-level="medium"] span:nth-child(3){height:20px;background:rgba(0,70,173,0.8)}
-.profile-hub-activity-bars[data-level="high"] span:nth-child(1){height:10px;background:rgba(0,70,173,0.22)}
-.profile-hub-activity-bars[data-level="high"] span:nth-child(2){height:14px;background:rgba(0,70,173,0.42)}
-.profile-hub-activity-bars[data-level="high"] span:nth-child(3){height:22px;background:rgba(0,70,173,1)}
-.profile-hub-activity-bars[data-level="high"] span:nth-child(4){height:18px;background:rgba(0,70,173,0.62)}
-
-/* Perfil profesional */
-.prof-page{display:flex;flex-direction:column;gap:26px}
-.prof-hero{
-  position:relative;
-  overflow:hidden;
-  padding:26px 24px 22px;
-  border-radius:34px;
-  background:linear-gradient(180deg, rgba(255,255,255,0.92), rgba(250,246,242,0.98));
-  box-shadow:var(--shadow);
-}
-body.dark .prof-hero{
-  background:linear-gradient(180deg, rgba(28,36,48,0.94), rgba(23,29,39,0.98));
-}
-.prof-hero-watermark{
-  position:absolute;
-  top:10px;
-  left:-6px;
-  font-family:'Manrope','Sora',sans-serif;
-  font-size:clamp(74px,14vw,154px);
-  line-height:0.8;
-  letter-spacing:-0.1em;
-  font-weight:800;
-  text-transform:uppercase;
-  color:rgba(28,27,27,0.05);
-  pointer-events:none;
-  user-select:none;
-}
-body.dark .prof-hero-watermark{color:rgba(255,255,255,0.04)}
-.prof-hero-inner{
-  position:relative;
-  z-index:1;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  text-align:center;
-}
-.prof-avatar-ring{
-  width:96px;
-  height:96px;
-  margin-bottom:18px;
-  padding:3px;
-  border-radius:999px;
-  background:linear-gradient(135deg, var(--unad-blue), #2f79ff);
-}
-.prof-avatar-core{
-  width:100%;
-  height:100%;
-  border-radius:999px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background:linear-gradient(180deg, rgba(255,255,255,0.98), rgba(248,243,238,0.98));
-  font-size:38px;
-}
-.prof-name{
-  font-family:'Manrope','Sora',sans-serif;
-  font-size:clamp(34px,4vw,52px);
-  line-height:0.95;
-  letter-spacing:-0.06em;
-}
-.prof-role{
-  margin-top:8px;
-  font-size:15px;
-  color:var(--text2);
-}
-.prof-actions{
-  display:flex;
-  gap:12px;
-  margin-top:22px;
-  flex-wrap:wrap;
-  justify-content:center;
-}
-.prof-action-btn{
-  border:none;
-  border-radius:999px;
-  padding:13px 24px;
-  font-size:13px;
-  font-weight:800;
-  letter-spacing:0.04em;
-}
-.prof-action-btn.primary{
-  color:#fff;
-  background:linear-gradient(135deg, var(--unad-blue), #2f79ff);
-  box-shadow:0 18px 30px rgba(0,70,173,0.18);
-}
-.prof-action-btn.secondary{
-  color:var(--text);
-  background:rgba(120,107,95,0.10);
-}
-.prof-section{display:flex;flex-direction:column;gap:16px}
-.prof-section-head{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:14px;
-}
-.prof-section-title{
-  font-family:'Manrope','Sora',sans-serif;
-  font-size:34px;
-  line-height:0.98;
-  letter-spacing:-0.06em;
-}
-.prof-section-note{
-  font-size:11px;
-  font-weight:800;
-  letter-spacing:0.18em;
-  text-transform:uppercase;
-  color:var(--unad-blue);
-}
-.prof-timeline{
-  position:relative;
-  display:flex;
-  flex-direction:column;
-  gap:22px;
-}
-.prof-timeline::before{
-  content:'';
-  position:absolute;
-  top:10px;
-  bottom:10px;
-  left:18px;
-  width:2px;
-  background:rgba(120,107,95,0.18);
-}
-.prof-step{
-  position:relative;
-  display:grid;
-  grid-template-columns:52px 1fr;
-  gap:18px;
-  align-items:flex-start;
-}
-.prof-step-index{
-  position:relative;
-  z-index:1;
-  width:36px;
-  height:36px;
-  border-radius:12px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-family:'IBM Plex Mono',monospace;
-  font-size:16px;
-  font-weight:700;
-  background:rgba(120,107,95,0.10);
-  color:var(--text2);
-  box-shadow:0 12px 22px rgba(12,24,48,0.06);
-}
-.prof-step.active .prof-step-index{
-  background:linear-gradient(135deg, var(--unad-blue), #2f79ff);
-  color:#fff;
-}
-.prof-step-card{
-  padding:22px 22px 20px;
-  border-radius:24px;
-  background:linear-gradient(180deg, rgba(255,255,255,0.92), rgba(252,249,247,0.98));
-  box-shadow:0 18px 30px rgba(12,24,48,0.05);
-}
-body.dark .prof-step-card{
-  background:linear-gradient(180deg, rgba(28,36,48,0.94), rgba(23,29,39,0.98));
-}
-.prof-step-card.is-future{opacity:0.72}
-.prof-step-top{
-  display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap:12px;
-  margin-bottom:10px;
-}
-.prof-step-kicker{
-  font-size:10px;
-  font-weight:800;
-  letter-spacing:0.18em;
-  text-transform:uppercase;
-  color:var(--unad-blue);
-}
-.prof-step-icon{
-  color:var(--unad-blue);
-  font-size:14px;
-  font-weight:800;
-}
-.prof-step-title{
-  font-family:'Manrope','Sora',sans-serif;
-  font-size:20px;
-  line-height:1.05;
-  letter-spacing:-0.04em;
-}
-.prof-step-desc{
-  margin-top:8px;
-  font-size:14px;
-  line-height:1.6;
-  color:var(--text2);
-}
-.prof-step-meta{
-  margin-top:10px;
-  font-size:12px;
-  color:var(--text3);
-}
-.prof-step-skills{
-  display:flex;
-  flex-wrap:wrap;
-  gap:6px;
-  margin-top:12px;
-}
-.prof-step-skills span{
-  padding:4px 10px;
-  border-radius:999px;
-  background:rgba(0,70,173,0.08);
-  font-size:11px;
-  color:var(--unad-blue);
-}
-.prof-milestones{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:14px;
-}
-.prof-milestone{
-  position:relative;
-  overflow:hidden;
-  padding:22px 20px;
-  border-radius:24px;
-  background:linear-gradient(180deg, rgba(246,241,236,0.92), rgba(255,255,255,0.88));
-  box-shadow:0 18px 30px rgba(39,24,12,0.05);
-}
-body.dark .prof-milestone{
-  background:linear-gradient(180deg, rgba(28,36,48,0.94), rgba(23,29,39,0.98));
-}
-.prof-milestone.is-wide{grid-column:1 / -1}
-.prof-milestone-icon{
-  color:var(--unad-blue);
-  font-size:18px;
-  margin-bottom:14px;
-}
-.prof-milestone-title{
-  font-family:'Manrope','Sora',sans-serif;
-  font-size:22px;
-  line-height:1.05;
-  letter-spacing:-0.04em;
-}
-.prof-milestone-desc{
-  margin-top:8px;
-  font-size:13px;
-  line-height:1.6;
-  color:var(--text2);
-}
-.prof-milestone-badge{
-  position:absolute;
-  right:-8px;
-  bottom:-18px;
-  font-size:120px;
-  line-height:1;
-  color:rgba(120,107,95,0.10);
-}
-.prof-link-shell{
-  padding:22px;
-  border-radius:24px;
-  background:linear-gradient(180deg, rgba(255,255,255,0.92), rgba(252,249,247,0.98));
-  box-shadow:var(--shadow);
-}
-body.dark .prof-link-shell{
-  background:linear-gradient(180deg, rgba(28,36,48,0.94), rgba(23,29,39,0.98));
-}
-.prof-link-tools{
-  display:flex;
-  flex-direction:column;
-  gap:14px;
-}
-.prof-link-feature{
-  padding:20px;
-  border-radius:20px;
-  background:rgba(120,107,95,0.06);
-}
-.prof-link-langs{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  margin-bottom:14px;
-}
-.prof-link-lang{
-  padding:5px 9px;
-  border-radius:8px;
-  font-size:10px;
-  font-weight:800;
-  background:rgba(120,107,95,0.10);
-}
-.prof-link-lang.primary{
-  background:rgba(0,70,173,0.10);
-  color:var(--unad-blue);
-}
-.prof-link-quote{
-  font-size:15px;
-  line-height:1.7;
-  color:var(--text);
-  font-style:italic;
-}
-.prof-link-feature hr{
-  border:none;
-  border-top:1px solid rgba(120,107,95,0.14);
-  margin:16px 0;
-}
-.prof-link-explain{
-  font-size:14px;
-  line-height:1.65;
-  color:var(--text2);
-}
-.prof-link-list{
-  display:flex;
-  flex-direction:column;
-  gap:12px;
-}
-.prof-link-card{
-  padding:18px 18px 16px;
-  border-radius:20px;
-  background:rgba(255,255,255,0.58);
-}
-body.dark .prof-link-card{background:rgba(255,255,255,0.04)}
-.prof-link-card-top{
-  display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap:12px;
-}
-.prof-link-card-title{
-  font-family:'Manrope','Sora',sans-serif;
-  font-size:18px;
-  line-height:1.08;
-  letter-spacing:-0.04em;
-  margin-top:6px;
-}
-.prof-link-empty{
-  text-align:center;
-  padding:22px;
-  color:var(--text3);
-}
-@media(max-width:1024px){
-  .malla-hero{grid-template-columns:1fr}
-}
-@media(max-width:1024px){
-  .dash-period-strip{grid-template-columns:1fr 1fr}
-  .dash-activity-list{grid-template-columns:1fr}
-}
-@media(max-width:768px){
-  .content{padding:18px 14px 36px}
-  .view>.h2{
-    font-size:17px;
-    line-height:1.1;
-    letter-spacing:-0.04em;
-  }
-  .view>.sub{
-    font-size:13px;
-    margin-bottom:18px;
-  }
-  .dash-hero{
-    min-height:272px;
-    padding:24px 22px;
-    border-radius:30px;
-    margin-bottom:20px;
-  }
-  .dash-hero-copy{min-height:210px}
-  .dash-title{font-size:56px;max-width:280px}
-  .dash-subtitle{font-size:15px;max-width:290px}
-  .dash-frame-main{width:132px;height:108px;right:26px;bottom:38px}
-  .dash-frame-mini{width:40px;height:78px;right:182px;bottom:64px}
-  .dash-summary-card{
-    padding:22px;
-    border-radius:28px;
-    margin-bottom:24px;
-  }
-  .dash-summary-top,
-  .dash-summary-bottom{
-    flex-direction:column;
-    align-items:flex-start;
-  }
-  .dash-trend-badge{
-    width:70px;
-    height:70px;
-    align-self:flex-end;
-    margin-top:-82px;
-  }
-  .dash-score{font-size:56px}
-  .dash-progress-number{font-size:46px}
-  .dash-section{margin-top:22px}
-  .dash-section-head{
-    align-items:flex-start;
-    flex-direction:column;
-    margin-bottom:14px;
-  }
-  .dash-section-title{font-size:24px}
-  .dash-period-strip{
-    display:flex;
-    gap:14px;
-    overflow-x:auto;
-    padding-bottom:6px;
-    scroll-snap-type:x proximity;
-  }
-  .dash-period-strip .period-card{
-    min-width:270px;
-    scroll-snap-align:start;
-  }
-  .dash-activity-item{gap:14px}
-  .activity-thumb{
-    width:98px;
-    height:112px;
-    border-radius:22px;
-  }
-  .activity-title{font-size:17px}
-  .malla-hero{
-    gap:18px;
-    margin-bottom:20px;
-  }
-  .profile-hub-hero{
-    min-height:286px;
-    padding:22px 20px 18px;
-    border-radius:30px;
-  }
-  .profile-hub-hero::before{
-    right:30px;
-    top:24px;
-    width:82px;
-    height:150px;
-  }
-  .profile-hub-hero::after{
-    left:18px;
-    bottom:18px;
-    width:118px;
-    height:150px;
-  }
-  .profile-hub-copy{
-    min-height:214px;
-    max-width:280px;
-  }
-  .profile-hub-display{font-size:64px}
-  .profile-hub-panel{padding:22px}
-  .profile-hub-panel-title{font-size:24px}
-  .profile-hub-panel-desc{font-size:15px}
-  .profile-hub-stats{grid-template-columns:1fr 1fr;gap:12px}
-  .profile-hub-stat{
-    padding:18px 16px;
-    border-radius:20px;
-  }
-  .prof-hero{
-    padding:22px 18px 18px;
-    border-radius:28px;
-  }
-  .prof-hero-watermark{font-size:86px;top:18px}
-  .prof-avatar-ring{
-    width:82px;
-    height:82px;
-    margin-bottom:16px;
-  }
-  .prof-avatar-core{font-size:32px}
-  .prof-name{font-size:34px}
-  .prof-role{font-size:14px}
-  .prof-actions{gap:10px}
-  .prof-action-btn{
-    padding:12px 18px;
-    font-size:12px;
-  }
-  .prof-section-title{font-size:28px}
-  .prof-section-head{
-    flex-direction:column;
-    align-items:flex-start;
-  }
-  .prof-step{
-    grid-template-columns:42px 1fr;
-    gap:14px;
-  }
-  .prof-step-index{
-    width:32px;
-    height:32px;
-    font-size:14px;
-  }
-  .prof-step-card{
-    padding:18px;
-    border-radius:20px;
-  }
-  .prof-milestones{
-    grid-template-columns:1fr 1fr;
-    gap:12px;
-  }
-  .prof-milestone{
-    padding:18px 16px;
-    border-radius:20px;
-  }
-  .prof-milestone-title{font-size:18px}
-  .prof-link-shell{
-    padding:18px;
-    border-radius:20px;
-  }
-  .prof-link-feature{padding:16px}
-  .prof-link-quote,
-  .prof-link-explain{font-size:14px}
-  .malla-toolbar{
-    flex-direction:column;
-    align-items:stretch;
-  }
-  .malla-jump-btn{
-    width:100%;
-    height:44px;
-  }
-  .malla-rail{
-    top:calc(var(--safe-top, 0px) + 8px);
-    padding:12px;
-    border-radius:20px;
-  }
-  .malla-summary-card{
-    padding:22px;
-    border-radius:28px;
-  }
-  .malla-summary-value span{font-size:58px}
-  .malla-summary-meta strong{font-size:28px}
-  .malla-period-list{gap:12px}
-  .malla-acc.malla-period-section{padding-left:0}
-  .malla-period-watermark{
-    inset:24px -10px -24px;
-    font-size:min(122vw, 420px);
-    transform:rotate(-13deg) scaleX(1.2);
-  }
-  .malla-period-title{font-size:20px}
-  .malla-acc-header.malla-period-head{gap:10px}
-  .malla-status-chip{padding:7px 10px}
-  .mat-row.malla-course-card{
-    padding:18px 16px 16px;
-    border-radius:26px;
-  }
-  .mat-row.malla-course-card .mat-nombre{
-    font-size:20px;
-    max-width:100%;
-  }
-  .malla-card-mark{
-    min-width:28px;
-    height:28px;
-    font-size:14px;
-  }
-  .malla-card-bottom{
-    flex-direction:column;
-    align-items:flex-start;
-    gap:10px;
-  }
-  .elec-block.malla-elec-block{
-    padding:18px;
-    border-radius:24px;
-  }
-  .card,.cfg-card,.detail-panel,.perfil-hub-card,.li-card,.sal-card,.por-card{
-    border-radius:24px;
-  }
-  .malla-acc-header,.per-header,.mat-row{
-    border-radius:22px;
-  }
-}
 </style>
 </head>
 <body>
@@ -2581,231 +693,87 @@ body.dark .prof-link-card{background:rgba(255,255,255,0.04)}
 
     <!-- DASHBOARD -->
     <div class="view active" id="view-dashboard">
-      <section class="dash-hero">
-        <div class="dash-hero-copy">
-          <div class="dash-kicker">LeanUp · Marketing y Negocios Digitales</div>
-          <div class="dash-title">Hola, <span id="greetName" class="greet-link" onclick="focusNameEdit()" title="Cambiar nombre">Usuario</span></div>
-          <div class="dash-subtitle">Tu resumen académico, tu progreso curricular y tus próximos pasos en una sola vista.</div>
-        </div>
-        <div class="dash-hero-art" aria-hidden="true">
-          <div class="dash-orb dash-orb-a"></div>
-          <div class="dash-orb dash-orb-b"></div>
-          <div class="dash-frame dash-frame-main"></div>
-          <div class="dash-frame dash-frame-mini"></div>
-        </div>
-      </section>
-
-      <section class="dash-summary-card">
-        <div class="dash-summary-top">
-          <div>
-            <div class="dash-overline">Estado académico</div>
-            <div class="dash-score-wrap">
-              <div class="dash-score" id="dProm">—</div>
-              <div class="dash-score-note">Promedio acumulado</div>
-            </div>
-          </div>
-          <div class="dash-trend-badge" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 16l5-5 4 4 7-7"/><path d="M15 8h5v5"/></svg>
-          </div>
-        </div>
-        <div class="dash-summary-divider"></div>
-        <div class="dash-summary-bottom">
-          <div class="dash-progress-spotlight">
-            <div class="dash-progress-number" id="dPct">0%</div>
-            <div class="dash-progress-label">Avance total</div>
-          </div>
-          <div class="dash-progress-meta">
-            <div class="dash-progress-row">
-              <span>Créditos acumulados</span>
-              <strong><span id="dCred">0</span> / 144</strong>
-            </div>
-            <div class="bar dash-progress-bar"><div class="bar-fill" id="dHeroBar" style="width:0%"></div></div>
-            <div class="dash-progress-row dash-progress-muted">
-              <span><span id="dApro">0</span> materias aprobadas</span>
-              <span>8 periodos · modalidad virtual</span>
+      <div class="h2">Hola, <span id="greetName" onclick="focusNameEdit()" title="Cambiar nombre" style="cursor:pointer;border-bottom:2px dashed var(--unad-gold);padding-bottom:1px">Usuario</span> 👋</div>
+      <div class="sub">Marketing y Negocios Digitales · UNAD · Virtual · 8 periodos · 144 créditos</div>
+      <div class="grid-4">
+        <div class="stat-card"><div class="stat-num c1" id="dPct">0%</div><div class="stat-lbl">Completado</div></div>
+        <div class="stat-card"><div class="stat-num c2" id="dProm">—</div><div class="stat-lbl">Promedio</div></div>
+        <div class="stat-card"><div class="stat-num c3" id="dApro">0</div><div class="stat-lbl">Materias aprobadas</div></div>
+        <div class="stat-card"><div class="stat-num c4" id="dCred">0</div><div class="stat-lbl">Créditos acumulados</div></div>
+      </div>
+      <div class="grid-2">
+        <div class="card"><div class="sect-title"><span class="gold-dot"></span>Progreso por periodo</div><div id="dBars"></div></div>
+        <div class="card">
+          <div class="sect-title"><span class="gold-dot"></span>Información del programa</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div style="background:var(--bg3);border-radius:8px;padding:12px"><div style="font-size:10px;color:var(--text3);margin-bottom:3px">Total créditos</div><div style="font-size:22px;font-weight:700;font-family:'IBM Plex Mono';color:var(--unad-blue)">144</div></div>
+            <div style="background:var(--bg3);border-radius:8px;padding:12px"><div style="font-size:10px;color:var(--text3);margin-bottom:3px">Periodos</div><div style="font-size:22px;font-weight:700;font-family:'IBM Plex Mono';color:var(--unad-blue)">8</div></div>
+            <div style="background:rgba(255,184,28,0.07);border:1px solid rgba(255,184,28,0.25);border-radius:8px;padding:12px;grid-column:1/-1">
+              <div style="font-size:10px;color:#8A5F00;font-weight:600;margin-bottom:3px;letter-spacing:0.5px;text-transform:uppercase">Universidad</div>
+              <div style="font-size:12px;font-weight:600;color:var(--text)">UNAD · Universidad Nacional Abierta y a Distancia</div>
+              <div style="font-size:10px;color:var(--text3);margin-top:2px">Modalidad virtual · SNIES 116376 · Res. 010006 de 2023</div>
             </div>
           </div>
         </div>
-      </section>
-
-      <section class="dash-section">
-        <div class="dash-section-head">
-          <div>
-            <div class="dash-overline">Ruta curricular</div>
-            <div class="dash-section-title">Progreso por periodo</div>
-          </div>
-          <div class="dash-section-note">SNIES 116376 · 144 créditos</div>
-        </div>
-        <div class="dash-period-strip" id="dPeriodCards"></div>
-      </section>
-
-      <section class="dash-section">
-        <div class="dash-section-head">
-          <div>
-            <div class="dash-overline">Pulso académico</div>
-            <div class="dash-section-title">Actividad reciente</div>
-          </div>
-        </div>
-        <div class="dash-activity-list" id="dRecentActivity"></div>
-      </section>
+      </div>
     </div>
 
     <!-- MALLA -->
     <div class="view" id="view-malla">
-      <section class="malla-hero">
-        <div class="malla-hero-copy">
-          <div class="dash-overline">Ruta curricular</div>
-          <div class="h2">Malla Curricular</div>
-          <div class="sub">Explora periodos, selecciona electivas y entra al detalle de cada materia sin perder la lógica actual de LeanUp.</div>
-        </div>
-        <div class="malla-summary-card">
-          <div class="malla-summary-kicker">Impacto académico</div>
-          <div class="malla-summary-top">
-            <div class="malla-summary-value"><span id="mallaPct">0%</span> <small>completado</small></div>
-          </div>
-          <div class="malla-summary-track"><div class="malla-summary-fill" id="mallaSummaryBar" style="width:0%"></div></div>
-          <div class="malla-summary-meta">
-            <div>
-              <span>Créditos</span>
-              <strong><span id="mallaCred">0</span><em>/ 144</em></strong>
-            </div>
-            <div>
-              <span>Promedio</span>
-              <strong id="mallaProm">—</strong>
-            </div>
-          </div>
-        </div>
-      </section>
-      <div class="malla-toolbar">
-        <div class="search-wrap malla-search">
-          <span class="search-icon">🔍</span>
-          <input class="search-inp" id="mallaSearch" type="text" placeholder="Buscar materia por nombre o descripción..." oninput="renderMalla()">
-        </div>
-        <button class="malla-jump-btn" type="button" onclick="focusCurrentMallaPeriod()">Periodo actual</button>
-      </div>
-      <div class="malla-rail">
-        <div id="mallaPeriodTabs" class="malla-chip-row"></div>
-        <div id="mallaFilterTabs" class="malla-chip-row"></div>
+      <div class="h2">Malla Curricular</div>
+      <div class="sub">Haz clic en una materia o electiva para ver su guía · Selecciona electivos · Ingresa tus notas</div>
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input class="search-inp" id="mallaSearch" type="text" placeholder="Buscar materia por nombre o descripción..." oninput="renderMalla()">
       </div>
       <div class="malla-grid">
-        <div>
-          <div id="mallaList" class="malla-period-list"></div>
-        </div>
+        <div id="mallaList"></div>
       </div>
     </div>
 
     <!-- PERFIL HUB -->
     <div class="view" id="view-perfil-hub">
-      <div class="profile-hub-shell">
-        <section class="profile-hub-hero">
-          <div class="profile-hub-copy">
-            <div class="profile-hub-kicker">Hub Universitario</div>
-            <div class="profile-hub-display">Perfil</div>
+      <div class="h2">Perfil</div>
+      <div class="sub">Tu desarrollo profesional y académico</div>
+      <div class="perfil-hub-grid">
+        <div class="perfil-hub-card" onclick="openProfileSection('profesional')">
+          <div class="perfil-hub-icon">👤</div>
+          <div class="perfil-hub-text">
+            <div class="perfil-hub-title">Perfil Profesional</div>
+            <div class="perfil-hub-desc">Timeline de evolución académica y textos para LinkedIn</div>
           </div>
-        </section>
-
-        <div class="profile-hub-deck">
-          <article class="perfil-hub-card profile-hub-panel" onclick="openProfileSection('profesional')">
-            <div class="profile-hub-panel-head">
-              <div class="profile-hub-panel-icon">👤</div>
-              <div class="profile-hub-panel-arrow">↗</div>
-            </div>
-            <div class="profile-hub-panel-title">Perfil Profesional</div>
-            <div class="profile-hub-panel-desc">Gestiona tu identidad académica, traduce tu progreso a lenguaje profesional y aterriza fortalezas para LinkedIn.</div>
-            <div class="profile-hub-card-dots">
-              <span class="profile-hub-dot is-active"></span>
-              <span class="profile-hub-dot"></span>
-              <span class="profile-hub-dot"></span>
-            </div>
-          </article>
-
-          <article class="perfil-hub-card profile-hub-panel" onclick="openProfileSection('salida')">
-            <div class="profile-hub-panel-head">
-              <div class="profile-hub-panel-icon">💼</div>
-              <div class="profile-hub-panel-arrow">↗</div>
-            </div>
-            <div class="profile-hub-panel-title">Salida Laboral</div>
-            <div class="profile-hub-panel-desc">Conecta materias, habilidades y contextos de trabajo reales para proyectar tu carrera más allá de la universidad.</div>
-            <div class="profile-hub-card-foot">
-              <span class="profile-hub-card-pill">✦</span>
-              <span class="profile-hub-card-pill">◔</span>
-              <span class="profile-hub-card-label">Ruta profesional aplicada</span>
-            </div>
-          </article>
-
-          <article class="perfil-hub-card profile-hub-panel is-highlight" onclick="openProfileSection('portafolio')">
-            <div class="profile-hub-panel-head">
-              <div class="profile-hub-panel-icon">📘</div>
-              <div class="profile-hub-panel-arrow">↗</div>
-            </div>
-            <div class="profile-hub-panel-title">Portafolio</div>
-            <div class="profile-hub-panel-desc">Exhibe proyectos y entregables que ya puedes convertir en piezas concretas para mostrar valor fuera del aula.</div>
-          </article>
+          <div class="perfil-hub-arrow">›</div>
         </div>
-
-        <div class="profile-hub-stats">
-          <div class="profile-hub-stat">
-            <div class="profile-hub-stat-label">Nivel de Perfil</div>
-            <div class="profile-hub-stat-value" id="profileHubLevel">0%</div>
-            <div class="profile-hub-stat-track"><div class="profile-hub-stat-fill" id="profileHubLevelBar" style="width:0%"></div></div>
+        <div class="perfil-hub-card" onclick="openProfileSection('salida')">
+          <div class="perfil-hub-icon">💼</div>
+          <div class="perfil-hub-text">
+            <div class="perfil-hub-title">Salida Laboral</div>
+            <div class="perfil-hub-desc">Roles profesionales reales por área de estudio</div>
           </div>
-          <div class="profile-hub-stat">
-            <div class="profile-hub-stat-label">Actividad</div>
-            <div class="profile-hub-stat-value" id="profileHubActivity">Inicial</div>
-            <div class="profile-hub-activity-bars" id="profileHubActivityBars" data-level="low">
-              <span></span><span></span><span></span><span></span>
-            </div>
+          <div class="perfil-hub-arrow">›</div>
+        </div>
+        <div class="perfil-hub-card" onclick="openProfileSection('portafolio')">
+          <div class="perfil-hub-icon">📁</div>
+          <div class="perfil-hub-text">
+            <div class="perfil-hub-title">Portafolio</div>
+            <div class="perfil-hub-desc">Proyectos reales que puedes construir con lo aprendido</div>
           </div>
+          <div class="perfil-hub-arrow">›</div>
         </div>
       </div>
     </div>
 
     <!-- PERFIL PROFESIONAL -->
     <div class="view" id="view-profesional">
-      <div class="prof-page">
-        <section class="prof-hero">
-          <div class="prof-hero-watermark">PERFIL</div>
-          <div class="prof-hero-inner">
-            <div class="prof-avatar-ring"><div class="prof-avatar-core">👤</div></div>
-            <div class="prof-name" id="profHeroName">Usuario</div>
-            <div class="prof-role" id="profHeroRole">Trayectoria profesional en construcción</div>
-            <div class="prof-actions">
-              <button class="prof-action-btn primary" type="button" onclick="document.getElementById('profTranslateSection').scrollIntoView({behavior:'smooth',block:'start'})">Motor LinkedIn</button>
-              <button class="prof-action-btn secondary" type="button" onclick="document.getElementById('profTimelineSection').scrollIntoView({behavior:'smooth',block:'start'})">Timeline</button>
-            </div>
-          </div>
-        </section>
-
-        <section class="prof-section" id="profTimelineSection">
-          <div class="prof-section-head">
-            <div class="prof-section-title">Evolución dinámica</div>
-            <div class="prof-section-note">Timeline académico</div>
-          </div>
-          <div class="prof-timeline" id="timelineEl"></div>
-        </section>
-
-        <section class="prof-section">
-          <div class="prof-section-head">
-            <div class="prof-section-title">Hitos académicos</div>
-          </div>
-          <div class="prof-milestones" id="profileMilestones"></div>
-        </section>
-
-        <section class="prof-section" id="profTranslateSection">
-          <div class="prof-section-head">
-            <div style="display:flex;align-items:center;gap:10px">
-              <span style="color:var(--unad-blue);font-size:20px">✦</span>
-              <div class="prof-section-title">Motor LinkedIn</div>
-            </div>
-          </div>
-          <div class="prof-link-shell">
-            <div class="prof-link-tools">
-              <div class="search-wrap"><span class="search-icon">🔍</span><input class="search-inp" id="liSearch" type="text" placeholder="Buscar materia para LinkedIn..." oninput="renderLinkedin()"></div>
-              <div class="prof-link-feature" id="profileLinkedinFeature"></div>
-              <div class="prof-link-list" id="linkedinCards"></div>
-            </div>
-          </div>
-        </section>
+      <div class="h2">Perfil Profesional</div>
+      <div class="sub">Tu evolución académica y textos para LinkedIn — agrupados por periodo · Incluye electivos seleccionados</div>
+      <div class="grid-2">
+        <div class="card"><div class="sect-title"><span class="gold-dot"></span>Timeline de evolución</div><div id="timelineEl"></div></div>
+        <div class="card">
+          <div class="sect-title"><span class="gold-dot"></span>Traductor de LinkedIn</div>
+          <div class="search-wrap"><span class="search-icon">🔍</span><input class="search-inp" id="liSearch" type="text" placeholder="Buscar materia para LinkedIn..." oninput="renderLinkedin()"></div>
+          <div id="linkedinCards"></div>
+        </div>
       </div>
     </div>
 
@@ -3303,8 +1271,6 @@ let electivosNotas={};
 let openPers={sal:new Set([1]),li:new Set([1]),po:new Set([1])};
 let openMalla=new Set([1]);
 let periodos=[...new Set(materias.map(m=>m.per))].sort((a,b)=>a-b);
-let mallaPeriodFocus=null;
-let mallaFilter='all';
 
 /* ── SAVE / LOAD ── */
 function saveData(){
@@ -3617,71 +1583,11 @@ function getElectivos(){
 function getAllMats(){return[...materias,...getElectivos()];}
 
 /* ── STATS ── */
-function getDashNote(m){
-  return m.esElec ? electivosNotas[m.grupo+':::'+m.cod] : m.nota;
-}
-function getDashboardCurrentPeriod(){
-  for(const p of periodos){
-    const ms=materias.filter(m=>m.per===p);
-    const elecEnPer=getElectivos().filter(e=>e.per===p);
-    const totalCount=ms.length+elecEnPer.length;
-    const completed=ms.filter(m=>m.nota!==null&&m.nota>=3).length+
-      elecEnPer.filter(e=>{
-        const n=electivosNotas[e.grupo+':::'+e.cod];
-        return n!==undefined&&n>=3;
-      }).length;
-    if(completed<totalCount)return p;
-  }
-  return periodos[periodos.length-1]||1;
-}
-function getDashInitials(name){
-  return (name||'LU').split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase();
-}
-function getDashboardActivityHTML(currentPeriod){
-  const all=getAllMats().map(m=>({...m,dashNote:getDashNote(m)}));
-  const graded=[...all].filter(m=>typeof m.dashNote==='number').sort((a,b)=>b.per-a.per||b.dashNote-a.dashNote);
-  const pending=[...all].filter(m=>typeof m.dashNote!=='number').sort((a,b)=>a.per-b.per);
-  const picks=[];
-  const used=new Set();
-  function pushPick(m){
-    const key=m.esElec?(m.grupo+':::'+m.cod):('m'+m.id);
-    if(used.has(key)||picks.length>=4)return;
-    used.add(key);
-    picks.push(m);
-  }
-  graded.slice(0,2).forEach(pushPick);
-  pending.filter(m=>m.per===currentPeriod).slice(0,2).forEach(pushPick);
-  pending.slice(0,4).forEach(pushPick);
-  if(!picks.length)all.slice(0,3).forEach(pushPick);
-  return picks.slice(0,4).map((m,idx)=>{
-    const meta=(m.d||'').length>96?(m.d||'').substring(0,96)+'⬦':(m.d||'');
-    const status=typeof m.dashNote==='number'
-      ? `Calificado: ${Number(m.dashNote).toFixed(1)}/5.0`
-      : (m.per===currentPeriod?'En curso actualmente':'Pendiente por cursar');
-    return `<article class="dash-activity-item">
-      <div class="activity-thumb tone-${(idx%4)+1}">${getDashInitials(m.nombre)}</div>
-      <div class="activity-copy">
-        <div class="activity-kicker">Periodo ${m.per}${m.esElec?' · Electiva':''}</div>
-        <div class="activity-title">${m.nombre}</div>
-        <div class="activity-meta">${meta}</div>
-        <div class="activity-status">${status}</div>
-      </div>
-    </article>`;
-  }).join('');
-}
-function getProfileHubActivityState(currentPeriod){
-  const currentCourses=materias.filter(m=>m.per===currentPeriod);
-  const totalCurrent=currentCourses.length;
-  const approvedCurrent=currentCourses.filter(m=>typeof m.nota==='number'&&m.nota>=3).length;
-  const gradedCurrent=currentCourses.filter(m=>typeof m.nota==='number').length;
-  const pct=totalCurrent?Math.round((approvedCurrent/totalCurrent)*100):0;
-  if(pct>=60||gradedCurrent>=Math.max(2,Math.ceil(totalCurrent/2)))return {label:'Alta',level:'high'};
-  if(pct>=20||gradedCurrent>0)return {label:'Media',level:'medium'};
-  return {label:'Inicial',level:'low'};
-}
 function updateAll(){
+  // Materias obligatorias aprobadas
   const apro=materias.filter(m=>m.nota!==null&&m.nota>=3);
   const notas=apro.map(m=>m.nota);
+  // Incluir electivos con nota en promedio y créditos
   const elecApro=getElectivos().filter(e=>{
     const n=electivosNotas[e.grupo+':::'+e.cod];
     return n!==undefined&&n>=3;
@@ -3698,55 +1604,25 @@ function updateAll(){
   document.getElementById('dProm').textContent=prom;
   document.getElementById('dApro').textContent=apro.length+elecApro.length;
   document.getElementById('dCred').textContent=cred;
-  document.getElementById('dHeroBar').style.width=pct+'%';
-  const mallaPctEl=document.getElementById('mallaPct');
-  const mallaCredEl=document.getElementById('mallaCred');
-  const mallaPromEl=document.getElementById('mallaProm');
-  const mallaBarEl=document.getElementById('mallaSummaryBar');
-  if(mallaPctEl)mallaPctEl.textContent=pct+'%';
-  if(mallaCredEl)mallaCredEl.textContent=cred;
-  if(mallaPromEl)mallaPromEl.textContent=prom;
-  if(mallaBarEl)mallaBarEl.style.width=pct+'%';
-  const profileLevelEl=document.getElementById('profileHubLevel');
-  const profileLevelBarEl=document.getElementById('profileHubLevelBar');
-  const profileActivityEl=document.getElementById('profileHubActivity');
-  const profileActivityBarsEl=document.getElementById('profileHubActivityBars');
-  if(profileLevelEl)profileLevelEl.textContent=pct+'%';
-  if(profileLevelBarEl)profileLevelBarEl.style.width=pct+'%';
-  const profileActivity=getProfileHubActivityState(getDashboardCurrentPeriod());
-  if(profileActivityEl)profileActivityEl.textContent=profileActivity.label;
-  if(profileActivityBarsEl)profileActivityBarsEl.dataset.level=profileActivity.level;
   document.getElementById('sidebarProg').style.width=pct+'%';
   document.getElementById('sidebarLabel').textContent=pct+'% · '+cred+'/'+TOTAL+' cr.';
-  const currentPeriod=getDashboardCurrentPeriod();
-  let periodCards='';
+  let bh='';
   periodos.forEach(p=>{
     const ms=materias.filter(m=>m.per===p);
     const elecEnPer=getElectivos().filter(e=>e.per===p);
-    const totalMs=ms.length;
+    const totalMs=ms.length; // solo obligatorias para el porcentaje de barra
     const ap=ms.filter(m=>m.nota!==null&&m.nota>=3).length;
     const rep=ms.filter(m=>m.nota!==null&&m.nota<3).length;
     const elecAp=elecEnPer.filter(e=>{const n=electivosNotas[e.grupo+':::'+e.cod];return n!==undefined&&n>=3;}).length;
     const elecRep=elecEnPer.filter(e=>{const n=electivosNotas[e.grupo+':::'+e.cod];return n!==undefined&&n<3;}).length;
-    const totalCount=totalMs+elecEnPer.length;
-    const completed=ap+elecAp;
-    const pc=totalCount?Math.round((completed/totalCount)*100):0;
-    const badgeClass=pc===100?'done':p===currentPeriod?'active':'idle';
-    const badgeLabel=pc===100?'Cerrado':p===currentPeriod?'Activo':(completed>0?'En ruta':'Pendiente');
+    const pc=Math.round((ap/totalMs)*100);
+    const cl=pc===100?'bar-fill done':pc>0?'bar-fill':'bar-fill low';
+    const apLabel=(ap+elecAp)+'/'+(totalMs+elecEnPer.length)+' aprobadas';
     const repTotal=rep+elecRep;
-    const repLabel=repTotal>0?`${repTotal} reprobada${repTotal>1?'s':''}`:'Sin reprocesos';
-    periodCards+=`<article class="period-card ${badgeClass==='active'?'current':''}">
-      <div class="period-card-top">
-        <div class="period-card-title">Periodo ${p}</div>
-        <div class="period-card-badge ${badgeClass}">${badgeLabel}</div>
-      </div>
-      <div class="period-card-line"><span>Cursos</span><strong>${completed} / ${totalCount}</strong></div>
-      <div class="period-card-progress"><div class="bar-fill" style="width:${pc}%"></div></div>
-      <div class="period-card-foot"><span>${pc}% completado</span><span>${repLabel}</span></div>
-    </article>`;
+    const repLabel=repTotal>0?` · <span style="color:var(--danger)">${repTotal} reprobada${repTotal>1?'s':''}</span>`:'';
+    bh+=`<div class="prog-row"><div class="prog-meta"><span>Periodo ${p}</span><span>${apLabel}${repLabel}</span></div><div class="bar"><div class="${cl}" style="width:${pc}%"></div></div></div>`;
   });
-  document.getElementById('dPeriodCards').innerHTML=periodCards;
-  document.getElementById('dRecentActivity').innerHTML=getDashboardActivityHTML(currentPeriod);
+  document.getElementById('dBars').innerHTML=bh;
 }
 
 /* ── MALLA ── */
@@ -3788,206 +1664,97 @@ function toggleMalla(p){
   }
 }
 
-function getMallaPeriodStatus(p,totalCount,apro,repro,currentPeriod){
-  const graded=apro+repro;
-  if(totalCount>0&&graded>=totalCount)return {label:'Finalizado',className:'done'};
-  if(p<=currentPeriod||graded>0)return {label:'En curso',className:'active'};
-  return {label:'Pendiente',className:'pending'};
-}
-function ensureMallaState(){
-  const currentPeriod=getDashboardCurrentPeriod();
-  if(!mallaPeriodFocus||!periodos.includes(mallaPeriodFocus))mallaPeriodFocus=currentPeriod;
-  if(!['all','pending','current','approved','failed','elective'].includes(mallaFilter))mallaFilter='all';
-}
-function getMallaPeriodSummaryHTML(apro,repro){
-  let html='';
-  if(apro>0)html+=`<span class="malla-stat-chip done">${apro} aprobada${apro>1?'s':''}</span>`;
-  if(repro>0)html+=`<span class="malla-stat-chip fail">${repro} reprobada${repro>1?'s':''}</span>`;
-  return html;
-}
-function getMallaCardState(period,note,currentPeriod){
-  if(typeof note==='number'&&note>=3)return {className:'aprobada',mark:'✓',label:`Aprobada (${note.toFixed(1)})`,future:false};
-  if(typeof note==='number'&&note<3)return {className:'reprobada',mark:'×',label:`Reprobada (${note.toFixed(1)})`,future:false};
-  if(period===currentPeriod)return {className:'cursando',mark:'··',label:'En curso',future:false};
-  if(period<currentPeriod)return {className:'pendiente',mark:'•',label:'Sin nota',future:false};
-  return {className:'pendiente',mark:'○',label:'Pendiente',future:true};
-}
-function getMallaCourseCardHTML(m,currentPeriod,isElectiva=false,grupo=''){
-  const note=isElectiva?electivosNotas[grupo+':::'+m.cod]:m.nota;
-  const state=getMallaCardState(m.per,note,currentPeriod);
-  const rowAttrs=isElectiva?`data-cod="${m.cod}"`:`id="mrow-${m.id}"`;
-  const click=isElectiva?`selElec('${grupo.replace(/'/g,'&#39;')}','${m.cod}')`:`selMat(${m.id})`;
-  return `<article class="mat-row malla-course-card ${state.future?'is-future':''}" ${rowAttrs} onclick="${click}">
-    <div class="malla-card-top">
-      <div class="mat-nombre">${m.nombre}</div>
-      <div class="malla-card-mark ${state.className}">${state.mark}</div>
-    </div>
-    <div class="malla-card-bottom">
-      <div class="malla-card-meta">
-        <span class="malla-credit-pill">${m.cr||3} créditos</span>
-        <span class="malla-code">${m.cod}</span>
-        ${isElectiva?'<span class="tag tag-electiva">Electiva</span>':''}
-      </div>
-      <span class="malla-card-state ${state.className}">${state.label}</span>
-    </div>
-    <div class="malla-card-accent ${state.className}"><span></span></div>
-  </article>`;
-}
-function getMallaElectivaBlockHTML(grupo,data,currentPeriod){
-  const sel=electivosSeleccionados[grupo];
-  const sg=grupo.replace(/'/g,'&#39;');
-  let html=`<section class="elec-block malla-elec-block" data-grupo="${sg}">
-    <div class="malla-elec-head">
-      <div>
-        <div class="malla-elec-kicker">Ruta electiva</div>
-        <div class="malla-elec-title">${grupo}</div>
-      </div>
-    </div>`;
-  data.opciones.forEach(op=>{
-    if(sel===op.cod){
-      html+=getMallaCourseCardHTML({...op,per:data.per,cr:op.cr||3},currentPeriod,true,grupo);
-    }else{
-      html+=`<div class="elec-opt" data-cod="${op.cod}" onclick="selElec('${sg}','${op.cod}')">
-        <div class="radio"></div>
-        <div class="elec-name">${op.nombre}</div>
-        <div class="elec-cr">${op.cr||3} cr.</div>
-      </div>`;
-    }
-  });
-  html+=`</section>`;
-  return html;
-}
-function getMallaFilterDefs(){
-  return [
-    {id:'all',label:'Todo'},
-    {id:'pending',label:'Pendientes'},
-    {id:'current',label:'En curso'},
-    {id:'approved',label:'Aprobadas'},
-    {id:'failed',label:'Reprobadas'},
-    {id:'elective',label:'Electivas'}
-  ];
-}
-function matchesMallaFilter(period,note,isElectiva,currentPeriod){
-  if(mallaFilter==='all')return true;
-  if(mallaFilter==='elective')return !!isElectiva;
-  if(mallaFilter==='approved')return typeof note==='number'&&note>=3;
-  if(mallaFilter==='failed')return typeof note==='number'&&note<3;
-  if(mallaFilter==='current')return period===currentPeriod&&note===null;
-  if(mallaFilter==='pending')return note===null&&period!==currentPeriod;
-  return true;
-}
-function getPeriodCreditsForView(p){
-  const ms=materias.filter(m=>m.per===p);
-  const elecs=Object.entries(electivosData).filter(([_,v])=>v.per===p);
-  return ms.reduce((a,m)=>a+m.cr,0)+elecs.reduce((a,[,data])=>a+((data.opciones[0]&&data.opciones[0].cr)||3),0);
-}
-function renderMallaControls(currentPeriod){
-  const periodTabs=document.getElementById('mallaPeriodTabs');
-  const filterTabs=document.getElementById('mallaFilterTabs');
-  if(periodTabs){
-    periodTabs.innerHTML=periodos.map(p=>{
-      const total=materias.filter(m=>m.per===p).length+Object.entries(electivosData).filter(([_,v])=>v.per===p).length;
-      const apro=materias.filter(m=>m.per===p&&m.nota!==null&&m.nota>=3).length;
-      const repro=materias.filter(m=>m.per===p&&m.nota!==null&&m.nota<3).length;
-      const status=getMallaPeriodStatus(p,total,apro,repro,currentPeriod);
-      return `<button type="button" class="malla-chip ${p===mallaPeriodFocus?'active':''}" onclick="setMallaPeriod(${p})">P${p} · ${status.label}</button>`;
-    }).join('');
-  }
-  if(filterTabs){
-    filterTabs.innerHTML=getMallaFilterDefs().map(f=>`<button type="button" class="malla-chip muted ${mallaFilter===f.id?'active':''}" onclick="setMallaFilter('${f.id}')">${f.label}</button>`).join('');
-  }
-}
-function setMallaPeriod(period){
-  mallaPeriodFocus=period;
-  renderMalla();
-}
-function setMallaFilter(filterId){
-  mallaFilter=filterId;
-  renderMalla();
-}
-function focusCurrentMallaPeriod(){
-  mallaPeriodFocus=getDashboardCurrentPeriod();
-  renderMalla();
-}
-
 function renderMalla(){
-  ensureMallaState();
   const q=(document.getElementById('mallaSearch')||{}).value||'';
   const sq=q.toLowerCase().trim();
-  const currentPeriod=getDashboardCurrentPeriod();
-  renderMallaControls(currentPeriod);
   let html='';
-  let hasAny=false;
-  const periodsToRender=sq?periodos:[mallaPeriodFocus];
-  periodsToRender.forEach(p=>{
+  periodos.forEach(p=>{
     const ms=materias.filter(m=>m.per===p);
-    const filtered=ms.filter(m=>{
-      const matchesSearch=!sq||m.nombre.toLowerCase().includes(sq)||m.d.toLowerCase().includes(sq);
-      return matchesSearch&&matchesMallaFilter(m.per,m.nota,false,currentPeriod);
-    });
+    const filtered=sq?ms.filter(m=>m.nombre.toLowerCase().includes(sq)||m.d.toLowerCase().includes(sq)):ms;
     const elecs=Object.entries(electivosData).filter(([k,v])=>v.per===p);
-    const visibleElecs=elecs.filter(([grupo,data])=>{
-      const selectedCod=electivosSeleccionados[grupo];
-      if(selectedCod){
-        const selected=data.opciones.find(op=>op.cod===selectedCod);
-        if(!selected)return mallaFilter==='elective'||mallaFilter==='all';
-        const note=electivosNotas[grupo+':::'+selected.cod] ?? null;
-        const matchesSearch=!sq||selected.nombre.toLowerCase().includes(sq)||(selected.d||'').toLowerCase().includes(sq)||grupo.toLowerCase().includes(sq);
-        return matchesSearch&&matchesMallaFilter(data.per,note,true,currentPeriod);
-      }
-      const anyMatches=data.opciones.some(op=>{
-        const matchesSearch=!sq||op.nombre.toLowerCase().includes(sq)||(op.d||'').toLowerCase().includes(sq)||grupo.toLowerCase().includes(sq);
-        return matchesSearch;
-      });
-      return anyMatches&&(mallaFilter==='all'||mallaFilter==='elective'||mallaFilter==='pending');
-    });
-    if(!filtered.length&&!visibleElecs.length)return;
-    hasAny=true;
+    if(!filtered.length&&!elecs.length)return;
+    const isOpen=openMalla.has(p)||sq.length>0;
     const apro=ms.filter(m=>m.nota!==null&&m.nota>=3).length;
     const repro=ms.filter(m=>m.nota!==null&&m.nota<3).length;
-    const elecCredits=visibleElecs.reduce((a,[,data])=>a+((data.opciones[0]&&data.opciones[0].cr)||3),0);
-    const totalCount=filtered.length+visibleElecs.length;
-    const periodStatus=getMallaPeriodStatus(p,totalCount,apro,repro,currentPeriod);
-    html+=`<section class="malla-acc malla-period-section" data-per="${p}">
-      <div class="malla-period-watermark">${String(p).padStart(2,'0')}</div>
-      <div class="malla-acc-header malla-period-head">
-        <div class="malla-period-copy">
-          <span class="malla-period-title">Periodo ${p}</span>
-          <span class="malla-period-meta">${filtered.length} visibles · ${(filtered.reduce((a,m)=>a+m.cr,0)+elecCredits)} créditos</span>
-          <div class="malla-period-stats" data-period-summary="${p}">${getMallaPeriodSummaryHTML(apro,repro)}</div>
+    const pct=Math.round((apro/ms.length)*100);
+    html+=`<div class="malla-acc" data-per="${p}">
+      <div class="malla-acc-header" onclick="toggleMalla(${p})">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <span>Periodo ${p}</span>
+          <span style="font-size:11px;color:var(--text3);font-weight:400">${ms.length} materias · 18 cr.</span>
+          ${apro>0?`<span style="font-size:10px;font-weight:600;color:var(--success);background:rgba(0,168,107,0.1);padding:2px 7px;border-radius:10px">${apro} aprobada${apro>1?'s':''}</span>`:''}
+          ${repro>0?`<span style="font-size:10px;font-weight:600;color:var(--danger);background:rgba(201,43,43,0.08);padding:2px 7px;border-radius:10px">${repro} reprobada${repro>1?'s':''}</span>`:''}
         </div>
-        <div class="malla-status-chip ${periodStatus.className}">${periodStatus.label}</div>
-      </div>
-      <div class="malla-acc-body">`;
+        <span class="malla-acc-arrow ${isOpen?'':'closed'}">▼</span>
+      </div>`;
+    const bodyStyle=isOpen?'max-height:5000px;opacity:1':'display:none;max-height:0;opacity:0';
+    html+=`<div class="malla-acc-body" style="${bodyStyle}">`;
     filtered.forEach(m=>{
-      html+=getMallaCourseCardHTML(m,currentPeriod,false,'');
-    });
-    visibleElecs.forEach(([grupo,data])=>{
-      html+=getMallaElectivaBlockHTML(grupo,data,currentPeriod);
-    });
-    html+=`</div></section>`;
+        const e=m.nota!==null?(m.nota>=3?'aprobada':'reprobada'):m.cursando?'cursando':'pendiente';
+        const et=m.nota!==null?(m.nota>=3?'Aprobada':'Reprobada'):m.cursando?'En curso':'Pendiente';
+        html+=`<div class="mat-row" id="mrow-${m.id}" onclick="selMat(${m.id})">
+          <div style="flex:1">
+            <div class="mat-nombre">${m.nombre}</div>
+            <div class="mat-desc">${m.d.substring(0,70)}…</div>
+            <div class="mat-meta">Cód. ${m.cod} · ${m.cr} créditos</div>
+            <div style="display:flex;gap:3px;flex-wrap:wrap;margin-top:4px">${m.tipo.map(tipoTag).join('')}<span class="tag tag-${e}">${et}</span></div>
+          </div>
+          <div class="${nClass(m.nota)} nota-badge">${m.nota!==null?m.nota:'—'}</div>
+        </div>`;
+      });
+      if(!sq){
+        elecs.forEach(([grupo,data])=>{
+          const sel=electivosSeleccionados[grupo];
+          const sg=grupo.replace(/'/g,'&#39;');
+          html+=`<div class="elec-block" data-grupo="${sg}"><div class="elec-title">${grupo}</div>`;
+          data.opciones.forEach(op=>{
+            const isSel=sel===op.cod;
+            if(isSel){
+              // Render selected electiva as a full mat-row like regular materias
+              const nKey=grupo+':::'+op.cod;
+              const nota=electivosNotas[nKey]!==undefined?electivosNotas[nKey]:null;
+              const e=nota!==null?(nota>=3?'aprobada':'reprobada'):'pendiente';
+              const et=nota!==null?(nota>=3?'Aprobada':'Reprobada'):'Pendiente';
+              const tipoTags=(op.tipo||['Electiva']).map(tipoTag).join('');
+              html+=`<div class="mat-row selected" data-cod="${op.cod}" onclick="selElec('${sg}','${op.cod}')">
+                <div style="flex:1">
+                  <div class="mat-nombre">${op.nombre}</div>
+                  <div class="mat-desc">${(op.d||'').substring(0,70)}…</div>
+                  <div class="mat-meta">Cód. ${op.cod} · ${op.cr||3} créditos</div>
+                  <div style="display:flex;gap:3px;flex-wrap:wrap;margin-top:4px">
+                    <span class="tag tag-electiva">◆ Electiva</span>
+                    <span class="tag tag-${e}">${et}</span>
+                  </div>
+                </div>
+                <div class="${nClass(nota)} nota-badge">${nota!==null?nota:'—'}</div>
+              </div>`;
+            } else {
+              html+=`<div class="elec-opt" data-cod="${op.cod}" onclick="selElec('${sg}','${op.cod}')">
+                <div class="radio"></div>
+                <div class="elec-name">${op.nombre}</div>
+                <div class="elec-cr">${op.cr||3} cr.</div>
+              </div>`;
+            }
+          });
+          html+=`</div>`;
+        });
+      }
+      html+=`</div>`;
+    html+=`</div>`;
   });
-  if(!hasAny)html=`<div class="malla-empty">No encontré materias para este filtro. Prueba con otro periodo o cambia el filtro rápido.</div>`;
   document.getElementById('mallaList').innerHTML=html;
 }
+
 function selMat(id){
   document.querySelectorAll('.mat-row').forEach(r=>r.classList.remove('selected'));
   const row=document.getElementById('mrow-'+id);
   if(row)row.classList.add('selected');
   const m=materias.find(x=>x.id===id);if(!m)return;
-  const currentPeriod=getDashboardCurrentPeriod();
-  const state=getMallaCardState(m.per,m.nota,currentPeriod);
   const dls=['','Muy fácil','Fácil','Media','Alta','Muy alta'];
   const dlc=['','var(--success)','var(--success)','var(--unad-blue)','var(--warning)','var(--danger)'];
   const hasNota=m.nota!==null;
   document.getElementById('detailPanel').innerHTML=`<div class="detail-panel">
-    <div class="malla-detail-intro">
-      <div>
-        <div class="malla-detail-kicker">Materia base</div>
-        <div class="panel-name">${m.nombre}</div>
-      </div>
-      <div class="malla-status-chip ${state.className==='aprobada'?'done':state.className==='reprobada'?'pending':state.className==='cursando'?'active':'pending'}">Periodo ${m.per}</div>
-    </div>
+    <div class="panel-name">${m.nombre}</div>
     <div class="panel-meta">Cód. ${m.cod} · ${m.cr} créditos · Periodo ${m.per}</div>
     <div style="display:flex;gap:3px;flex-wrap:wrap;margin-bottom:12px">${m.tipo.map(tipoTag).join('')}</div>
     <div class="info-box">${m.d}</div>
@@ -4044,7 +1811,35 @@ function selElec(grupo,cod){
   const sg=grupo.replace(/'/g,'&#39;');
   const block=document.querySelector(`.elec-block[data-grupo="${sg}"]`);
   if(block&&gd){
-    block.outerHTML=getMallaElectivaBlockHTML(grupo,gd,getDashboardCurrentPeriod());
+    let inner=`<div class="elec-title">${grupo}</div>`;
+    gd.opciones.forEach(op=>{
+      const isSel=op.cod===cod;
+      if(isSel){
+        const nKey=grupo+':::'+op.cod;
+        const nota=electivosNotas[nKey]!==undefined?electivosNotas[nKey]:null;
+        const e=nota!==null?(nota>=3?'aprobada':'reprobada'):'pendiente';
+        const et=nota!==null?(nota>=3?'Aprobada':'Reprobada'):'Pendiente';
+        inner+=`<div class="mat-row selected" data-cod="${op.cod}" onclick="selElec('${sg}','${op.cod}')">
+          <div style="flex:1">
+            <div class="mat-nombre">${op.nombre}</div>
+            <div class="mat-desc">${(op.d||'').substring(0,70)}…</div>
+            <div class="mat-meta">Cód. ${op.cod} · ${op.cr||3} créditos</div>
+            <div style="display:flex;gap:3px;flex-wrap:wrap;margin-top:4px">
+              <span class="tag tag-electiva">◆ Electiva</span>
+              <span class="tag tag-${e}">${et}</span>
+            </div>
+          </div>
+          <div class="${nClass(nota)} nota-badge">${nota!==null?nota:'—'}</div>
+        </div>`;
+      } else {
+        inner+=`<div class="elec-opt" data-cod="${op.cod}" onclick="selElec('${sg}','${op.cod}')">
+          <div class="radio"></div>
+          <div class="elec-name">${op.nombre}</div>
+          <div class="elec-cr">${op.cr||3} cr.</div>
+        </div>`;
+      }
+    });
+    block.innerHTML=inner;
   }
   showElecDetail(grupo,cod);
 }
@@ -4054,19 +1849,11 @@ function showElecDetail(grupo,cod){
   const op=gd.opciones.find(o=>o.cod===cod);if(!op)return;
   const nKey=grupo+':::'+cod;
   const nota=electivosNotas[nKey]!==undefined?electivosNotas[nKey]:null;
-  const currentPeriod=getDashboardCurrentPeriod();
-  const state=getMallaCardState(gd.per,nota,currentPeriod);
   const hasNota=nota!==null;
   document.getElementById('detailPanel').innerHTML=`<div class="detail-panel" style="border-left-color:var(--unad-gold)">
-    <div class="malla-detail-intro">
-      <div>
-        <div class="malla-detail-kicker">Ruta electiva</div>
-        <div class="panel-name">${op.nombre}</div>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-        <span class="tag tag-electiva" style="flex-shrink:0;margin-top:2px">Electiva</span>
-        <div class="malla-status-chip ${state.className==='aprobada'?'done':state.className==='reprobada'?'pending':state.className==='cursando'?'active':'pending'}">Periodo ${gd.per}</div>
-      </div>
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:3px">
+      <div class="panel-name">${op.nombre}</div>
+      <span class="tag tag-electiva" style="flex-shrink:0;margin-top:2px">◆ Electiva</span>
     </div>
     <div class="panel-meta">Cód. ${op.cod} · ${op.cr} créditos · Periodo ${gd.per} · ${grupo}</div>
     <div class="info-box" style="border-left-color:var(--unad-gold)">${op.d}</div>
@@ -4159,8 +1946,12 @@ function updateAccHeader(per){
   });
   const acc=document.querySelector(`.malla-acc[data-per="${per}"]`);
   if(!acc)return;
-  const summary=acc.querySelector('[data-period-summary]');
-  if(summary)summary.innerHTML=getMallaPeriodSummaryHTML(apro,repro);
+  const headerDiv=acc.querySelector('.malla-acc-header > div');
+  if(!headerDiv)return;
+  const chips=headerDiv.querySelectorAll('span:nth-child(n+3)');
+  chips.forEach(s=>s.remove());
+  if(apro>0){const s=document.createElement('span');s.style.cssText='font-size:10px;font-weight:600;color:var(--success);background:rgba(0,168,107,0.1);padding:2px 7px;border-radius:10px';s.textContent=apro+' aprobada'+(apro>1?'s':'');headerDiv.appendChild(s);}
+  if(repro>0){const s=document.createElement('span');s.style.cssText='font-size:10px;font-weight:600;color:var(--danger);background:rgba(201,43,43,0.08);padding:2px 7px;border-radius:10px';s.textContent=repro+' reprobada'+(repro>1?'s':'');headerDiv.appendChild(s);}
 }
 
 function saveNota(id){
@@ -4182,9 +1973,21 @@ function saveNota(id){
       </div>`;
   }
 
-  renderMalla();
+  // Actualizar badge en la lista
+  const badge=document.querySelector('#mrow-'+id+' .nota-badge');
+  if(badge){badge.className=nClass(m.nota)+' nota-badge';badge.textContent=m.nota;}
+
+  // Actualizar tag de estado en la lista
   const row=document.getElementById('mrow-'+id);
-  if(row)row.classList.add('selected');
+  if(row){
+    const tagEstado=row.querySelector('.tag-aprobada,.tag-reprobada,.tag-cursando,.tag-pendiente');
+    if(tagEstado){
+      const e=m.nota>=3?'aprobada':'reprobada';
+      tagEstado.className='tag tag-'+e;tagEstado.textContent=m.nota>=3?'Aprobada':'Reprobada';
+    }
+  }
+
+  updateAccHeader(m.per);
   updateAll();
   if(document.getElementById('view-profesional').classList.contains('active'))renderProfesional();
 }
@@ -4207,9 +2010,21 @@ function editNota(id){
   m.nota=null;
   markUnsaved();
 
-  renderMalla();
+  // 3. Actualizar badge en la lista directamente (sin renderMalla)
+  const badge=document.querySelector('#mrow-'+id+' .nota-badge');
+  if(badge){badge.className='n-empty nota-badge';badge.textContent='—';}
+
+  // 4. Actualizar tag de estado en la lista directamente (sin renderMalla)
   const row=document.getElementById('mrow-'+id);
-  if(row)row.classList.add('selected');
+  if(row){
+    const tagEstado=row.querySelector('.tag-aprobada,.tag-reprobada,.tag-cursando,.tag-pendiente');
+    if(tagEstado){tagEstado.className='tag tag-pendiente';tagEstado.textContent='Pendiente';}
+  }
+
+  // 5. Actualizar header del acordeón
+  updateAccHeader(m.per);
+
+  // 6. Actualizar stats del dashboard (no toca el panel)
   updateAll();
 
   // 6. Focus al input
@@ -4228,9 +2043,14 @@ function resetNota(id){
     </div>
     <div id="nota-hint-${id}" class="nota-hint">↵ Enter para guardar · Escribe 35 para 3.5</div>`;
   }
-  renderMalla();
+  const badge=document.querySelector('#mrow-'+id+' .nota-badge');
+  if(badge){badge.className='n-empty nota-badge';badge.textContent='—';}
   const row=document.getElementById('mrow-'+id);
-  if(row)row.classList.add('selected');
+  if(row){
+    const tagEstado=row.querySelector('.tag-aprobada,.tag-reprobada,.tag-cursando,.tag-pendiente');
+    if(tagEstado){tagEstado.className='tag tag-pendiente';tagEstado.textContent='Pendiente';}
+  }
+  updateAccHeader(m.per);
   updateAll();
   if(document.getElementById('view-profesional').classList.contains('active'))renderProfesional();
 }
@@ -4251,10 +2071,17 @@ function saveElecNota(grupo,cod){
   if(gd){gd.opciones.forEach(op=>{delete electivosNotas[grupo+':::'+op.cod];});}
   electivosNotas[grupo+':::'+cod]=v;
   markUnsaved();
-  renderMalla();
+  // Update mat-row badge and tag in elec-block
   const sg2=grupo.replace(/'/g,'&#39;');
   const elecRow=document.querySelector(`.elec-block[data-grupo="${sg2}"] .mat-row[data-cod="${cod}"]`);
-  if(elecRow)elecRow.classList.add('selected');
+  if(elecRow){
+    const badge=elecRow.querySelector('.nota-badge');
+    if(badge){badge.className=nClass(v)+' nota-badge';badge.textContent=v;}
+    const tagE=elecRow.querySelector('.tag-aprobada,.tag-reprobada,.tag-pendiente');
+    if(tagE){tagE.className='tag tag-'+(v>=3?'aprobada':'reprobada');tagE.textContent=v>=3?'Aprobada':'Reprobada';}
+  }
+  const gper=gd?gd.per:null;
+  if(gper)updateAccHeader(gper);
   updateAll();
   if(document.getElementById('view-profesional').classList.contains('active'))renderProfesional();
   showElecDetail(grupo,cod);
@@ -4285,10 +2112,16 @@ function resetElecNota(grupo,cod){
   delete electivosNotas[nKey];
   markUnsaved();
   const gd=electivosData[grupo];
-  renderMalla();
   const sg2=grupo.replace(/'/g,'&#39;');
   const elecRow=document.querySelector(`.elec-block[data-grupo="${sg2}"] .mat-row[data-cod="${cod}"]`);
-  if(elecRow)elecRow.classList.add('selected');
+  if(elecRow){
+    const badge=elecRow.querySelector('.nota-badge');
+    if(badge){badge.className='n-empty nota-badge';badge.textContent='—';}
+    const tagE=elecRow.querySelector('.tag-aprobada,.tag-reprobada,.tag-pendiente');
+    if(tagE){tagE.className='tag tag-pendiente';tagE.textContent='Pendiente';}
+  }
+  const gper=gd?gd.per:null;
+  if(gper)updateAccHeader(gper);
   updateAll();
   if(document.getElementById('view-profesional').classList.contains('active'))renderProfesional();
   showElecDetail(grupo,cod);
@@ -4377,70 +2210,20 @@ function calcTlState(etapa){
   return{state:'future',apro,total,pct};
 }
 
-function getProfessionalTimelineStates(){
+function renderProfesional(){
+  // Calcular estados reales
   const estados=tlData.map(e=>calcTlState(e));
+  // Ajustar: la primera etapa con pct>0 y <100 es "now", las anteriores "done", las siguientes "future"
+  // pero si ninguna tiene nada, todas son "future"
   let foundNow=false;
   const statesFinal=estados.map((s,i)=>{
     if(s.state==='done')return s;
-    if(!foundNow&&s.apro>0){
-      foundNow=true;
-      return {...s,state:'now'};
-    }
-    if(!foundNow&&i>0&&estados[i-1].state==='done'){
-      foundNow=true;
-      return {...s,state:'now'};
-    }
-    return {...s,state:'future'};
+    if(!foundNow&&s.apro>0){foundNow=true;return{...s,state:'now'};}
+    if(!foundNow&&i>0&&estados[i-1].state==='done'){foundNow=true;return{...s,state:'now'};}
+    return{...s,state:'future'};
   });
-  if(statesFinal.every(s=>s.state==='future')&&statesFinal[0]){
-    statesFinal[0]={...statesFinal[0],state:'now'};
-  }
-  return statesFinal;
-}
-
-function getProfessionalHeroRole(statesFinal){
-  let activeIndex=statesFinal.findIndex(s=>s.state==='now');
-  if(activeIndex===-1){
-    activeIndex=statesFinal.map((s,i)=>s.state==='done'?i:-1).filter(i=>i>=0).pop();
-  }
-  if(activeIndex===undefined||activeIndex===-1)activeIndex=0;
-  return tlData[activeIndex]?.rank||'Trayectoria profesional en construccion';
-}
-
-function renderProfessionalMilestones(statesFinal){
-  const completedStages=statesFinal.filter(s=>s.state==='done').length;
-  const average=getAverage();
-  const currentPeriod=getDashboardCurrentPeriod();
-  const finishedCourses=materias.filter(m=>m.nota!==null&&m.nota>=3).length+getElectivos().filter(e=>{
-    const key=e.grupo+':::'+e.cod;
-    return electivosNotas[key]!==undefined&&electivosNotas[key]>=3;
-  }).length;
-  document.getElementById('profileMilestones').innerHTML=[
-    `<article class="prof-milestone is-wide">
-      <div class="prof-milestone-icon">🎓</div>
-      <div class="prof-milestone-title">Nivel academico consolidado</div>
-      <div class="prof-milestone-desc">${completedStages} etapas cerradas y ${finishedCourses} materias aprobadas dentro de tu recorrido en marketing y negocios digitales.</div>
-      <div class="prof-milestone-badge">${Math.round(getOverallProgress())}% progreso</div>
-    </article>`,
-    `<article class="prof-milestone">
-      <div class="prof-milestone-icon">🌍</div>
-      <div class="prof-milestone-title">Momento curricular</div>
-      <div class="prof-milestone-desc">Periodo ${currentPeriod} como foco actual para traducir experiencia academica en posicionamiento profesional.</div>
-    </article>`,
-    `<article class="prof-milestone">
-      <div class="prof-milestone-icon">🧠</div>
-      <div class="prof-milestone-title">Promedio competitivo</div>
-      <div class="prof-milestone-desc">${average.toFixed(2)} de promedio acumulado para reforzar tu narrativa en CV, bio y LinkedIn.</div>
-    </article>`
-  ].join('');
-}
-
-function renderProfesional(){
-  const statesFinal=getProfessionalTimelineStates();
-  const heroName=document.getElementById('profHeroName');
-  const heroRole=document.getElementById('profHeroRole');
-  if(heroName)heroName.textContent=username||'Usuario';
-  if(heroRole)heroRole.textContent=getProfessionalHeroRole(statesFinal);
+  // Si todas son future (0 notas), marcar la primera como "now"
+  if(statesFinal.every(s=>s.state==='future')){statesFinal[0]={...statesFinal[0],state:'now'};}
 
   let th='';
   tlData.forEach((r,i)=>{
@@ -4462,7 +2245,7 @@ function renderProfesional(){
         <div class="tl-desc">${r.desc}</div>
         <div class="tl-creds">${r.credits}</div>
         ${progBar}
-        <div style="font-size:11px;color:${s.state==='done'?'var(--success)':s.state==='now'?'var(--unad-blue)':'var(--text3)'};margin-bottom:6px;font-weight:500">▼ ${r.logro}</div>
+        <div style="font-size:11px;color:${s.state==='done'?'var(--success)':s.state==='now'?'var(--unad-blue)':'var(--text3)'};margin-bottom:6px;font-weight:500">▸ ${r.logro}</div>
         <div class="tl-skills">${r.skills.map(sk=>`<span class="tl-skill">${sk}</span>`).join('')}</div>
       </div>
     </div>`;
@@ -4507,92 +2290,6 @@ function copyLi(id,btn){
 }
 
 /* ── SALIDA LABORAL ── */
-function renderProfesional(){
-  const statesFinal=getProfessionalTimelineStates();
-  const heroName=document.getElementById('profHeroName');
-  const heroRole=document.getElementById('profHeroRole');
-  if(heroName)heroName.textContent=username||'Usuario';
-  if(heroRole)heroRole.textContent=getProfessionalHeroRole(statesFinal);
-
-  const timelineHTML=tlData.map((r,i)=>{
-    const s=statesFinal[i];
-    const badgeText=s.state==='done'
-      ? `Completado ${s.apro}/${s.total}`
-      : s.state==='now'
-        ? `En progreso ${s.apro}/${s.total}`
-        : 'Pendiente';
-    const badgeIcon=s.state==='done'?'✓':s.state==='now'?'↗':'○';
-    return `<article class="prof-step ${s.state}">
-      <div class="prof-step-index">${String(i+1).padStart(2,'0')}</div>
-      <div class="prof-step-card">
-        <div class="prof-step-top">
-          <div class="prof-step-kicker">${s.state==='done'?'ETAPA COMPLETADA':s.state==='now'?'FASE ACTUAL':'PROXIMA ETAPA'}</div>
-          <div class="prof-step-icon">${badgeIcon}</div>
-        </div>
-        <div class="prof-step-title">${r.rank}</div>
-        <div class="prof-step-desc">${r.desc}</div>
-        <div class="prof-step-meta">${r.credits} · ${badgeText}</div>
-        <div class="prof-link-quote" style="margin:0 0 14px 0">${r.logro}</div>
-        <div class="prof-step-skills">${r.skills.map(sk=>`<span class="tl-skill">${sk}</span>`).join('')}</div>
-      </div>
-    </article>`;
-  }).join('');
-
-  document.getElementById('timelineEl').innerHTML=timelineHTML;
-  renderProfessionalMilestones(statesFinal);
-  renderLinkedin();
-}
-
-function renderLinkedin(){
-  const input=document.getElementById('liSearch');
-  const q=(input||{}).value||'';
-  const sq=q.toLowerCase().trim();
-  const all=getAllMats().filter(m=>m.li);
-  const filtered=all.filter(m=>{
-    if(!sq)return true;
-    return m.nombre.toLowerCase().includes(sq)
-      || (m.li||'').toLowerCase().includes(sq)
-      || (m.sk||[]).some(sk=>sk.toLowerCase().includes(sq));
-  });
-  const featured=filtered[0]||all[0]||null;
-  const featureEl=document.getElementById('profileLinkedinFeature');
-  if(featureEl){
-    featureEl.innerHTML=featured
-      ? `<div class="prof-link-langs">
-          <span class="prof-link-lang">ES</span>
-          <span style="color:var(--text3)">→</span>
-          <span class="prof-link-lang">LinkedIn</span>
-        </div>
-        <div class="prof-link-quote">"${featured.li}"</div>
-        <div class="prof-link-explain">Texto base construido desde ${featured.nombre}${featured.esElec?' · Electiva':''} para traducir tu avance academico a una narrativa profesional clara.</div>`
-      : '<div class="prof-link-empty">Todavia no hay textos disponibles para este filtro.</div>';
-  }
-
-  const cardsEl=document.getElementById('linkedinCards');
-  if(!cardsEl)return;
-  if(!filtered.length){
-    cardsEl.innerHTML=`<div class="prof-link-empty">No encontre materias para "${q.trim()}". Prueba con otra palabra clave.</div>`;
-    return;
-  }
-
-  cardsEl.innerHTML=filtered.map(m=>{
-    const uid=m.esElec?(m.grupo+m.cod).replace(/\W/g,'_'):`m${m.id}`;
-    const skills=(m.sk||[]).slice(0,3).map(sk=>`<span class="tl-skill">${sk}</span>`).join('');
-    return `<article class="li-card prof-link-card">
-      <div class="prof-link-card-top">
-        <div>
-          <div class="li-mat ${m.esElec?'elec':''}">${m.nombre}${m.esElec?' · Electiva':''}</div>
-          <div class="prof-step-meta">Periodo ${m.per} · ${m.cod} · ${m.cr} creditos</div>
-        </div>
-        <button class="copy-btn" onclick="copyLi('lt-${uid}',this)">Copiar</button>
-      </div>
-      <div class="prof-link-card-title">Version lista para LinkedIn</div>
-      <div class="li-text" id="lt-${uid}">${m.li}</div>
-      <div class="prof-step-skills">${skills}</div>
-    </article>`;
-  }).join('');
-}
-
 function renderSalida(){
   const q=(document.getElementById('salidaSearch')||{}).value||'';
   const sq=q.toLowerCase().trim();

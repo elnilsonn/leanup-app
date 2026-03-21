@@ -192,6 +192,18 @@ body.dark .topbar-glass-btn:active{background:rgba(255,255,255,0.15)}
 .per-arrow{color:var(--text3);font-size:11px;transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1)}
 .per-arrow.closed{transform:rotate(-90deg)}
 .per-body{padding:6px 0 0;overflow:hidden;max-height:5000px;opacity:1;transition:max-height 0.40s cubic-bezier(0.25,0.46,0.45,0.94),opacity 0.28s cubic-bezier(0.25,0.46,0.45,0.94)}
+.quick-nav{position:sticky;top:calc(env(safe-area-inset-top) + 58px);z-index:12;background:linear-gradient(180deg,var(--bg) 0%,var(--bg) 82%,rgba(0,0,0,0) 100%);padding-bottom:8px;margin:-2px 0 12px}
+.quick-nav-row{display:flex;gap:8px;overflow-x:auto;padding:2px 1px 6px;scrollbar-width:none}
+.quick-nav-row::-webkit-scrollbar{display:none}
+.quick-chip-btn{border:none;cursor:pointer;flex:0 0 auto;padding:9px 14px;border-radius:999px;background:var(--bg3);border:1px solid var(--border);color:var(--text2);font-size:11px;font-weight:700;font-family:'Sora',sans-serif;letter-spacing:0.35px;transition:all 0.16s cubic-bezier(0.4,0,0.2,1)}
+.quick-chip-btn.active{background:rgba(0,70,173,0.12);border-color:rgba(0,70,173,0.24);color:var(--unad-blue)}
+.quick-chip-btn:active{transform:scale(0.97)}
+.quick-panel{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;box-shadow:var(--shadow);margin-bottom:12px}
+.quick-panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
+.quick-panel-title{font-size:16px;font-weight:700;color:var(--text)}
+.quick-panel-meta{font-size:11px;color:var(--text3)}
+.quick-panel-badge{font-size:10px;font-weight:700;color:var(--unad-blue);background:rgba(0,70,173,0.1);border-radius:999px;padding:5px 10px;white-space:nowrap}
+.quick-empty{background:var(--bg2);border:1px dashed var(--border2);border-radius:12px;padding:18px 16px;color:var(--text3);font-size:12px;line-height:1.6;text-align:center}
 /* TIMELINE */
 .tl-wrap{position:relative;padding-left:0}
 .tl-item{position:relative;display:flex;gap:16px;margin-bottom:0}
@@ -615,6 +627,11 @@ body.dark .bn-more-item.active svg{color:var(--unad-gold)}
   .malla-acc-header{min-height:48px;padding:12px 16px}
 
   .search-wrap{margin-bottom:12px}
+  .quick-nav{top:calc(env(safe-area-inset-top) + 56px);margin-bottom:10px}
+  .quick-chip-btn{padding:9px 13px;font-size:10px}
+  .quick-panel{padding:13px 14px}
+  .quick-panel-title{font-size:15px}
+  .quick-panel-meta{font-size:10px}
 
   /* Botón atrás — visible con cualquier overlay móvil */
   body.panel-open .mobile-back,
@@ -726,6 +743,7 @@ body.dark .bn-more-item.active svg{color:var(--unad-gold)}
         <span class="search-icon">🔍</span>
         <input class="search-inp" id="mallaSearch" type="text" placeholder="Buscar materia por nombre o descripción..." oninput="renderMalla()">
       </div>
+      <div id="mallaQuickControls"></div>
       <div class="malla-grid">
         <div id="mallaList"></div>
       </div>
@@ -772,6 +790,7 @@ body.dark .bn-more-item.active svg{color:var(--unad-gold)}
         <div class="card">
           <div class="sect-title"><span class="gold-dot"></span>Traductor de LinkedIn</div>
           <div class="search-wrap"><span class="search-icon">🔍</span><input class="search-inp" id="liSearch" type="text" placeholder="Buscar materia para LinkedIn..." oninput="renderLinkedin()"></div>
+          <div id="liQuickControls"></div>
           <div id="linkedinCards"></div>
         </div>
       </div>
@@ -782,6 +801,7 @@ body.dark .bn-more-item.active svg{color:var(--unad-gold)}
       <div class="h2">Diccionario de Salida Laboral</div>
       <div class="sub">¿En qué trabajo real usarás cada materia? — agrupado por periodo · Incluye electivos seleccionados</div>
       <div class="search-wrap"><span class="search-icon">🔍</span><input class="search-inp" id="salidaSearch" type="text" placeholder="Buscar materia o rol laboral..." oninput="renderSalida()"></div>
+      <div id="salidaQuickControls"></div>
       <div id="salidaList"></div>
     </div>
 
@@ -790,6 +810,7 @@ body.dark .bn-more-item.active svg{color:var(--unad-gold)}
       <div class="h2">Generador de Portafolio</div>
       <div class="sub">Proyectos reales que puedes construir con lo aprendido — por periodo · Incluye electivos seleccionados</div>
       <div class="search-wrap"><span class="search-icon">🔍</span><input class="search-inp" id="portaSearch" type="text" placeholder="Buscar materia o tipo de proyecto..." oninput="renderPortafolio()"></div>
+      <div id="portaQuickControls"></div>
       <div id="portafolioList"></div>
     </div>
 
@@ -1271,6 +1292,20 @@ let electivosNotas={};
 let openPers={sal:new Set([1]),li:new Set([1]),po:new Set([1])};
 let openMalla=new Set([1]);
 let periodos=[...new Set(materias.map(m=>m.per))].sort((a,b)=>a-b);
+const quickFilters=[
+  {id:'all',label:'Todas'},
+  {id:'pending',label:'Pendientes'},
+  {id:'in_progress',label:'En curso'},
+  {id:'approved',label:'Aprobadas'},
+  {id:'failed',label:'Reprobadas'},
+  {id:'elective',label:'Electivas'}
+];
+let quickViewState={
+  malla:{period:getSuggestedQuickPeriod(),filter:'all'},
+  li:{period:getSuggestedQuickPeriod(),filter:'all'},
+  sal:{period:getSuggestedQuickPeriod(),filter:'all'},
+  po:{period:getSuggestedQuickPeriod(),filter:'all'}
+};
 
 /* ── SAVE / LOAD ── */
 function saveData(){
@@ -1583,6 +1618,110 @@ function getElectivos(){
 function getAllMats(){return[...materias,...getElectivos()];}
 
 /* ── STATS ── */
+function getSuggestedQuickPeriod(){
+  for(const p of periodos){
+    const items=getAllMats().filter(m=>m.per===p);
+    if(items.some(item=>getItemAcademicState(item)!=='approved'))return p;
+  }
+  return periodos[periodos.length-1]||1;
+}
+function getItemNota(item){
+  if(item.esElec)return electivosNotas[item.grupo+':::'+item.cod]??null;
+  return item.nota;
+}
+function getItemAcademicState(item){
+  const nota=getItemNota(item);
+  if(nota!==null&&nota!==undefined)return nota>=3?'approved':'failed';
+  if(item.cursando)return'in_progress';
+  return'pending';
+}
+function matchesQuickFilter(item,filter){
+  if(filter==='all')return true;
+  if(filter==='elective')return !!item.esElec;
+  return getItemAcademicState(item)===filter;
+}
+function ensureQuickViewState(section){
+  if(!quickViewState[section])quickViewState[section]={period:getSuggestedQuickPeriod(),filter:'all'};
+  if(!periodos.includes(quickViewState[section].period))quickViewState[section].period=getSuggestedQuickPeriod();
+}
+function renderQuickControls(containerId,section){
+  const el=document.getElementById(containerId);
+  if(!el)return;
+  ensureQuickViewState(section);
+  const state=quickViewState[section];
+  el.innerHTML=`<div class="quick-nav">
+    <div class="quick-nav-row">
+      ${periodos.map(p=>`<button type="button" class="quick-chip-btn ${state.period===p?'active':''}" onclick="setQuickPeriod('${section}',${p})">P${p}</button>`).join('')}
+    </div>
+    <div class="quick-nav-row">
+      ${quickFilters.map(f=>`<button type="button" class="quick-chip-btn ${state.filter===f.id?'active':''}" onclick="setQuickFilter('${section}','${f.id}')">${f.label}</button>`).join('')}
+    </div>
+  </div>`;
+}
+function rerenderQuickSection(section){
+  if(section==='malla')return renderMalla();
+  if(section==='li')return renderLinkedin();
+  if(section==='sal')return renderSalida();
+  if(section==='po')return renderPortafolio();
+}
+function setQuickPeriod(section,period){
+  ensureQuickViewState(section);
+  quickViewState[section].period=period;
+  rerenderQuickSection(section);
+}
+function setQuickFilter(section,filter){
+  ensureQuickViewState(section);
+  quickViewState[section].filter=filter;
+  rerenderQuickSection(section);
+}
+function getQuickSectionShell(title,meta,badge,inner){
+  return `<div class="quick-panel">
+    <div class="quick-panel-head">
+      <div>
+        <div class="quick-panel-title">${title}</div>
+        <div class="quick-panel-meta">${meta}</div>
+      </div>
+      <div class="quick-panel-badge">${badge}</div>
+    </div>
+  </div>${inner}`;
+}
+function getElectiveGroupUI(grupo,data,filter){
+  const sel=electivosSeleccionados[grupo];
+  const sg=grupo.replace(/'/g,'&#39;');
+  let html=`<div class="elec-block" data-grupo="${sg}"><div class="elec-title">${grupo}</div>`;
+  data.opciones.forEach(op=>{
+    const isSel=sel===op.cod;
+    if(isSel){
+      const nKey=grupo+':::'+op.cod;
+      const nota=electivosNotas[nKey]!==undefined?electivosNotas[nKey]:null;
+      const e=nota!==null?(nota>=3?'aprobada':'reprobada'):'pendiente';
+      const et=nota!==null?(nota>=3?'Aprobada':'Reprobada'):'Pendiente';
+      if(filter!=='all'&&filter!=='pending'&&filter!=='elective'&&!matchesQuickFilter({...op,esElec:true,grupo,per:data.per},filter))return;
+      html+=`<div class="mat-row selected" data-cod="${op.cod}" onclick="selElec('${sg}','${op.cod}')">
+        <div style="flex:1">
+          <div class="mat-nombre">${op.nombre}</div>
+          <div class="mat-desc">${(op.d||'').substring(0,70)}â€¦</div>
+          <div class="mat-meta">CÃ³d. ${op.cod} Â· ${op.cr||3} crÃ©ditos</div>
+          <div style="display:flex;gap:3px;flex-wrap:wrap;margin-top:4px">
+            <span class="tag tag-electiva">â—† Electiva</span>
+            <span class="tag tag-${e}">${et}</span>
+          </div>
+        </div>
+        <div class="${nClass(nota)} nota-badge">${nota!==null?nota:'â€”'}</div>
+      </div>`;
+      return;
+    }
+    if(filter!=='all'&&filter!=='pending'&&filter!=='elective')return;
+    html+=`<div class="elec-opt" data-cod="${op.cod}" onclick="selElec('${sg}','${op.cod}')">
+      <div class="radio"></div>
+      <div class="elec-name">${op.nombre}</div>
+      <div class="elec-cr">${op.cr||3} cr.</div>
+    </div>`;
+  });
+  html+=`</div>`;
+  return html;
+}
+
 function updateAll(){
   // Materias obligatorias aprobadas
   const apro=materias.filter(m=>m.nota!==null&&m.nota>=3);
@@ -2371,6 +2510,126 @@ function renderPortafolio(){
 }
 
 /* ── CONFIG ── */
+function renderMalla(){
+  renderQuickControls('mallaQuickControls','malla');
+  ensureQuickViewState('malla');
+  const state=quickViewState.malla;
+  const q=(document.getElementById('mallaSearch')||{}).value||'';
+  const sq=q.toLowerCase().trim();
+  const p=state.period;
+  const filter=state.filter;
+  const msBase=materias.filter(m=>m.per===p);
+  const filtered=msBase.filter(m=>{
+    const matchesSearch=!sq||m.nombre.toLowerCase().includes(sq)||(m.d||'').toLowerCase().includes(sq);
+    return matchesSearch&&matchesQuickFilter(m,filter);
+  });
+  const elecEntries=Object.entries(electivosData).filter(([grupo,data])=>{
+    if(data.per!==p)return false;
+    const selected=electivosSeleccionados[grupo];
+    const selectedOp=selected?data.opciones.find(op=>op.cod===selected):null;
+    const matchesSearch=!sq||data.opciones.some(op=>op.nombre.toLowerCase().includes(sq)||((op.d||'').toLowerCase().includes(sq)));
+    if(!matchesSearch)return false;
+    if(filter==='all'||filter==='pending'||filter==='elective')return true;
+    if(!selectedOp)return false;
+    return matchesQuickFilter({...selectedOp,esElec:true,grupo,per:data.per},filter);
+  });
+  const baseElecCredits=Object.entries(electivosData).filter(([,data])=>data.per===p).reduce((acc,[,data])=>acc+((data.opciones[0]&&data.opciones[0].cr)||3),0);
+  const visibleCount=filtered.length+elecEntries.length;
+  let bodyHTML='';
+  filtered.forEach(m=>{
+    const itemState=getItemAcademicState(m);
+    const e=itemState==='approved'?'aprobada':itemState==='failed'?'reprobada':itemState==='in_progress'?'cursando':'pendiente';
+    const et=itemState==='approved'?'Aprobada':itemState==='failed'?'Reprobada':itemState==='in_progress'?'En curso':'Pendiente';
+    bodyHTML+=`<div class="mat-row" id="mrow-${m.id}" onclick="selMat(${m.id})">
+      <div style="flex:1">
+        <div class="mat-nombre">${m.nombre}</div>
+        <div class="mat-desc">${m.d.substring(0,70)}â€¦</div>
+        <div class="mat-meta">CÃ³d. ${m.cod} Â· ${m.cr} crÃ©ditos</div>
+        <div style="display:flex;gap:3px;flex-wrap:wrap;margin-top:4px">${m.tipo.map(tipoTag).join('')}<span class="tag tag-${e}">${et}</span></div>
+      </div>
+      <div class="${nClass(m.nota)} nota-badge">${m.nota!==null?m.nota:'â€”'}</div>
+    </div>`;
+  });
+  elecEntries.forEach(([grupo,data])=>{
+    bodyHTML+=getElectiveGroupUI(grupo,data,filter);
+  });
+  if(!bodyHTML)bodyHTML=`<div class="quick-empty">No hay materias o electivas visibles en este periodo para ese filtro.</div>`;
+  document.getElementById('mallaList').innerHTML=getQuickSectionShell(`Periodo ${p}`,`${visibleCount} elementos visibles Â· ${msBase.reduce((acc,m)=>acc+m.cr,0)+baseElecCredits} crÃ©ditos en foco`,quickFilters.find(f=>f.id===filter)?.label||'Todas',bodyHTML);
+}
+
+function renderLinkedin(){
+  renderQuickControls('liQuickControls','li');
+  ensureQuickViewState('li');
+  const state=quickViewState.li;
+  const p=state.period;
+  const q=(document.getElementById('liSearch')||{}).value||'';
+  const sq=q.toLowerCase().trim();
+  const items=getAllMats().filter(m=>{
+    if(m.per!==p||!m.li)return false;
+    const matchesSearch=!sq||m.nombre.toLowerCase().includes(sq)||m.li.toLowerCase().includes(sq);
+    return matchesSearch&&matchesQuickFilter(m,state.filter);
+  });
+  const listHTML=items.length?items.map(m=>{
+    const uid=m.esElec?(m.grupo+m.cod).replace(/\W/g,'_'):`m${m.id}`;
+    return `<div class="li-card">
+      <div class="li-mat ${m.esElec?'elec':''}">${m.nombre}${m.esElec?' Â· Electiva':''}</div>
+      <div class="li-text" id="lt-${uid}">${m.li}</div>
+      <button class="copy-btn" onclick="copyLi('lt-${uid}',this)">Copiar texto</button>
+    </div>`;
+  }).join(''):`<div class="quick-empty">No hay textos de LinkedIn visibles en este periodo para ese filtro.</div>`;
+  document.getElementById('linkedinCards').innerHTML=getQuickSectionShell(`Periodo ${p}`,`${items.length} textos visibles para traducir tu perfil`,quickFilters.find(f=>f.id===state.filter)?.label||'Todas',listHTML);
+}
+
+function renderSalida(){
+  renderQuickControls('salidaQuickControls','sal');
+  ensureQuickViewState('sal');
+  const state=quickViewState.sal;
+  const p=state.period;
+  const q=(document.getElementById('salidaSearch')||{}).value||'';
+  const sq=q.toLowerCase().trim();
+  const items=getAllMats().filter(m=>{
+    if(m.per!==p||!m.sal)return false;
+    const matchesSearch=!sq||m.nombre.toLowerCase().includes(sq)||m.sal.toLowerCase().includes(sq)||(m.sk||[]).some(s=>s.toLowerCase().includes(sq));
+    return matchesSearch&&matchesQuickFilter(m,state.filter);
+  });
+  const listHTML=items.length?items.map(m=>`<div class="sal-card">
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:600;margin-bottom:2px;display:flex;align-items:center;gap:8px">${m.nombre}${m.esElec?'<span class="tag tag-electiva">Electiva</span>':''}</div>
+        <div style="font-size:11px;color:var(--text2);margin-bottom:6px;line-height:1.4">${m.d}</div>
+        <div class="sal-roles"><div class="sal-roles-lbl">Roles laborales</div><div style="font-size:12px;color:var(--text)">${m.sal}</div></div>
+        ${m.sk?`<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px">${m.sk.slice(0,4).map(s=>`<span class="chip">${s}</span>`).join('')}</div>`:''}
+      </div>
+      <div style="text-align:right;flex-shrink:0"><div style="font-size:9px;color:var(--text3)">Per.</div><div style="font-size:20px;font-weight:700;font-family:'IBM Plex Mono';color:var(--text3)">${m.per}</div></div>
+    </div>`).join(''):`<div class="quick-empty">No hay roles laborales visibles en este periodo para ese filtro.</div>`;
+  document.getElementById('salidaList').innerHTML=getQuickSectionShell(`Periodo ${p}`,`${items.length} materias conectadas a salida laboral`,quickFilters.find(f=>f.id===state.filter)?.label||'Todas',listHTML);
+}
+
+function renderPortafolio(){
+  renderQuickControls('portaQuickControls','po');
+  ensureQuickViewState('po');
+  const state=quickViewState.po;
+  const p=state.period;
+  const q=(document.getElementById('portaSearch')||{}).value||'';
+  const sq=q.toLowerCase().trim();
+  const items=getAllMats().filter(m=>{
+    if(m.per!==p||!m.po)return false;
+    const matchesSearch=!sq||m.nombre.toLowerCase().includes(sq)||m.po.toLowerCase().includes(sq);
+    return matchesSearch&&matchesQuickFilter(m,state.filter);
+  });
+  const listHTML=items.length?items.map(m=>{
+    const promptEsc=(m.prompt||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    return `<div class="por-card">
+      <div class="por-mat ${m.esElec?'elec':'oblig'}">${m.nombre}${m.esElec?' Â· Electiva':''}</div>
+      <div style="font-size:13px;color:var(--text);line-height:1.6;margin-bottom:8px">${m.po}</div>
+      <div style="margin-bottom:10px;font-size:10px;color:var(--text3);display:flex;gap:8px;flex-wrap:wrap">
+        ${m.tipo?m.tipo.map(t=>`<span>#${t}</span>`).join(''):''}${m.cr?`<span>${m.cr} crÃ©ditos</span>`:''}
+      </div>
+      ${m.prompt?`<button class="copy-btn" style="font-size:11px;padding:5px 12px" onclick="copyPrompt('${promptEsc}',this)">ðŸ¤– Copiar prompt para IA</button>`:''}
+    </div>`;
+  }).join(''):`<div class="quick-empty">No hay proyectos visibles en este periodo para ese filtro.</div>`;
+  document.getElementById('portafolioList').innerHTML=getQuickSectionShell(`Periodo ${p}`,`${items.length} ideas de portafolio visibles`,quickFilters.find(f=>f.id===state.filter)?.label||'Todas',listHTML);
+}
+
 function toggleDark(on){
   darkMode=on;
   document.body.classList.toggle('dark',on);

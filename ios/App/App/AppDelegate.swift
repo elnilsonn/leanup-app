@@ -923,12 +923,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
                 }
                 // Apple push/pop curve (matches UINavigationController)
                 var appleCurve = 'cubic-bezier(0.28,0.11,0.32,1)';
-                var pushDur = '0.38s';
-                var popDur  = '0.35s';
+                var pushDur = '0.42s';
+                var popDur  = '0.38s';
                 function fixedBase(bg) {
                     // padding: 0 14px matches .content's horizontal padding
                     // vertical padding is handled by .lu-fixed-transition CSS class
-                    return 'display:block;position:fixed;top:0;left:0;right:0;bottom:0;overflow-y:auto;background:' + bg + ';animation:none;padding:0 14px;';
+                    return 'display:block;position:fixed;top:0;left:0;right:0;bottom:0;overflow-y:auto;background:' + bg + ';animation:none;padding:0 14px;will-change:transform;backface-visibility:hidden;-webkit-backface-visibility:hidden;';
                 }
                 function addFixedClass(el) { el.classList.add('lu-fixed-transition'); }
                 function removeFixedClass(el) { el.classList.remove('lu-fixed-transition'); }
@@ -977,22 +977,26 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
                             // CRITICAL: Set BOTH views fixed BEFORE _sv() changes classes
                             hubView.classList.add('lu-nav-static');
                             newView.classList.add('lu-nav-static');
+                            newView.classList.add('lu-anim-skip');
                             addFixedClass(hubView);
                             addFixedClass(newView);
-                            hubView.style.cssText = fb + 'z-index:201;transform:translateX(0)';
-                            newView.style.cssText = fb + 'z-index:202;transform:translateX(100%)';
+                            hubView.style.cssText = fb + 'z-index:201;transform:translate3d(0,0,0)';
+                            newView.style.cssText = fb + 'z-index:202;transform:translate3d(100%,0,0)';
                             window.__lu_skipMainScrollReset = true;
                             _sv.apply(this, [id, el]);
                             var mainContent = document.getElementById('mainContent');
                             if (mainContent) mainContent.scrollTop = 0;
                             addEdgeShadow(newView);
                             var dimEl = addDim(hubView);
-                            void newView.offsetWidth;
                             var trans = 'transform ' + pushDur + ' ' + appleCurve;
-                            newView.style.transition = trans;
-                            newView.style.transform  = 'translateX(0)';
-                            hubView.style.transition = trans;
-                            hubView.style.transform  = 'translateX(-33%)';
+                            requestAnimationFrame(function() {
+                                requestAnimationFrame(function() {
+                                    newView.style.transition = trans;
+                                    newView.style.transform  = 'translate3d(0,0,0)';
+                                    hubView.style.transition = trans;
+                                    hubView.style.transform  = 'translate3d(-33%,0,0)';
+                                });
+                            });
                             setTimeout(function() {
                                 cleanupExtras();
                                 newView.classList.add('lu-anim-skip');
@@ -1001,7 +1005,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
                                 newView.style.cssText = '';
                                 hubView.style.cssText = '';
                                 _animating = false;
-                            }, 400);
+                            }, 450);
                         } else {
                             _sv.apply(this, [id, el]);
                             _animating = false;
@@ -1028,17 +1032,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
                             hubView2.classList.add('lu-nav-static');
                             addFixedClass(curView);
                             addFixedClass(hubView2);
-                            curView.style.cssText  = fb2 + 'z-index:202;transform:translateX(0)';
-                            hubView2.style.cssText = fb2 + 'z-index:201;transform:translateX(-33%)';
+                            curView.style.cssText  = fb2 + 'z-index:202;transform:translate3d(0,0,0)';
+                            hubView2.style.cssText = fb2 + 'z-index:201;transform:translate3d(-33%,0,0)';
                             addEdgeShadow(curView);
                             var dimEl2 = addDim(hubView2);
                             if (dimEl2) { dimEl2.style.background = 'rgba(0,0,0,0.08)'; dimEl2.style.transition = 'none'; }
                             void curView.offsetWidth;
                             var trans2 = 'transform ' + popDur + ' ' + appleCurve;
                             curView.style.transition  = trans2;
-                            curView.style.transform   = 'translateX(100%)';
+                            curView.style.transform   = 'translate3d(100%,0,0)';
                             hubView2.style.transition = trans2;
-                            hubView2.style.transform  = 'translateX(0)';
+                            hubView2.style.transform  = 'translate3d(0,0,0)';
                             if (dimEl2) { requestAnimationFrame(function(){ dimEl2.style.transition = 'background ' + popDur + ' ' + appleCurve; dimEl2.style.background = 'rgba(0,0,0,0)'; }); }
                             setTimeout(function() {
                                 cleanupExtras();
@@ -1550,7 +1554,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
                 """)
             case .ended:
                 if vx > 400 || tx > screenW * 0.4 {
-                    let dur = max(0.10, Double(screenW - tx) / Double(max(vx, 500)))
+                    let dur = min(0.34, max(0.18, Double(screenW - tx) / Double(max(vx, 450))))
                     wv.evaluateJavaScript("""
                         (function() {
                             var dp = document.getElementById('detailPanel');
@@ -1592,8 +1596,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
                         var base = 'display:block;position:fixed;top:0;left:0;right:0;bottom:0;overflow-y:auto;background:' + bg + ';animation:none;transition:none;padding:0 14px;';
                         v.classList.add('lu-fixed-transition');
                         hub.classList.add('lu-fixed-transition');
-                        v.style.cssText = base + 'z-index:202;transform:translateX(0)';
-                        hub.style.cssText = base + 'z-index:201;transform:translateX(-33%)';
+                        v.style.cssText = base + 'z-index:202;transform:translate3d(0,0,0)';
+                        hub.style.cssText = base + 'z-index:201;transform:translate3d(-33%,0,0)';
                         var d = document.createElement('div');
                         d.className = 'lu-push-dim';
                         d.style.cssText = 'position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.08);pointer-events:none;z-index:999;';
@@ -1611,15 +1615,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
                         var hub = document.getElementById('view-perfil-hub');
                         if (!v || v === hub) return;
                         var progress = Math.min(1, \(tx) / \(screenW));
-                        v.style.transform = 'translateX(\(tx)px)';
-                        hub.style.transform = 'translateX(' + (-33 * (1 - progress)) + '%)';
+                        v.style.transform = 'translate3d(\(tx)px,0,0)';
+                        hub.style.transform = 'translate3d(' + (-33 * (1 - progress)) + '%,0,0)';
                         var dim = hub.querySelector('.lu-push-dim');
                         if (dim) dim.style.background = 'rgba(0,0,0,' + (0.08 * (1 - progress)).toFixed(3) + ')';
                     })();
                 """)
             case .ended:
                 if vx > 400 || tx > screenW * 0.4 {
-                    let dur = max(0.10, Double(screenW - tx) / Double(max(vx, 500)))
+                    let dur = min(0.36, max(0.18, Double(screenW - tx) / Double(max(vx, 450))))
                     wv.evaluateJavaScript("""
                         (function() {
                             var v = document.querySelector('.view.active');
@@ -1628,9 +1632,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
                             var d = '\(String(format:"%.2f", dur))s';
                             var c = 'cubic-bezier(0.28,0.11,0.32,1)';
                             v.style.transition = 'transform ' + d + ' ' + c;
-                            v.style.transform = 'translateX(100%)';
+                            v.style.transform = 'translate3d(100%,0,0)';
                             hub.style.transition = 'transform ' + d + ' ' + c;
-                            hub.style.transform = 'translateX(0)';
+                            hub.style.transform = 'translate3d(0,0,0)';
                             var dim = hub.querySelector('.lu-push-dim');
                             if (dim) { dim.style.transition = 'background ' + d + ' ' + c; dim.style.background = 'rgba(0,0,0,0)'; }
                             setTimeout(function() {
@@ -1682,9 +1686,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
                 if (!v || v === hub) return;
                 var d = '0.30s', c = 'cubic-bezier(0.28,0.11,0.32,1)';
                 v.style.transition = 'transform ' + d + ' ' + c;
-                v.style.transform = 'translateX(0)';
+                v.style.transform = 'translate3d(0,0,0)';
                 hub.style.transition = 'transform ' + d + ' ' + c;
-                hub.style.transform = 'translateX(-33%)';
+                hub.style.transform = 'translate3d(-33%,0,0)';
                 var dim = hub.querySelector('.lu-push-dim');
                 if (dim) { dim.style.transition = 'background ' + d + ' ' + c; dim.style.background = 'rgba(0,0,0,0.08)'; }
                 setTimeout(function() {

@@ -910,7 +910,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
             // animation:none inline prevents CSS fadeSlideIn from re-triggering on cleanup.
             function patchShowView() {
                 if (window.__lu_sv_patched) return;
-                if (typeof showView !== 'function') { setTimeout(patchShowView, 250); return; }
+                if (typeof showView !== 'function'
+                        || typeof mobileOpenProfileSection !== 'function'
+                        || typeof mobileCloseProfileSectionOrBack !== 'function') {
+                    setTimeout(patchShowView, 250); return;
+                }
                 window.__lu_sv_patched = true;
                 var _sv = window.showView;
                 var profileSubViews = ['profesional', 'salida', 'portafolio'];
@@ -954,6 +958,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
                 }
 
                 window.showView = function(id, el) {
+                    var isSubView = profileSubViews.indexOf(id) >= 0;
+                    if (window.innerWidth <= 768 && isSubView) {
+                        window.mobileOpenProfileSection(id);
+                        return;
+                    }
+                    if (window.innerWidth <= 768
+                            && id === 'perfil-hub'
+                            && document.body.classList.contains('profile-sub-open')) {
+                        window.mobileCloseProfileSectionOrBack();
+                        return;
+                    }
                     // Clear animation-skip ONLY from views that will lose .active
                     // Removing it from a view that KEEPS .active re-triggers fadeSlideIn
                     var targetId = 'view-' + id;
@@ -961,7 +976,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
                         if (v.id !== targetId) v.classList.remove('lu-anim-skip');
                     });
 
-                    var isSubView = profileSubViews.indexOf(id) >= 0;
+                    isSubView = profileSubViews.indexOf(id) >= 0;
                     var goingToHub = (id === 'perfil-hub');
 
                     if (isSubView && !window.__lu_noSubViewAnim) {
@@ -1080,7 +1095,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
                 window.__lu_svg_patched = true;
                 var _svg = window.showViewGear;
                 window.showViewGear = function() {
-                    window.webkit?.messageHandlers?.nativeUI?.postMessage({ event: 'subViewClose' });
                     _svg.apply(this, arguments);
                 };
             }
@@ -1243,11 +1257,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
         let host = UIHostingController(
             rootView: GlassBackButton { [weak self] in
                 guard let self else { return }
-                if self.isPanelOpen {
+                if self.isPanelOpen || self.isProfileSubViewOpen {
                     self.capacitorWebView?.evaluateJavaScript("mobileClosePanelOrBack()")
-                } else if self.isProfileSubViewOpen {
-                    self.capacitorWebView?.evaluateJavaScript("showView('perfil-hub',null)")
-                    self.isProfileSubViewOpen = false
                 }
             }
         )
@@ -1588,65 +1599,37 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
                 // Hub MUST have display:block — it has no .active class (display:none from CSS)
                 wv.evaluateJavaScript("""
                     (function() {
-                        var v = document.querySelector('.view.active');
-                        var hub = document.getElementById('view-perfil-hub');
-                        if (!v || v === hub) return;
-                        var isDark = document.body.classList.contains('dark');
-                        var bg = isDark ? '#0d1420' : '#F0F4FA';
-                        var base = 'display:block;position:fixed;top:0;left:0;right:0;bottom:0;overflow-y:auto;background:' + bg + ';animation:none;transition:none;padding:0 14px;';
-                        v.classList.add('lu-fixed-transition');
-                        hub.classList.add('lu-fixed-transition');
-                        v.style.cssText = base + 'z-index:202;transform:translate3d(0,0,0)';
-                        hub.style.cssText = base + 'z-index:201;transform:translate3d(-33%,0,0)';
-                        var d = document.createElement('div');
-                        d.className = 'lu-push-dim';
-                        d.style.cssText = 'position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.08);pointer-events:none;z-index:999;';
-                        hub.appendChild(d);
-                        var sh = document.createElement('div');
-                        sh.className = 'lu-edge-shadow';
-                        sh.style.cssText = 'position:absolute;top:0;left:-20px;width:20px;bottom:0;background:linear-gradient(to right,transparent,rgba(0,0,0,0.12));pointer-events:none;z-index:1000;';
-                        v.appendChild(sh);
+                        var v = document.querySelector('.view.mobile-profile-open');
+                        if (!v) return;
+                        v.classList.add('lu-profile-gesture');
+                        v.style.transition = 'none';
+                        v.style.transform = 'translate3d(0,0,0)';
                     })();
                 """)
             case .changed:
                 wv.evaluateJavaScript("""
                     (function() {
-                        var v = document.querySelector('.view.active');
-                        var hub = document.getElementById('view-perfil-hub');
-                        if (!v || v === hub) return;
-                        var progress = Math.min(1, \(tx) / \(screenW));
+                        var v = document.querySelector('.view.mobile-profile-open');
+                        if (!v) return;
+                        v.classList.add('lu-profile-gesture');
+                        v.style.transition = 'none';
                         v.style.transform = 'translate3d(\(tx)px,0,0)';
-                        hub.style.transform = 'translate3d(' + (-33 * (1 - progress)) + '%,0,0)';
-                        var dim = hub.querySelector('.lu-push-dim');
-                        if (dim) dim.style.background = 'rgba(0,0,0,' + (0.08 * (1 - progress)).toFixed(3) + ')';
                     })();
                 """)
             case .ended:
                 if vx > 400 || tx > screenW * 0.4 {
-                    let dur = min(0.36, max(0.18, Double(screenW - tx) / Double(max(vx, 450))))
+                    let dur = min(0.34, max(0.18, Double(screenW - tx) / Double(max(vx, 450))))
                     wv.evaluateJavaScript("""
                         (function() {
-                            var v = document.querySelector('.view.active');
-                            var hub = document.getElementById('view-perfil-hub');
-                            if (!v || v === hub) return;
-                            var d = '\(String(format:"%.2f", dur))s';
-                            var c = 'cubic-bezier(0.28,0.11,0.32,1)';
-                            v.style.transition = 'transform ' + d + ' ' + c;
+                            var v = document.querySelector('.view.mobile-profile-open');
+                            if (!v) return;
+                            v.classList.add('lu-profile-gesture');
+                            v.style.transition = 'transform \(String(format:"%.2f", dur))s cubic-bezier(0.32,0.72,0,1)';
                             v.style.transform = 'translate3d(100%,0,0)';
-                            hub.style.transition = 'transform ' + d + ' ' + c;
-                            hub.style.transform = 'translate3d(0,0,0)';
-                            var dim = hub.querySelector('.lu-push-dim');
-                            if (dim) { dim.style.transition = 'background ' + d + ' ' + c; dim.style.background = 'rgba(0,0,0,0)'; }
                             setTimeout(function() {
-                                document.querySelectorAll('.lu-push-dim,.lu-edge-shadow').forEach(function(e){ e.remove(); });
-                                v.classList.remove('active');
-                                hub.classList.add('active', 'lu-anim-skip');
-                                v.classList.remove('lu-fixed-transition');
-                                hub.classList.remove('lu-fixed-transition');
-                                v.style.cssText = '';
-                                hub.style.cssText = '';
-                                window.__lu_subActive = false;
-                                window.webkit?.messageHandlers?.nativeUI?.postMessage({ event: 'subViewClose' });
+                                if (typeof window.__lu_finishProfileOverlayClose === 'function') {
+                                    window.__lu_finishProfileOverlayClose(true);
+                                }
                             }, \(Int(dur * 1000)));
                         })();
                     """)
@@ -1678,26 +1661,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
     }
 
     private func snapViewBack(wv: WKWebView) {
-        // Snap both fixed-positioned views back to their original positions
+        // Snap the mobile profile overlay back to x=0 without moving the hub underneath.
         wv.evaluateJavaScript("""
             (function() {
-                var v = document.querySelector('.view.active');
-                var hub = document.getElementById('view-perfil-hub');
-                if (!v || v === hub) return;
-                var d = '0.30s', c = 'cubic-bezier(0.28,0.11,0.32,1)';
+                var v = document.querySelector('.view.mobile-profile-open');
+                if (!v) return;
+                var d = '0.25s', c = 'cubic-bezier(0.32,0.72,0,1)';
+                v.classList.add('lu-profile-gesture');
                 v.style.transition = 'transform ' + d + ' ' + c;
                 v.style.transform = 'translate3d(0,0,0)';
-                hub.style.transition = 'transform ' + d + ' ' + c;
-                hub.style.transform = 'translate3d(-33%,0,0)';
-                var dim = hub.querySelector('.lu-push-dim');
-                if (dim) { dim.style.transition = 'background ' + d + ' ' + c; dim.style.background = 'rgba(0,0,0,0.08)'; }
                 setTimeout(function() {
-                    document.querySelectorAll('.lu-push-dim,.lu-edge-shadow').forEach(function(e){ e.remove(); });
-                    v.classList.add('lu-anim-skip');
-                    v.classList.remove('lu-fixed-transition');
-                    hub.classList.remove('lu-fixed-transition');
-                    v.style.cssText = '';
-                    hub.style.cssText = '';
+                    v.classList.remove('lu-profile-gesture');
+                    v.style.transition = '';
+                    v.style.transform = '';
                 }, 320);
             })();
         """)

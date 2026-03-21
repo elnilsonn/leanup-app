@@ -430,8 +430,8 @@ body.dark .theme-opt.active{background:var(--bg3);box-shadow:0 1px 3px rgba(0,0,
     -webkit-backface-visibility:hidden;
   }
   #profilePanel .profile-detail-panel{
-    /* Match the normal mobile content start: safe area + topbar (50px) + content padding (16px) */
-    padding-top:calc(env(safe-area-inset-top) + 66px);
+    /* The moved profile subviews already receive top clearance from the injected .view padding. */
+    padding-top:0;
     padding-left:14px;
     padding-right:14px;
   }

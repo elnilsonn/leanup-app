@@ -349,6 +349,9 @@ body.dark .theme-opt.active{background:var(--bg3);box-shadow:0 1px 3px rgba(0,0,
       background:transparent!important;
       box-shadow:none!important;
       border:none!important;
+      animation:none!important;
+      transform:none!important;
+      opacity:1!important;
     }
     #detailPanel.mobile-open .info-box{
       background:rgba(255,255,255,0.5)!important;
@@ -386,8 +389,8 @@ body.dark .theme-opt.active{background:var(--bg3);box-shadow:0 1px 3px rgba(0,0,
     border-left:none;
     box-shadow:none;
     margin:0;
-    /* Top: safe area + topbar (50px). Bottom: bottom-nav (56px) + safe area */
-    padding-top:calc(env(safe-area-inset-top) + 56px);
+    /* Top: safe area + topbar + extra breathing room. Bottom: bottom-nav + safe area */
+    padding-top:calc(env(safe-area-inset-top) + 72px);
     padding-bottom:calc(env(safe-area-inset-bottom) + 64px);
     padding-left:16px;
     padding-right:16px;

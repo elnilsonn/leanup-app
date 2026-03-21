@@ -447,6 +447,756 @@ private struct GlassCircleAction: View {
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// MARK: - Native LeanUp Foundation
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+private enum LeanUpThemeMode: String, Codable, CaseIterable, Sendable {
+    case light
+    case dark
+    case system
+}
+
+private struct LeanUpSnapshot: Codable, Equatable, Sendable {
+    var notas: [String: Double]
+    var electivosSeleccionados: [String: String]
+    var electivosNotas: [String: Double]
+    var username: String
+    var darkMode: Bool
+    var themeMode: LeanUpThemeMode
+
+    static let empty = LeanUpSnapshot()
+
+    init(
+        notas: [String: Double] = [:],
+        electivosSeleccionados: [String: String] = [:],
+        electivosNotas: [String: Double] = [:],
+        username: String = "Usuario",
+        darkMode: Bool = false,
+        themeMode: LeanUpThemeMode = .light
+    ) {
+        self.notas = notas
+        self.electivosSeleccionados = electivosSeleccionados
+        self.electivosNotas = electivosNotas
+        self.username = username
+        self.darkMode = darkMode
+        self.themeMode = themeMode
+        self = self.normalized()
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        notas = try container.decodeIfPresent([String: Double].self, forKey: .notas) ?? [:]
+        electivosSeleccionados = try container.decodeIfPresent([String: String].self, forKey: .electivosSeleccionados) ?? [:]
+        electivosNotas = try container.decodeIfPresent([String: Double].self, forKey: .electivosNotas) ?? [:]
+        username = try container.decodeIfPresent(String.self, forKey: .username) ?? "Usuario"
+        darkMode = try container.decodeIfPresent(Bool.self, forKey: .darkMode) ?? false
+        themeMode = try container.decodeIfPresent(LeanUpThemeMode.self, forKey: .themeMode) ?? .light
+        self = self.normalized()
+    }
+
+    func normalized() -> LeanUpSnapshot {
+        var copy = self
+
+        let trimmed = copy.username.trimmingCharacters(in: .whitespacesAndNewlines)
+        copy.username = trimmed.isEmpty ? "Usuario" : trimmed
+
+        copy.electivosNotas = copy.electivosNotas.filter { key, _ in
+            let parts = key.components(separatedBy: ":::")
+            guard parts.count == 2 else { return false }
+            return copy.electivosSeleccionados[parts[0]] == parts[1]
+        }
+
+        switch copy.themeMode {
+        case .light:
+            copy.darkMode = false
+        case .dark:
+            copy.darkMode = true
+        case .system:
+            break
+        }
+
+        return copy
+    }
+
+    func encodedString(prettyPrinted: Bool = false) throws -> String {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = prettyPrinted ? [.prettyPrinted, .sortedKeys] : [.sortedKeys]
+        let data = try encoder.encode(normalized())
+        guard let string = String(data: data, encoding: .utf8) else {
+            throw LeanUpSnapshotError.invalidUTF8
+        }
+        return string
+    }
+
+    static func decode(from string: String) throws -> LeanUpSnapshot {
+        guard let data = string.data(using: .utf8) else {
+            throw LeanUpSnapshotError.invalidUTF8
+        }
+        return try JSONDecoder().decode(LeanUpSnapshot.self, from: data)
+    }
+}
+
+private enum LeanUpSnapshotError: Error {
+    case invalidUTF8
+    case invalidBase64
+}
+
+private struct LeanUpSnapshotStore: Sendable {
+    static let nativeBackupKey = "leanup_v4_backup"
+
+    private let userDefaults: UserDefaults
+
+    init(userDefaults: UserDefaults = .standard) {
+        self.userDefaults = userDefaults
+    }
+
+    func loadSnapshot() throws -> LeanUpSnapshot? {
+        guard let base64 = userDefaults.string(forKey: Self.nativeBackupKey) else {
+            return nil
+        }
+        guard let data = Data(base64Encoded: base64) else {
+            throw LeanUpSnapshotError.invalidBase64
+        }
+        guard let json = String(data: data, encoding: .utf8) else {
+            throw LeanUpSnapshotError.invalidUTF8
+        }
+        return try LeanUpSnapshot.decode(from: json)
+    }
+
+    @discardableResult
+    func saveSnapshot(_ snapshot: LeanUpSnapshot) throws -> String {
+        let normalized = snapshot.normalized()
+        let json = try normalized.encodedString()
+        let base64 = Data(json.utf8).base64EncodedString()
+        userDefaults.set(base64, forKey: Self.nativeBackupKey)
+        return json
+    }
+}
+
+@MainActor
+private final class LeanUpAppModel: ObservableObject {
+    @Published var snapshot: LeanUpSnapshot = .empty
+
+    let totalCourses = 38
+    let totalCredits = 144
+
+    private let store = LeanUpSnapshotStore()
+
+    init() {
+        load()
+    }
+
+    var allGrades: [Double] {
+        Array(snapshot.notas.values) + Array(snapshot.electivosNotas.values)
+    }
+
+    var registeredCount: Int {
+        allGrades.count
+    }
+
+    var approvedCount: Int {
+        allGrades.filter { $0 >= 3.0 }.count
+    }
+
+    var failedCount: Int {
+        allGrades.filter { $0 < 3.0 }.count
+    }
+
+    var selectedElectivesCount: Int {
+        snapshot.electivosSeleccionados.count
+    }
+
+    var averageText: String {
+        guard !allGrades.isEmpty else { return "—" }
+        let average = allGrades.reduce(0, +) / Double(allGrades.count)
+        return String(format: "%.2f", average)
+    }
+
+    var progressText: String {
+        "\(approvedCount) aprobadas"
+    }
+
+    var themeDescription: String {
+        switch snapshot.themeMode {
+        case .light: return "Claro"
+        case .dark: return "Oscuro"
+        case .system: return "Sistema"
+        }
+    }
+
+    var preferredColorScheme: ColorScheme? {
+        switch snapshot.themeMode {
+        case .light: return .light
+        case .dark: return .dark
+        case .system: return nil
+        }
+    }
+
+    func load() {
+        snapshot = (try? store.loadSnapshot()) ?? .empty
+    }
+
+    func setUsername(_ name: String) {
+        snapshot.username = name
+        persist()
+    }
+
+    func setTheme(_ theme: LeanUpThemeMode) {
+        snapshot.themeMode = theme
+        persist()
+    }
+
+    private func persist() {
+        snapshot = snapshot.normalized()
+        try? store.saveSnapshot(snapshot)
+    }
+}
+
+private extension Color {
+    static let unadNavy = Color(red: 0 / 255, green: 27 / 255, blue: 80 / 255)
+    static let unadBlue = Color(red: 0 / 255, green: 70 / 255, blue: 173 / 255)
+    static let unadCyan = Color(red: 0 / 255, green: 157 / 255, blue: 196 / 255)
+    static let unadGold = Color(red: 255 / 255, green: 184 / 255, blue: 28 / 255)
+}
+
+@objc(NativeRootViewController)
+final class NativeRootViewController: UIViewController {
+    private var hostingController: UIHostingController<LeanUpNativeRootView>?
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.backgroundColor = .systemBackground
+
+        let host = UIHostingController(rootView: LeanUpNativeRootView())
+        addChild(host)
+        view.addSubview(host.view)
+        host.didMove(toParent: self)
+
+        host.view.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            host.view.topAnchor.constraint(equalTo: view.topAnchor),
+            host.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            host.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            host.view.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+        ])
+
+        hostingController = host
+    }
+}
+
+private struct LeanUpNativeRootView: View {
+    @StateObject private var model = LeanUpAppModel()
+
+    var body: some View {
+        TabView {
+            LeanUpNavigationContainer {
+                LeanUpDashboardView(model: model)
+            }
+            .tabItem {
+                Label("Inicio", systemImage: "house.fill")
+            }
+
+            LeanUpNavigationContainer {
+                LeanUpMigrationView(
+                    title: "Malla curricular",
+                    icon: "list.bullet.clipboard.fill",
+                    message: "Esta seccion sera la siguiente en migrarse de forma completa a SwiftUI. Ya estamos guardando el progreso con una base nativa para que la migracion sea segura.",
+                    highlights: [
+                        "Tus datos ya tienen contrato nativo compartido.",
+                        "La proxima fase sera convertir materias, periodos y detalle de notas.",
+                        "No volveremos a depender del WebView como pantalla principal."
+                    ]
+                )
+            }
+            .tabItem {
+                Label("Malla", systemImage: "list.bullet.clipboard")
+            }
+
+            LeanUpNavigationContainer {
+                LeanUpMigrationView(
+                    title: "Perfil profesional",
+                    icon: "person.crop.rectangle.stack.fill",
+                    message: "Tambien vamos a reconstruir esta pantalla en nativo. La idea es que el perfil, las salidas laborales y el portafolio tengan una estructura iOS mucho mas clara y elegante.",
+                    highlights: [
+                        "Navegacion nativa en vez de paneles web.",
+                        "Animaciones y jerarquia visual propias de iPhone.",
+                        "Base lista para widgets, notificaciones y funciones futuras."
+                    ]
+                )
+            }
+            .tabItem {
+                Label("Perfil", systemImage: "person.fill")
+            }
+
+            LeanUpNavigationContainer {
+                LeanUpSettingsView(model: model)
+            }
+            .tabItem {
+                Label("Config", systemImage: "gearshape.fill")
+            }
+        }
+        .tint(.unadBlue)
+        .preferredColorScheme(model.preferredColorScheme)
+    }
+}
+
+private struct LeanUpNavigationContainer<Content: View>: View {
+    let content: Content
+
+    init(@ViewBuilder content: () -> Content) {
+        self.content = content()
+    }
+
+    var body: some View {
+        if #available(iOS 16.0, *) {
+            NavigationStack {
+                content
+            }
+        } else {
+            NavigationView {
+                content
+            }
+            .navigationViewStyle(.stack)
+        }
+    }
+}
+
+private struct LeanUpDashboardView: View {
+    @ObservedObject var model: LeanUpAppModel
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 18) {
+                LeanUpHeroCard(model: model)
+
+                HStack(spacing: 12) {
+                    LeanUpStatCard(title: "Promedio", value: model.averageText, subtitle: "Notas registradas")
+                    LeanUpStatCard(title: "Avance", value: "\(model.registeredCount)", subtitle: "Notas guardadas")
+                }
+
+                HStack(spacing: 12) {
+                    LeanUpStatCard(title: "Aprobadas", value: "\(model.approvedCount)", subtitle: "Con nota >= 3.0")
+                    LeanUpStatCard(title: "Electivas", value: "\(model.selectedElectivesCount)", subtitle: "Grupos activos")
+                }
+
+                LeanUpSurfaceCard {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Label("Estado del proyecto", systemImage: "sparkles.rectangle.stack.fill")
+                            .font(.headline.weight(.semibold))
+                            .foregroundStyle(.primary)
+
+                        Text("LeanUp ya esta arrancando como app nativa. La web deja de ser la experiencia principal y a partir de aqui iremos migrando cada seccion con criterio, sin perder tu progreso.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+
+                        VStack(alignment: .leading, spacing: 8) {
+                            LeanUpChecklistRow(text: "Shell nativa de iPhone activa")
+                            LeanUpChecklistRow(text: "Persistencia local preparada para SwiftUI")
+                            LeanUpChecklistRow(text: "Siguiente objetivo: malla curricular nativa")
+                        }
+                    }
+                }
+
+                LeanUpSurfaceCard {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Label("Resumen rapido", systemImage: "chart.bar.xaxis")
+                            .font(.headline.weight(.semibold))
+
+                        HStack {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(model.progressText)
+                                    .font(.title3.weight(.bold))
+                                Text("Incluye materias y electivas con nota guardada")
+                                    .font(.footnote)
+                                    .foregroundStyle(.secondary)
+                            }
+
+                            Spacer()
+
+                            Text(model.failedCount == 0 ? "Sin pendientes rojas" : "\(model.failedCount) por recuperar")
+                                .font(.footnote.weight(.semibold))
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 6)
+                                .background(
+                                    Capsule()
+                                        .fill(model.failedCount == 0 ? Color.green.opacity(0.14) : Color.red.opacity(0.14))
+                                )
+                                .foregroundStyle(model.failedCount == 0 ? Color.green : Color.red)
+                        }
+                    }
+                }
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 18)
+        }
+        .background(LeanUpPageBackground())
+        .navigationTitle("LeanUp")
+        .navigationBarTitleDisplayMode(.large)
+    }
+}
+
+private struct LeanUpSettingsView: View {
+    @ObservedObject var model: LeanUpAppModel
+    @State private var draftName = ""
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 18) {
+                LeanUpSurfaceCard {
+                    VStack(alignment: .leading, spacing: 14) {
+                        Label("Tu perfil", systemImage: "person.text.rectangle.fill")
+                            .font(.headline.weight(.semibold))
+
+                        Text("Este bloque ya es nativo. Aqui iremos moviendo las preferencias y ajustes que antes estaban dentro del HTML.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Nombre visible")
+                                .font(.subheadline.weight(.semibold))
+
+                            TextField("Tu nombre", text: $draftName)
+                                .textInputAutocapitalization(.words)
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 14)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                        .fill(Color.primary.opacity(0.06))
+                                )
+                                .onSubmit {
+                                    model.setUsername(draftName)
+                                }
+
+                            Button {
+                                model.setUsername(draftName)
+                            } label: {
+                                Label("Guardar nombre", systemImage: "checkmark.circle.fill")
+                                    .font(.subheadline.weight(.semibold))
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 14)
+                            }
+                            .buttonStyle(LeanUpPrimaryButtonStyle())
+                        }
+                    }
+                }
+
+                LeanUpSurfaceCard {
+                    VStack(alignment: .leading, spacing: 14) {
+                        Label("Apariencia", systemImage: "circle.lefthalf.filled")
+                            .font(.headline.weight(.semibold))
+
+                        Text("El tema ahora se gestiona desde la base nativa. Eso nos permite alinear LeanUp con el comportamiento real del iPhone.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+
+                        ForEach(LeanUpThemeMode.allCases, id: \.self) { mode in
+                            Button {
+                                model.setTheme(mode)
+                            } label: {
+                                HStack(spacing: 12) {
+                                    Image(systemName: icon(for: mode))
+                                        .font(.system(size: 18, weight: .semibold))
+                                        .frame(width: 24)
+
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text(title(for: mode))
+                                            .font(.subheadline.weight(.semibold))
+                                        Text(description(for: mode))
+                                            .font(.footnote)
+                                            .foregroundStyle(.secondary)
+                                    }
+
+                                    Spacer()
+
+                                    Image(systemName: model.snapshot.themeMode == mode ? "checkmark.circle.fill" : "circle")
+                                        .foregroundStyle(model.snapshot.themeMode == mode ? Color.unadBlue : .secondary)
+                                }
+                                .padding(14)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                                        .fill(model.snapshot.themeMode == mode ? Color.unadBlue.opacity(0.10) : Color.primary.opacity(0.05))
+                                )
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                }
+
+                LeanUpSurfaceCard {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Label("Estado actual", systemImage: "internaldrive.fill")
+                            .font(.headline.weight(.semibold))
+                        Text("Tus preferencias y progreso se siguen guardando localmente en el iPhone mientras migramos el resto de la app a nativo.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                        Text("Tema activo: \(model.themeDescription)")
+                            .font(.footnote.weight(.semibold))
+                    }
+                }
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 18)
+            .onAppear {
+                draftName = model.snapshot.username
+            }
+        }
+        .background(LeanUpPageBackground())
+        .navigationTitle("Configuracion")
+        .navigationBarTitleDisplayMode(.large)
+    }
+
+    private func title(for mode: LeanUpThemeMode) -> String {
+        switch mode {
+        case .light: return "Claro"
+        case .dark: return "Oscuro"
+        case .system: return "Sistema"
+        }
+    }
+
+    private func description(for mode: LeanUpThemeMode) -> String {
+        switch mode {
+        case .light: return "Usa una apariencia limpia y luminosa."
+        case .dark: return "Prioriza contraste suave para la noche."
+        case .system: return "Sigue automaticamente el modo del iPhone."
+        }
+    }
+
+    private func icon(for mode: LeanUpThemeMode) -> String {
+        switch mode {
+        case .light: return "sun.max.fill"
+        case .dark: return "moon.fill"
+        case .system: return "iphone"
+        }
+    }
+}
+
+private struct LeanUpMigrationView: View {
+    let title: String
+    let icon: String
+    let message: String
+    let highlights: [String]
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 18) {
+                LeanUpSurfaceCard {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Label(title, systemImage: icon)
+                            .font(.title3.weight(.bold))
+
+                        Text(message)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+
+                LeanUpSurfaceCard {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Label("Lo que ya esta resuelto", systemImage: "checkmark.seal.fill")
+                            .font(.headline.weight(.semibold))
+
+                        ForEach(highlights, id: \.self) { item in
+                            LeanUpChecklistRow(text: item)
+                        }
+                    }
+                }
+
+                LeanUpSurfaceCard {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Label("Siguiente paso", systemImage: "arrow.right.circle.fill")
+                            .font(.headline.weight(.semibold))
+                        Text("En la siguiente iteracion voy a empezar a construir la pantalla real de esta seccion en SwiftUI, con datos, jerarquia visual y navegacion nativa.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 18)
+        }
+        .background(LeanUpPageBackground())
+        .navigationTitle(title)
+        .navigationBarTitleDisplayMode(.large)
+    }
+}
+
+private struct LeanUpHeroCard: View {
+    @ObservedObject var model: LeanUpAppModel
+    @Environment(\.colorScheme) private var scheme
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Hola, \(model.snapshot.username)")
+                        .font(.system(size: 30, weight: .bold, design: .rounded))
+                    Text("LeanUp ya esta entrando en su etapa nativa para iPhone.")
+                        .font(.subheadline)
+                        .foregroundStyle(.primary.opacity(0.78))
+                }
+                Spacer()
+                Image(systemName: "graduationcap.circle.fill")
+                    .font(.system(size: 34))
+                    .foregroundStyle(Color.unadGold)
+            }
+
+            HStack(spacing: 10) {
+                LeanUpPill(text: "iOS nativo", icon: "iphone")
+                LeanUpPill(text: model.themeDescription, icon: "circle.lefthalf.filled")
+            }
+        }
+        .padding(22)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(heroBackground)
+    }
+
+    @ViewBuilder
+    private var heroBackground: some View {
+        let shape = RoundedRectangle(cornerRadius: 30, style: .continuous)
+
+        if #available(iOS 26.0, *) {
+            shape
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color.unadNavy.opacity(scheme == .dark ? 0.72 : 0.82),
+                            Color.unadBlue.opacity(scheme == .dark ? 0.62 : 0.72),
+                            Color.unadCyan.opacity(scheme == .dark ? 0.46 : 0.56),
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .glassEffect(.regular.tint(.white.opacity(0.12)), in: shape)
+        } else {
+            shape
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color.unadNavy.opacity(0.92),
+                            Color.unadBlue.opacity(0.84),
+                            Color.unadCyan.opacity(0.68),
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+        }
+    }
+}
+
+private struct LeanUpStatCard: View {
+    let title: String
+    let value: String
+    let subtitle: String
+
+    var body: some View {
+        LeanUpSurfaceCard {
+            VStack(alignment: .leading, spacing: 8) {
+                Text(title)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                Text(value)
+                    .font(.system(size: 28, weight: .bold, design: .rounded))
+                Text(subtitle)
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+}
+
+private struct LeanUpSurfaceCard<Content: View>: View {
+    @Environment(\.colorScheme) private var scheme
+    let content: Content
+
+    init(@ViewBuilder content: () -> Content) {
+        self.content = content()
+    }
+
+    var body: some View {
+        content
+            .padding(18)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                RoundedRectangle(cornerRadius: 26, style: .continuous)
+                    .fill(scheme == .dark ? Color.white.opacity(0.07) : Color.white.opacity(0.76))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 26, style: .continuous)
+                    .strokeBorder(Color.primary.opacity(scheme == .dark ? 0.08 : 0.06), lineWidth: 1)
+            )
+    }
+}
+
+private struct LeanUpChecklistRow: View {
+    let text: String
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: "checkmark.circle.fill")
+                .foregroundStyle(Color.unadBlue)
+            Text(text)
+                .font(.subheadline)
+                .foregroundStyle(.primary)
+        }
+    }
+}
+
+private struct LeanUpPill: View {
+    let text: String
+    let icon: String
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: icon)
+            Text(text)
+        }
+        .font(.footnote.weight(.semibold))
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .background(Capsule().fill(Color.white.opacity(0.16)))
+        .foregroundStyle(.white)
+    }
+}
+
+private struct LeanUpPageBackground: View {
+    @Environment(\.colorScheme) private var scheme
+
+    var body: some View {
+        LinearGradient(
+            colors: scheme == .dark
+                ? [
+                    Color.black,
+                    Color.unadNavy.opacity(0.92),
+                    Color.unadBlue.opacity(0.72)
+                ]
+                : [
+                    Color(red: 244 / 255, green: 248 / 255, blue: 253 / 255),
+                    Color(red: 233 / 255, green: 242 / 255, blue: 251 / 255),
+                    Color(red: 227 / 255, green: 240 / 255, blue: 247 / 255)
+                ],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+        .ignoresSafeArea()
+    }
+}
+
+private struct LeanUpPrimaryButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .foregroundStyle(.white)
+            .background(
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .fill(Color.unadBlue)
+            )
+            .scaleEffect(configuration.isPressed ? 0.98 : 1)
+            .animation(.spring(response: 0.2, dampingFraction: 0.7), value: configuration.isPressed)
+    }
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // MARK: - AppDelegate
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 @UIApplicationMain
@@ -481,7 +1231,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
-        scheduleMount(attempt: 0)
+        if !(window?.rootViewController is NativeRootViewController) {
+            scheduleMount(attempt: 0)
+        }
         return true
     }
 
@@ -489,6 +1241,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
     private func scheduleMount(attempt: Int) {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
             guard let self else { return }
+            if self.window?.rootViewController is NativeRootViewController {
+                return
+            }
             guard let rootVC = self.window?.rootViewController,
                   let wv = self.firstWebView(in: rootVC.view) else {
                 if attempt < 15 { self.scheduleMount(attempt: attempt + 1) }

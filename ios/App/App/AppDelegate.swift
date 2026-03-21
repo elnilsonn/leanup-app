@@ -565,6 +565,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WKScriptMessageHandler, W
 
                 /* Push content down inside each section — enough clearance for native glass buttons */
                 .view { padding-top: calc(env(safe-area-inset-top) + 56px) !important; }
+                .view.active { animation: none !important; }
 
                 /* FIX 2: Large iOS-Settings-style glass buttons */
                 .topbar-glass-btn {

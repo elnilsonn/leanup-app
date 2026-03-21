@@ -1347,14 +1347,12 @@ function tipoTag(t){
 function prepareViewActivation(id){
   const target=document.getElementById('view-'+id);
   if(!target)return null;
+  document.querySelectorAll('.view.lu-anim-skip').forEach(v=>{
+    if(v!==target)v.classList.remove('lu-anim-skip');
+  });
   const skip=window.__lu_skipViewFadeOnce===true;
   window.__lu_skipViewFadeOnce=false;
-  if(skip){
-    target.classList.add('lu-anim-skip');
-    requestAnimationFrame(()=>{
-      requestAnimationFrame(()=>{ target.classList.remove('lu-anim-skip'); });
-    });
-  }
+  if(skip)target.classList.add('lu-anim-skip');
   return target;
 }
 function showViewGear(){
@@ -1375,7 +1373,10 @@ function maybeResetMainContentScroll(){
   const skip=window.__lu_skipMainScrollReset===true;
   window.__lu_skipMainScrollReset=false;
   if(skip)return;
-  requestAnimationFrame(()=>{sc.scrollTop=0;});
+  sc.scrollTop=0;
+  if(sc.scrollTop!==0){
+    requestAnimationFrame(()=>{ sc.scrollTop=0; });
+  }
 }
 function isProfileSection(id){
   return ['profesional','salida','portafolio'].includes(id);

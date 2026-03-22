@@ -796,12 +796,6 @@ struct LeanUpCourseDetailView: View {
             }
             .navigationTitle("Materia")
             .navigationBarTitleDisplayMode(.inline)
-            .leanUpDetailSearch(
-                query: $searchQuery,
-                isPresented: $isSearchPresented,
-                results: searchResults,
-                onSelect: onSelectRoute
-            )
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
@@ -818,6 +812,14 @@ struct LeanUpCourseDetailView: View {
                     }
                 }
             }
+            .modifier(
+                LeanUpNativeDetailSearchModifier(
+                    query: $searchQuery,
+                    isPresented: $isSearchPresented,
+                    results: searchResults,
+                    onSelect: onSelectRoute
+                )
+            )
         }
         .navigationViewStyle(.stack)
     }
@@ -995,12 +997,6 @@ struct LeanUpElectiveGroupDetailView: View {
             }
             .navigationTitle("Electiva")
             .navigationBarTitleDisplayMode(.inline)
-            .leanUpDetailSearch(
-                query: $searchQuery,
-                isPresented: $isSearchPresented,
-                results: searchResults,
-                onSelect: onSelectRoute
-            )
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
@@ -1017,6 +1013,14 @@ struct LeanUpElectiveGroupDetailView: View {
                     }
                 }
             }
+            .modifier(
+                LeanUpNativeDetailSearchModifier(
+                    query: $searchQuery,
+                    isPresented: $isSearchPresented,
+                    results: searchResults,
+                    onSelect: onSelectRoute
+                )
+            )
         }
         .navigationViewStyle(.stack)
         .onAppear {
@@ -1431,19 +1435,19 @@ private struct LeanUpDetailSearchSuggestions: View {
     }
 }
 
-private extension View {
+private struct LeanUpNativeDetailSearchModifier: ViewModifier {
+    @Binding var query: String
+    @Binding var isPresented: Bool
+    let results: [LeanUpMallaSearchResult]
+    let onSelect: (LeanUpMallaDetailRoute) -> Void
+
     @ViewBuilder
-    func leanUpDetailSearch(
-        query: Binding<String>,
-        isPresented: Binding<Bool>,
-        results: [LeanUpMallaSearchResult],
-        onSelect: @escaping (LeanUpMallaDetailRoute) -> Void
-    ) -> some View {
+    func body(content: Content) -> some View {
         if #available(iOS 17.0, *) {
-            self
+            content
                 .searchable(
-                    text: query,
-                    isPresented: isPresented,
+                    text: $query,
+                    isPresented: $isPresented,
                     placement: .navigationBarDrawer(displayMode: .always),
                     prompt: "Busca otra materia o electiva"
                 )
@@ -1451,14 +1455,14 @@ private extension View {
                     LeanUpDetailSearchSuggestions(results: results) {
                         onSelect($0)
                     } onClose: {
-                        query.wrappedValue = ""
-                        isPresented.wrappedValue = false
+                        query = ""
+                        isPresented = false
                     }
                 }
         } else {
-            self
+            content
                 .searchable(
-                    text: query,
+                    text: $query,
                     placement: .navigationBarDrawer(displayMode: .always),
                     prompt: "Busca otra materia o electiva"
                 )
@@ -1466,8 +1470,8 @@ private extension View {
                     LeanUpDetailSearchSuggestions(results: results) {
                         onSelect($0)
                     } onClose: {
-                        query.wrappedValue = ""
-                        isPresented.wrappedValue = false
+                        query = ""
+                        isPresented = false
                     }
                 }
         }

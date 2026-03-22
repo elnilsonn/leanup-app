@@ -487,6 +487,19 @@ Migrar LeanUp desde una base hibrida/web hacia una app nativa de iPhone con `Swi
   - la carga marcada como `en curso` reduce mejor la lectura de lo que falta
 - En detalle de materias y electivas ya existe un control nativo para marcar ese estado mientras aun no llega la nota final.
 
+### 43. Electivas de Formacion Complementaria completadas en la base nativa
+
+- Se completaron las opciones faltantes en `ios/App/App/native-academics.json` para que las electivas de formacion complementaria queden consistentes dentro de la app nativa.
+- Ahora `Electivo Formacion Complementaria I`, `II` y `III` ya incluyen este conjunto completo de opciones:
+  - Teatro
+  - Guitarra
+  - Protocolo
+  - Apreciacion de las Imagenes del Arte
+  - Hoja de Vida
+  - Actividad Fisica y para la Salud
+- El contenido se tomo del HTML historico cuando ya existia texto legado util, y se reutilizo de forma consistente dentro del recurso academico nativo.
+- No fue necesario tocar la UI ni la logica de persistencia para este ajuste; la mejora vive en la fuente academica nativa que ya consume la app.
+
 ## Estado actual
 
 ### Ya funcional

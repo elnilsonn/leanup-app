@@ -1509,6 +1509,22 @@
           "linkedinText": "Hábitos de bienestar para alto desempeño profesional y trabajo bajo presión",
           "portfolioProject": "Plan personal de bienestar y productividad con objetivos medibles y seguimiento semanal",
           "portfolioPrompt": ""
+        },
+        {
+          "code": "404086996",
+          "name": "Apreciación de las Imágenes del Arte",
+          "credits": 1,
+          "summary": "Aprenderás a leer y apreciar imágenes artísticas, desarrollando tu sentido estético",
+          "plainLanguage": "Es aprender a ver cuadros y fotos artísticas y entender por qué son especiales",
+          "outcomes": "Creatividad, dirección de arte, content creation, diseño de campañas",
+          "skills": [
+            "Alfabetidad visual",
+            "Sentido estético",
+            "Análisis de imágenes"
+          ],
+          "linkedinText": "Apreciación estética y alfabetidad visual aplicada al diseño de campañas y dirección de arte",
+          "portfolioProject": "Análisis visual de 5 campañas publicitarias icónicas desde perspectiva estética y conceptual",
+          "portfolioPrompt": ""
         }
       ]
     },
@@ -1516,6 +1532,38 @@
       "name": "Electivo Formación Complementaria II",
       "period": 4,
       "options": [
+        {
+          "code": "80010",
+          "name": "Teatro",
+          "credits": 1,
+          "summary": "Aprenderás técnicas de expresión corporal y vocal que mejoran tu comunicación",
+          "plainLanguage": "Es aprender a actuar un poco para perder el miedo al público y expresarte mejor",
+          "outcomes": "Presentaciones públicas, storytelling, comunicación con clientes",
+          "skills": [
+            "Expresión corporal",
+            "Comunicación no verbal",
+            "Confianza en público"
+          ],
+          "linkedinText": "Comunicación persuasiva con técnicas teatrales: presencia escénica, manejo de voz y cuerpo, storytelling en vivo y presentaciones de alto impacto que captan y retienen audiencias",
+          "portfolioProject": "Video de presentación o pitch aplicando técnicas teatrales de impacto",
+          "portfolioPrompt": ""
+        },
+        {
+          "code": "80005",
+          "name": "Guitarra",
+          "credits": 1,
+          "summary": "Aprenderás los fundamentos del instrumento como desarrollo personal y cultural",
+          "plainLanguage": "Es aprender a tocar guitarra como hobby que desarrolla tu disciplina y creatividad",
+          "outcomes": "Creatividad, disciplina, trabajo en equipo — habilidades blandas",
+          "skills": [
+            "Disciplina",
+            "Creatividad",
+            "Expresión artística"
+          ],
+          "linkedinText": "Disciplina creativa a través de la música: desarrollo de la constancia, el aprendizaje progresivo y la creatividad aplicada — habilidades blandas que diferencian a los profesionales más completos",
+          "portfolioProject": "Proyecto musical documentado como ejemplo de aprendizaje autodirigido y disciplina",
+          "portfolioPrompt": ""
+        },
         {
           "code": "404086996",
           "name": "Apreciación de las Imágenes del Arte",
@@ -1562,6 +1610,22 @@
           ],
           "linkedinText": "Perfil profesional y personal branding para el mercado laboral digital",
           "portfolioProject": "CV profesional y perfil LinkedIn optimizado para marketing digital",
+          "portfolioPrompt": ""
+        },
+        {
+          "code": "80020",
+          "name": "Actividad Física y para la Salud",
+          "credits": 2,
+          "summary": "Aprenderás hábitos de vida saludable y la importancia de la actividad física para el rendimiento",
+          "plainLanguage": "Es aprender que hacer ejercicio y comer bien no solo te hace sentir mejor sino que trabajas mejor",
+          "outcomes": "Productividad personal — el bienestar mejora el desempeño en cualquier trabajo",
+          "skills": [
+            "Hábitos saludables",
+            "Gestión del estrés",
+            "Productividad personal"
+          ],
+          "linkedinText": "Hábitos de bienestar para alto desempeño profesional y trabajo bajo presión",
+          "portfolioProject": "Plan personal de bienestar y productividad con objetivos medibles y seguimiento semanal",
           "portfolioPrompt": ""
         }
       ]
@@ -1839,6 +1903,22 @@
           ],
           "linkedinText": "Hábitos de bienestar para alto desempeño profesional bajo presión",
           "portfolioProject": "Plan de bienestar y productividad con objetivos medibles",
+          "portfolioPrompt": ""
+        },
+        {
+          "code": "404086996",
+          "name": "Apreciación de las Imágenes del Arte",
+          "credits": 1,
+          "summary": "Aprenderás a leer y apreciar imágenes artísticas, desarrollando tu sentido estético",
+          "plainLanguage": "Es aprender a ver cuadros y fotos artísticas y entender por qué son especiales",
+          "outcomes": "Creatividad, dirección de arte, content creation, diseño de campañas",
+          "skills": [
+            "Alfabetidad visual",
+            "Sentido estético",
+            "Análisis de imágenes"
+          ],
+          "linkedinText": "Apreciación estética y alfabetidad visual aplicada al diseño de campañas y dirección de arte",
+          "portfolioProject": "Análisis visual de 5 campañas publicitarias icónicas desde perspectiva estética y conceptual",
           "portfolioPrompt": ""
         }
       ]

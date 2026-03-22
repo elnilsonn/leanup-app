@@ -536,6 +536,17 @@ Migrar LeanUp desde una base hibrida/web hacia una app nativa de iPhone con `Swi
 - Para iOS 26, el detalle adopta el patron nativo minimizado del sistema con `searchToolbarBehavior(.minimize)` para acercarse mas al comportamiento de Liquid Glass y dejar que el sistema resuelva la transicion de lupa a barra.
 - En `Dashboard` se recorto el desborde del hero y se suavizo el ajuste de las `pills` para reducir el pequeno scroll horizontal no deseado.
 
+### 47. Rebote lateral del dashboard rastreado fuera del archivo visual
+
+- El movimiento lateral tipo "estiramiento" del `Dashboard` no se trato como un problema principal de `LeanUpDashboardScreen.swift`.
+- La investigacion apunto mas bien al `UIScrollView` que SwiftUI genera para esa pantalla dentro de la shell nativa.
+- El ajuste se movio a `NativeRoot.swift`, donde el dashboard ahora se envuelve con una configuracion de scroll mas estricta:
+  - `scrollBounceBehavior(.basedOnSize, axes: .vertical)` cuando el sistema lo permite
+  - `alwaysBounceHorizontal = false`
+  - `directionalLockEnabled = true`
+  - ocultar indicador horizontal
+- Con esto la correccion se hace a nivel del comportamiento del contenedor, no del layout interno de la pantalla.
+
 ## Estado actual
 
 ### Ya funcional

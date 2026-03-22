@@ -686,7 +686,7 @@ final class LeanUpAppModel: ObservableObject {
     var estimatedGraduationDate: Date? {
         guard approvedCount < totalTrackableItems else { return Date() }
         guard let remainingPeriods = estimatedRemainingPeriods else { return nil }
-        let months = Int((remainingPeriods * 6.0).rounded())
+        let months = Int((remainingPeriods * 4.0).rounded())
         return Calendar.current.date(byAdding: .month, value: max(months, 0), to: Date())
     }
 
@@ -722,10 +722,10 @@ final class LeanUpAppModel: ObservableObject {
         }
 
         if inProgressCount > 0 {
-            return "La lectura usa tu avance aprobado, tu carga actual marcada como en curso y un calendario real de 2 semestres por ano."
+            return "La lectura usa tu avance aprobado, tu carga actual marcada como en curso y la duracion real de ciclos de 4 meses."
         }
 
-        return "La lectura usa tu avance aprobado, los periodos donde ya tienes notas y un calendario real de 2 semestres por ano."
+        return "La lectura usa tu avance aprobado, los periodos donde ya tienes notas y una duracion estimada de 4 meses por ciclo."
     }
 
     var paceValueText: String {

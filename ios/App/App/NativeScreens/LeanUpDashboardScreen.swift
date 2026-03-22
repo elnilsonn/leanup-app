@@ -19,7 +19,6 @@ struct LeanUpDashboardView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .background(LeanUpPageBackground())
-        .clipped()
         .navigationTitle("LeanUp")
         .navigationBarTitleDisplayMode(.large)
     }
@@ -84,14 +83,7 @@ struct LeanUpDashboardHero: View {
                     LeanUpInlineMetric(title: "Periodo foco", value: model.focusPeriod.map(String.init) ?? "Listo")
                 }
 
-                LazyVGrid(
-                    columns: [
-                        GridItem(.flexible(), spacing: 10),
-                        GridItem(.flexible(), spacing: 10)
-                    ],
-                    alignment: .leading,
-                    spacing: 10
-                ) {
+                HStack(spacing: 10) {
                     LeanUpPill(text: "\(model.earnedCredits) creditos", icon: "bolt.fill")
                     LeanUpPill(text: "\(model.registeredCount) notas", icon: "chart.bar.fill")
                     LeanUpPill(text: "\(model.completedPeriodsCount) periodos cerrados", icon: "flag.checkered")
@@ -197,13 +189,7 @@ struct LeanUpDashboardPaceCard: View {
                     detail: model.paceDetail
                 )
 
-                LazyVGrid(
-                    columns: [
-                        GridItem(.flexible(), spacing: 12),
-                        GridItem(.flexible(), spacing: 12)
-                    ],
-                    spacing: 12
-                ) {
+                HStack(spacing: 12) {
                     LeanUpDashboardAccentStat(
                         title: "Ritmo",
                         value: model.paceValueText,
@@ -257,13 +243,7 @@ struct LeanUpDashboardGpaTrackerCard: View {
                 } else {
                     LeanUpDashboardLineChart(points: model.periodAverageSeries)
 
-                    LazyVGrid(
-                        columns: [
-                            GridItem(.flexible(), spacing: 12),
-                            GridItem(.flexible(), spacing: 12)
-                        ],
-                        spacing: 12
-                    ) {
+                    HStack(spacing: 12) {
                         LeanUpDashboardAccentStat(
                             title: "Ultimo",
                             value: latestAverageText,
@@ -347,7 +327,7 @@ struct LeanUpDashboardPerformanceCard: View {
                         text: "Cuando registres notas de materias normales, aqui apareceran tus mejores resultados y las materias mas retadoras."
                     )
                 } else {
-                    VStack(alignment: .leading, spacing: 12) {
+                    HStack(alignment: .top, spacing: 12) {
                         LeanUpDashboardPerformanceColumn(
                             title: "Mejor te fue en",
                             tint: .green,

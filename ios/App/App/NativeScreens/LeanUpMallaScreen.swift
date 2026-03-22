@@ -1,4 +1,4 @@
-import SwiftUI
+﻿import SwiftUI
 import UIKit
 
 struct LeanUpMallaView: View {
@@ -66,12 +66,7 @@ struct LeanUpMallaView: View {
             }
         }
         .sheet(item: $route) { route in
-            switch route {
-            case .course(let course):
-                LeanUpCourseDetailView(model: model, course: course)
-            case .electiveGroup(let group):
-                LeanUpElectiveGroupDetailView(model: model, group: group)
-            }
+            LeanUpMallaDetailContainerView(model: model, initialRoute: route)
         }
         .onAppear {
             if selectedPeriod == nil {
@@ -225,6 +220,34 @@ enum LeanUpMallaDetailRoute: Identifiable {
             return "course-\(course.id)"
         case .electiveGroup(let group):
             return "elective-\(group.id)"
+        }
+    }
+}
+
+struct LeanUpMallaDetailContainerView: View {
+    @ObservedObject var model: LeanUpAppModel
+    @State private var currentRoute: LeanUpMallaDetailRoute
+
+    init(model: LeanUpAppModel, initialRoute: LeanUpMallaDetailRoute) {
+        self.model = model
+        _currentRoute = State(initialValue: initialRoute)
+    }
+
+    var body: some View {
+        Group {
+            switch currentRoute {
+            case .course(let course):
+                LeanUpCourseDetailView(model: model, course: course, onSelectRoute: updateRoute)
+            case .electiveGroup(let group):
+                LeanUpElectiveGroupDetailView(model: model, group: group, onSelectRoute: updateRoute)
+            }
+        }
+        .id(currentRoute.id)
+    }
+
+    private func updateRoute(_ route: LeanUpMallaDetailRoute) {
+        withAnimation(.spring(response: 0.28, dampingFraction: 0.86)) {
+            currentRoute = route
         }
     }
 }
@@ -684,13 +707,14 @@ struct LeanUpCurriculumTag: View {
 struct LeanUpCourseDetailView: View {
     @ObservedObject var model: LeanUpAppModel
     let course: LeanUpCourse
+    var onSelectRoute: (LeanUpMallaDetailRoute) -> Void = { _ in }
     @Environment(\.dismiss) private var dismiss
-    @State private var isSearchPresented = false
-    @State private var searchRoute: LeanUpMallaDetailRoute?
+    @State private var isSearchExpanded = false
+    @State private var searchQuery = ""
 
     var body: some View {
         NavigationView {
-            ZStack(alignment: .topLeading) {
+            ZStack(alignment: .topTrailing) {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 18) {
                         LeanUpSurfaceCard {
@@ -769,6 +793,13 @@ struct LeanUpCourseDetailView: View {
                 }
                 .leanUpKeyboardFriendlyScroll()
                 .background(LeanUpPageBackground())
+
+                LeanUpInlineDetailSearchOverlay(
+                    model: model,
+                    query: $searchQuery,
+                    isExpanded: $isSearchExpanded,
+                    onSelect: onSelectRoute
+                )
             }
             .navigationTitle("Materia")
             .navigationBarTitleDisplayMode(.inline)
@@ -780,52 +811,31 @@ struct LeanUpCourseDetailView: View {
                         Label("Atras", systemImage: "chevron.backward")
                     }
                 }
-
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        isSearchPresented = true
-                    } label: {
-                        Image(systemName: "magnifyingglass")
-                    }
-                }
             }
         }
         .navigationViewStyle(.stack)
-        .sheet(isPresented: $isSearchPresented) {
-            LeanUpMallaSearchView(model: model) { item in
-                searchRoute = item
-                isSearchPresented = false
-            }
-        }
-        .sheet(item: $searchRoute) { route in
-            switch route {
-            case .course(let course):
-                LeanUpCourseDetailView(model: model, course: course)
-            case .electiveGroup(let group):
-                LeanUpElectiveGroupDetailView(model: model, group: group)
-            }
-        }
     }
 }
 
 struct LeanUpElectiveGroupDetailView: View {
     @ObservedObject var model: LeanUpAppModel
     let group: LeanUpElectiveGroup
+    var onSelectRoute: (LeanUpMallaDetailRoute) -> Void = { _ in }
     @Environment(\.dismiss) private var dismiss
     @State private var selectedDisciplinaryTrack: LeanUpElectiveDisciplinaryTrack?
-    @State private var isSearchPresented = false
-    @State private var searchRoute: LeanUpMallaDetailRoute?
+    @State private var isSearchExpanded = false
+    @State private var searchQuery = ""
 
     var body: some View {
         NavigationView {
-            ZStack(alignment: .topLeading) {
+            ZStack(alignment: .topTrailing) {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 18) {
                         LeanUpSurfaceCard {
                             VStack(alignment: .leading, spacing: 10) {
                                 Text(group.name)
                                     .font(.title2.weight(.bold))
-                                Text("Periodo \(group.period) - \(filteredOptions.count) opciones visibles")
+                                Text("Periodo \(group.period) - \(filteredOptions.count) de \(group.options.count) opciones")
                                     .font(.subheadline)
                                     .foregroundStyle(.secondary)
                                 Text(headerDescription)
@@ -862,7 +872,7 @@ struct LeanUpElectiveGroupDetailView: View {
                                         .padding(.horizontal, 2)
                                     }
 
-                                    Text("Cada ruta guarda su propia seleccion. Aqui puedes revisar Transformacion Digital, Competitividad o Sustentabilidad sin salir del panel.")
+                                    Text("Cada disciplinar especifico trae el mismo catalogo completo. Esta franja solo te ayuda a filtrar por ruta dentro del mismo grupo.")
                                         .font(.footnote)
                                         .foregroundStyle(.secondary)
                                 }
@@ -894,31 +904,31 @@ struct LeanUpElectiveGroupDetailView: View {
                                     }
 
                                     Text(option.summary)
-                                        .font(.subheadline)
-                                        .foregroundStyle(.secondary)
+                                        .font(.subheadline.weight(.semibold))
+                                        .foregroundStyle(.primary)
 
-                                    LeanUpSurfaceInsetCard {
-                                        VStack(alignment: .leading, spacing: 10) {
-                                            Label("En palabras simples", systemImage: "lightbulb.fill")
-                                                .font(.subheadline.weight(.semibold))
-                                            Text(option.plainLanguage)
-                                                .font(.footnote)
-                                                .foregroundStyle(.secondary)
-                                        }
+                                    if !option.plainLanguage.isEmpty {
+                                        LeanUpElectiveOptionSection(
+                                            title: "En palabras simples",
+                                            systemImage: "lightbulb.fill",
+                                            detail: option.plainLanguage
+                                        )
                                     }
 
-                                    LeanUpSurfaceInsetCard {
-                                        VStack(alignment: .leading, spacing: 10) {
-                                            Label("Salidas y aplicacion", systemImage: "briefcase.fill")
-                                                .font(.subheadline.weight(.semibold))
-                                            Text(option.outcomes)
-                                                .font(.footnote)
-                                                .foregroundStyle(.secondary)
-                                        }
+                                    if !option.outcomes.isEmpty {
+                                        LeanUpElectiveOptionSection(
+                                            title: "Salidas y aplicacion",
+                                            systemImage: "briefcase.fill",
+                                            detail: option.outcomes
+                                        )
                                     }
 
                                     if !option.skills.isEmpty {
-                                        FlowTagList(items: Array(option.skills.prefix(6)))
+                                        VStack(alignment: .leading, spacing: 10) {
+                                            Label("Habilidades que esta electiva fortalece", systemImage: "star.square.on.square.fill")
+                                                .font(.subheadline.weight(.semibold))
+                                            FlowTagList(items: Array(option.skills.prefix(8)))
+                                        }
                                     }
 
                                     if !option.linkedinText.isEmpty {
@@ -928,7 +938,7 @@ struct LeanUpElectiveGroupDetailView: View {
                                     if !option.portfolioProject.isEmpty {
                                         LeanUpMallaPortfolioInsetCard(
                                             project: option.portfolioProject,
-                                            prompt: option.portfolioPrompt
+                                            prompt: option.effectivePortfolioPrompt
                                         )
                                     }
 
@@ -972,6 +982,13 @@ struct LeanUpElectiveGroupDetailView: View {
                 }
                 .leanUpKeyboardFriendlyScroll()
                 .background(LeanUpPageBackground())
+
+                LeanUpInlineDetailSearchOverlay(
+                    model: model,
+                    query: $searchQuery,
+                    isExpanded: $isSearchExpanded,
+                    onSelect: onSelectRoute
+                )
             }
             .navigationTitle("Electiva")
             .navigationBarTitleDisplayMode(.inline)
@@ -983,34 +1000,12 @@ struct LeanUpElectiveGroupDetailView: View {
                         Label("Atras", systemImage: "chevron.backward")
                     }
                 }
-
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        isSearchPresented = true
-                    } label: {
-                        Image(systemName: "magnifyingglass")
-                    }
-                }
             }
         }
         .navigationViewStyle(.stack)
         .onAppear {
             if selectedDisciplinaryTrack == nil {
-                selectedDisciplinaryTrack = group.defaultDisciplinaryTrack ?? availableDisciplinaryTracks.first
-            }
-        }
-        .sheet(isPresented: $isSearchPresented) {
-            LeanUpMallaSearchView(model: model) { item in
-                searchRoute = item
-                isSearchPresented = false
-            }
-        }
-        .sheet(item: $searchRoute) { route in
-            switch route {
-            case .course(let course):
-                LeanUpCourseDetailView(model: model, course: course)
-            case .electiveGroup(let group):
-                LeanUpElectiveGroupDetailView(model: model, group: group)
+                selectedDisciplinaryTrack = group.electiveDisciplinaryTrack ?? availableDisciplinaryTracks.first
             }
         }
     }
@@ -1018,21 +1013,23 @@ struct LeanUpElectiveGroupDetailView: View {
 
 private extension LeanUpElectiveGroupDetailView {
     var activeDisciplinaryTrack: LeanUpElectiveDisciplinaryTrack? {
-        selectedDisciplinaryTrack
+        selectedDisciplinaryTrack ?? group.electiveDisciplinaryTrack ?? availableDisciplinaryTracks.first
     }
 
     var availableDisciplinaryTracks: [LeanUpElectiveDisciplinaryTrack] {
-        let tracks = group.options.flatMap(\.electiveDisciplinaryTrackValues)
         var seen = Set<LeanUpElectiveDisciplinaryTrack>()
-        return tracks.filter { seen.insert($0).inserted }
+        return group.options
+            .flatMap(\.disciplinaryTrackValues)
+            .filter { seen.insert($0).inserted }
+            .sorted { $0.sortOrder < $1.sortOrder }
     }
 
     var filteredOptions: [LeanUpElectiveOption] {
-        guard let selectedDisciplinaryTrack else {
-            return group.options
-        }
+        guard let track = activeDisciplinaryTrack else { return group.options }
 
-        return group.options.filter { $0.electiveDisciplinaryTrackValues.contains(selectedDisciplinaryTrack) }
+        return group.options.filter { option in
+            option.disciplinaryTrackValues.isEmpty || option.disciplinaryTrackValues.contains(track)
+        }
     }
 
     var headerDescription: String {
@@ -1040,8 +1037,9 @@ private extension LeanUpElectiveGroupDetailView {
             return "Selecciona la electiva que realmente quieres cursar en este grupo. Solo una puede estar activa a la vez."
         }
 
-        return "Este electivo disciplinar incluye varias rutas. Usa el banner para cambiar entre Transformacion Digital, Competitividad y Sustentabilidad sin mezclar todas las opciones de golpe."
+        return "LeanUp filtra por ruta dentro de este mismo electivo para que no tengas que revisar las 18 opciones de golpe."
     }
+
 }
 
 enum LeanUpElectiveDisciplinaryTrack: String, CaseIterable, Identifiable, Hashable {
@@ -1050,6 +1048,13 @@ enum LeanUpElectiveDisciplinaryTrack: String, CaseIterable, Identifiable, Hashab
     case sustainability
 
     var id: String { rawValue }
+    var sortOrder: Int {
+        switch self {
+        case .digitalTransformation: return 0
+        case .competitiveness: return 1
+        case .sustainability: return 2
+        }
+    }
 
     var title: String {
         switch self {
@@ -1061,16 +1066,18 @@ enum LeanUpElectiveDisciplinaryTrack: String, CaseIterable, Identifiable, Hashab
 }
 
 private extension LeanUpElectiveGroup {
-    var defaultDisciplinaryTrack: LeanUpElectiveDisciplinaryTrack? {
-        if name.contains("Transformación Digital") {
+    var electiveDisciplinaryTrack: LeanUpElectiveDisciplinaryTrack? {
+        let normalizedName = name.folding(options: [.diacriticInsensitive, .caseInsensitive], locale: .current)
+
+        if normalizedName.contains("transformacion digital") {
             return .digitalTransformation
         }
 
-        if name.contains("Competitividad") {
+        if normalizedName.contains("competitividad") {
             return .competitiveness
         }
 
-        if name.contains("Sustentabilidad") {
+        if normalizedName.contains("sustentabilidad") || normalizedName.contains("sostenibilidad") {
             return .sustainability
         }
 
@@ -1079,8 +1086,36 @@ private extension LeanUpElectiveGroup {
 }
 
 private extension LeanUpElectiveOption {
-    var electiveDisciplinaryTrackValues: [LeanUpElectiveDisciplinaryTrack] {
+    var disciplinaryTrackValues: [LeanUpElectiveDisciplinaryTrack] {
         disciplinaryTracks.compactMap(LeanUpElectiveDisciplinaryTrack.init(rawValue:))
+    }
+
+    var effectivePortfolioPrompt: String {
+        if !portfolioPrompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return portfolioPrompt
+        }
+
+        guard !portfolioProject.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            return ""
+        }
+
+        return "Hola, soy estudiante de \(name) en la UNAD Colombia y tengo que desarrollar este proyecto de portafolio: \(portfolioProject). Quiero que me guies paso a paso para entenderlo y construirlo bien, no que lo hagas por mi. Empieza explicandome en palabras sencillas cual es el objetivo real de este proyecto y que entregables deberia preparar. Luego preguntame que enfoque quiero darle y espera mi respuesta antes de continuar."
+    }
+}
+
+struct LeanUpElectiveOptionSection: View {
+    let title: String
+    let systemImage: String
+    let detail: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Label(title, systemImage: systemImage)
+                .font(.subheadline.weight(.semibold))
+            Text(detail)
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+        }
     }
 }
 
@@ -1133,7 +1168,7 @@ struct LeanUpMallaLinkedInContent: View {
                 LeanUpCopyFeedbackButton(
                     sourceText: text,
                     idleTitle: "Copiar texto",
-                    successTitle: "✓ Copiado",
+                    successTitle: "âœ“ Copiado",
                     systemImage: "doc.on.doc",
                     successSystemImage: "checkmark.circle.fill"
                 )
@@ -1196,8 +1231,8 @@ struct LeanUpMallaPortfolioContent: View {
             if !prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 LeanUpCopyFeedbackButton(
                     sourceText: prompt,
-                    idleTitle: "🤖 Copiar prompt para IA",
-                    successTitle: "✓ Prompt copiado",
+                    idleTitle: "ðŸ¤– Copiar prompt para IA",
+                    successTitle: "âœ“ Prompt copiado",
                     systemImage: "sparkles.rectangle.stack",
                     successSystemImage: "checkmark.circle.fill",
                     fillColor: Color.unadBlue.opacity(0.09),
@@ -1251,6 +1286,115 @@ struct LeanUpCopyFeedbackButton: View {
     }
 }
 
+@MainActor
+struct LeanUpInlineDetailSearchOverlay: View {
+    @ObservedObject var model: LeanUpAppModel
+    @Binding var query: String
+    @Binding var isExpanded: Bool
+    let onSelect: (LeanUpMallaDetailRoute) -> Void
+
+    var body: some View {
+        VStack(alignment: .trailing, spacing: 10) {
+            if isExpanded {
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack(spacing: 10) {
+                        Image(systemName: "magnifyingglass")
+                            .foregroundStyle(Color.unadBlue)
+
+                        TextField("Busca otra materia o electiva", text: $query)
+                            .textInputAutocapitalization(.never)
+                            .disableAutocorrection(true)
+
+                        Button {
+                            withAnimation(.spring(response: 0.26, dampingFraction: 0.84)) {
+                                query = ""
+                                isExpanded = false
+                            }
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+
+                    if !trimmedQuery.isEmpty {
+                        Divider()
+
+                        VStack(alignment: .leading, spacing: 8) {
+                            if results.isEmpty {
+                                Text("No encontramos coincidencias con ese texto.")
+                                    .font(.footnote)
+                                    .foregroundStyle(.secondary)
+                            } else {
+                                ForEach(Array(results.prefix(6))) { result in
+                                    Button {
+                                        query = ""
+                                        withAnimation(.spring(response: 0.26, dampingFraction: 0.84)) {
+                                            isExpanded = false
+                                        }
+                                        onSelect(result.route)
+                                    } label: {
+                                        VStack(alignment: .leading, spacing: 4) {
+                                            Text(result.title)
+                                                .font(.subheadline.weight(.semibold))
+                                                .foregroundStyle(.primary)
+                                            Text(result.subtitle)
+                                                .font(.caption)
+                                                .foregroundStyle(.secondary)
+                                                .lineLimit(2)
+                                        }
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                        .padding(.vertical, 4)
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                            }
+                        }
+                    }
+                }
+                .padding(14)
+                .frame(maxWidth: 320)
+                .background(
+                    RoundedRectangle(cornerRadius: 24, style: .continuous)
+                        .fill(Color(.systemBackground).opacity(0.97))
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 24, style: .continuous)
+                        .stroke(Color.primary.opacity(0.08), lineWidth: 1)
+                )
+                .shadow(color: Color.black.opacity(0.08), radius: 18, y: 10)
+            } else {
+                Button {
+                    withAnimation(.spring(response: 0.26, dampingFraction: 0.84)) {
+                        isExpanded = true
+                    }
+                } label: {
+                    Image(systemName: "magnifyingglass")
+                        .font(.headline.weight(.bold))
+                        .foregroundStyle(Color.white)
+                        .padding(16)
+                        .background(
+                            Circle()
+                                .fill(Color.unadBlue)
+                        )
+                        .shadow(color: Color.unadBlue.opacity(0.22), radius: 14, y: 8)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(.top, 14)
+        .padding(.trailing, 20)
+    }
+
+    private var trimmedQuery: String {
+        query.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private var results: [LeanUpMallaSearchResult] {
+        leanUpMallaSearchResults(model: model, query: trimmedQuery)
+    }
+}
+
+@MainActor
 struct LeanUpMallaSearchView: View {
     @ObservedObject var model: LeanUpAppModel
     let onSelect: (LeanUpMallaDetailRoute) -> Void
@@ -1338,37 +1482,7 @@ struct LeanUpMallaSearchView: View {
     }
 
     private var results: [LeanUpMallaSearchResult] {
-        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return [] }
-
-        let courseResults = model.academics.courses.compactMap { course -> LeanUpMallaSearchResult? in
-            guard leanUpCourseMatches(course, query: trimmed) else { return nil }
-            return LeanUpMallaSearchResult(
-                id: "course-\(course.id)",
-                title: course.name,
-                subtitle: course.summary,
-                period: course.period,
-                route: .course(course),
-                isElective: false
-            )
-        }
-
-        let electiveResults = model.academics.electiveGroups.compactMap { group -> LeanUpMallaSearchResult? in
-            guard leanUpElectiveGroupMatches(group, query: trimmed) else { return nil }
-            return LeanUpMallaSearchResult(
-                id: "group-\(group.id)",
-                title: group.name,
-                subtitle: model.selectedOption(in: group)?.name ?? "\(group.options.count) opciones disponibles",
-                period: group.period,
-                route: .electiveGroup(group),
-                isElective: true
-            )
-        }
-
-        return (courseResults + electiveResults).sorted {
-            if $0.period == $1.period { return $0.title < $1.title }
-            return $0.period < $1.period
-        }
+        leanUpMallaSearchResults(model: model, query: query.trimmingCharacters(in: .whitespacesAndNewlines))
     }
 }
 
@@ -1627,8 +1741,44 @@ private func leanUpElectiveGroupMatches(_ group: LeanUpElectiveGroup, query: Str
     }
 }
 
+@MainActor
+private func leanUpMallaSearchResults(model: LeanUpAppModel, query: String) -> [LeanUpMallaSearchResult] {
+    guard !query.isEmpty else { return [] }
+
+    let courseResults = model.academics.courses.compactMap { course -> LeanUpMallaSearchResult? in
+        guard leanUpCourseMatches(course, query: query) else { return nil }
+        return LeanUpMallaSearchResult(
+            id: "course-\(course.id)",
+            title: course.name,
+            subtitle: course.summary,
+            period: course.period,
+            route: .course(course),
+            isElective: false
+        )
+    }
+
+    let electiveResults = model.academics.electiveGroups.compactMap { group -> LeanUpMallaSearchResult? in
+        guard leanUpElectiveGroupMatches(group, query: query) else { return nil }
+        return LeanUpMallaSearchResult(
+            id: "group-\(group.id)",
+            title: group.name,
+            subtitle: model.selectedOption(in: group)?.name ?? "\(group.options.count) opciones disponibles",
+            period: group.period,
+            route: .electiveGroup(group),
+            isElective: true
+        )
+    }
+
+    return (courseResults + electiveResults).sorted {
+        if $0.period == $1.period { return $0.title < $1.title }
+        return $0.period < $1.period
+    }
+}
+
 private func leanUpMatches(_ value: String, query: String) -> Bool {
     let normalizedValue = value.folding(options: [.diacriticInsensitive, .caseInsensitive], locale: .current)
     let normalizedQuery = query.folding(options: [.diacriticInsensitive, .caseInsensitive], locale: .current)
     return normalizedValue.contains(normalizedQuery)
 }
+
+

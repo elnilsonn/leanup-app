@@ -205,9 +205,9 @@ struct LeanUpDashboardPaceCard: View {
                     )
 
                     LeanUpDashboardAccentStat(
-                        title: "Base",
-                        value: model.studiedPeriodsText,
-                        caption: "Periodos con notas",
+                        title: "En curso",
+                        value: model.inProgressCountText,
+                        caption: "Carga activa",
                         tint: .unadCyan
                     )
                 }

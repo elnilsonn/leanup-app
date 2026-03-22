@@ -474,6 +474,19 @@ Migrar LeanUp desde una base hibrida/web hacia una app nativa de iPhone con `Swi
   - sistema de badges/logros desbloqueables
 - Con esto `Dashboard` deja de repetir ideas sueltas y pasa a leer de verdad la carrera desde datos concretos.
 
+### 42. Estado academico `En curso` integrado en modelo, malla y dashboard
+
+- Se agrego un estado real de progreso para materias y electivas: `en curso`.
+- Ese estado ya no es solo visual:
+  - se guarda en el snapshot nativo
+  - aparece en `Malla`
+  - entra en filtros y resumenes
+  - alimenta mejor la proyeccion de ritmo del dashboard
+- Tambien se ajusto la logica temporal del ritmo:
+  - la proyeccion ya trabaja con ciclos de 4 meses
+  - la carga marcada como `en curso` reduce mejor la lectura de lo que falta
+- En detalle de materias y electivas ya existe un control nativo para marcar ese estado mientras aun no llega la nota final.
+
 ## Estado actual
 
 ### Ya funcional
@@ -506,6 +519,7 @@ Migrar LeanUp desde una base hibrida/web hacia una app nativa de iPhone con `Swi
 - Malla ahora funciona por periodo visible con filtros rapidos y busqueda flotante
 - Malla ahora deja fija la barra de periodos fuera del scroll y vuelve a patrones mas nativos del sistema para buscar y volver
 - Dashboard reorganizado con enfoque en ritmo, promedio, rendimiento y logros
+- Estado `en curso` disponible para materias y electivas, conectado al ritmo de avance
 
 ### Riesgos actuales
 

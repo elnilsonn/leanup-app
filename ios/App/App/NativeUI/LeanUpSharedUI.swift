@@ -69,7 +69,9 @@ struct LeanUpStatusChip: View {
 
     var body: some View {
         HStack(spacing: 6) {
-            Text(note.map(LeanUpGradeFormatter.display) ?? "-")
+            if let note {
+                Text(LeanUpGradeFormatter.display(note))
+            }
             Text(status.title)
         }
         .font(.caption.weight(.semibold))
@@ -83,6 +85,8 @@ struct LeanUpStatusChip: View {
         switch status {
         case .pending:
             return Color.primary.opacity(0.08)
+        case .inProgress:
+            return Color.unadCyan.opacity(0.16)
         case .approved:
             return Color.green.opacity(0.14)
         case .failed:
@@ -94,6 +98,8 @@ struct LeanUpStatusChip: View {
         switch status {
         case .pending:
             return .secondary
+        case .inProgress:
+            return .unadCyan
         case .approved:
             return .green
         case .failed:

@@ -109,7 +109,7 @@ struct LeanUpMallaOverviewCard: View {
                     LeanUpInlineMetric(title: "Promedio", value: model.averageText)
                     LeanUpInlineMetric(title: "Creditos", value: "\(model.earnedCredits)")
                     LeanUpInlineMetric(title: "Por recuperar", value: "\(model.failedCount)")
-                    LeanUpInlineMetric(title: "Sin nota", value: "\(model.pendingCourses.count)")
+                    LeanUpInlineMetric(title: "En curso", value: "\(model.inProgressCount)")
                 }
 
                 VStack(alignment: .leading, spacing: 8) {
@@ -128,6 +128,10 @@ struct LeanUpMallaOverviewCard: View {
     private var summaryLine: String {
         if model.failedCount > 0 {
             return "Tu prioridad inmediata es recuperar \(model.failedCount) materia(s)."
+        }
+
+        if model.inProgressCount > 0 {
+            return "Tienes \(model.inProgressCount) elemento(s) en curso que ya cuentan para leer mejor tu ritmo."
         }
 
         if let period = model.focusPeriod {
@@ -171,9 +175,13 @@ struct LeanUpMallaFocusCard: View {
 
                     LeanUpPriorityRow(
                         icon: "square.and.pencil",
-                        tint: .unadBlue,
-                        title: "\(model.pendingCourses.count) materias aun sin nota registrada",
-                        detail: "Si ya tienes calificaciones definitivas, esta pantalla es donde mas valor ganas al actualizarlas."
+                        tint: model.inProgressCount > 0 ? .unadCyan : .unadBlue,
+                        title: model.inProgressCount > 0
+                            ? "\(model.inProgressCount) materias o electivas estan en curso"
+                            : "\(model.pendingCourses.count) materias aun sin nota registrada",
+                        detail: model.inProgressCount > 0
+                            ? "Ese bloque alimenta mejor la proyeccion de ritmo mientras llegan tus notas finales."
+                            : "Si ya tienes calificaciones definitivas, esta pantalla es donde mas valor ganas al actualizarlas."
                     )
                 }
 
@@ -369,7 +377,11 @@ struct LeanUpSelectedPeriodSection: View {
                                 Button {
                                     onOpen(.course(course))
                                 } label: {
-                                    LeanUpCourseRow(course: course, note: model.note(for: course))
+                                    LeanUpCourseRow(
+                                        course: course,
+                                        note: model.note(for: course),
+                                        status: model.courseStatus(for: course)
+                                    )
                                 }
                                 .buttonStyle(.plain)
                             }
@@ -401,7 +413,8 @@ struct LeanUpSelectedPeriodSection: View {
                                     LeanUpElectiveGroupRow(
                                         group: group,
                                         selectedOption: model.selectedOption(in: group),
-                                        note: model.selectedOption(in: group).flatMap { model.electiveNote(groupName: group.name, optionCode: $0.code) }
+                                        note: model.selectedOption(in: group).flatMap { model.electiveNote(groupName: group.name, optionCode: $0.code) },
+                                        status: model.electiveStatus(for: group)
                                     )
                                 }
                                 .buttonStyle(.plain)
@@ -446,6 +459,7 @@ struct LeanUpSelectedPeriodSection: View {
 struct LeanUpCourseRow: View {
     let course: LeanUpCourse
     let note: Double?
+    let status: LeanUpProgressStatus
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
@@ -477,6 +491,8 @@ struct LeanUpCourseRow: View {
 
                         if isFailed {
                             LeanUpCurriculumTag(text: "Recuperar", style: .failed)
+                        } else if isInProgress {
+                            LeanUpCurriculumTag(text: "En curso", style: .inProgress)
                         } else if isPending {
                             LeanUpCurriculumTag(text: "Sin nota", style: .pending)
                         } else {
@@ -494,12 +510,8 @@ struct LeanUpCourseRow: View {
         .padding(14)
         .background(
             RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(isFailed ? Color.red.opacity(0.08) : Color.primary.opacity(0.04))
+                .fill(backgroundFill)
         )
-    }
-
-    private var status: LeanUpProgressStatus {
-        LeanUpProgressStatus(grade: note)
     }
 
     private var isFailed: Bool {
@@ -507,9 +519,26 @@ struct LeanUpCourseRow: View {
         return false
     }
 
+    private var isInProgress: Bool {
+        if case .inProgress = status { return true }
+        return false
+    }
+
     private var isPending: Bool {
         if case .pending = status { return true }
         return false
+    }
+
+    private var backgroundFill: Color {
+        if isFailed {
+            return Color.red.opacity(0.08)
+        }
+
+        if isInProgress {
+            return Color.unadCyan.opacity(0.08)
+        }
+
+        return Color.primary.opacity(0.04)
     }
 }
 
@@ -517,10 +546,9 @@ struct LeanUpElectiveGroupRow: View {
     let group: LeanUpElectiveGroup
     let selectedOption: LeanUpElectiveOption?
     let note: Double?
+    let status: LeanUpProgressStatus
 
     var body: some View {
-        let status = LeanUpProgressStatus(grade: note)
-
         HStack(alignment: .top, spacing: 12) {
             VStack(alignment: .leading, spacing: 8) {
                 HStack(alignment: .top, spacing: 8) {
@@ -544,6 +572,9 @@ struct LeanUpElectiveGroupRow: View {
                     LeanUpCurriculumTag(text: "Electiva", style: .elective)
                     if let selectedOption {
                         LeanUpCurriculumTag(text: selectedOption.name, style: .electiveSoft)
+                    }
+                    if case .inProgress = status {
+                        LeanUpCurriculumTag(text: "En curso", style: .inProgress)
                     }
                 }
             }
@@ -569,6 +600,7 @@ enum LeanUpCurriculumTagStyle {
     case courseType(String)
     case difficulty(Int)
     case pending
+    case inProgress
     case approved
     case failed
     case elective
@@ -592,6 +624,8 @@ enum LeanUpCurriculumTagStyle {
             }
         case .pending:
             return Color.primary.opacity(0.08)
+        case .inProgress:
+            return Color.unadCyan.opacity(0.16)
         case .approved:
             return Color.green.opacity(0.16)
         case .failed:
@@ -621,6 +655,8 @@ enum LeanUpCurriculumTagStyle {
             }
         case .pending:
             return .secondary
+        case .inProgress:
+            return .unadCyan
         case .approved:
             return .green
         case .failed:
@@ -715,6 +751,15 @@ struct LeanUpCourseDetailView: View {
                             currentGrade: model.note(for: course)
                         ) { value in
                             model.setCourseGrade(value, for: course.id)
+                        }
+
+                        LeanUpAcademicStateCard(
+                            title: "Estado actual",
+                            subtitle: "Marcala como en curso mientras la estas viendo. Cuando llegue la nota final, esa nota pasa a mandar.",
+                            isOn: model.isCourseInProgress(course),
+                            canToggle: model.note(for: course) == nil
+                        ) { isOn in
+                            model.setCourseInProgress(isOn, for: course.id)
                         }
                     }
                     .padding(.horizontal, 20)
@@ -829,6 +874,15 @@ struct LeanUpElectiveGroupDetailView: View {
                                             currentGrade: model.electiveNote(groupName: group.name, optionCode: option.code)
                                         ) { value in
                                             model.setElectiveGrade(value, groupName: group.name, optionCode: option.code)
+                                        }
+
+                                        LeanUpAcademicStateCard(
+                                            title: "Estado actual",
+                                            subtitle: "Usa en curso para que LeanUp entienda tu carga activa aun sin nota final.",
+                                            isOn: model.isElectiveInProgress(group),
+                                            canToggle: model.electiveNote(groupName: group.name, optionCode: option.code) == nil
+                                        ) { isOn in
+                                            model.setElectiveInProgress(isOn, groupName: group.name)
                                         }
                                     }
                                 }
@@ -1267,6 +1321,39 @@ struct LeanUpGradeEditorCard: View {
     }
 }
 
+struct LeanUpAcademicStateCard: View {
+    let title: String
+    let subtitle: String
+    let isOn: Bool
+    let canToggle: Bool
+    let onChange: (Bool) -> Void
+
+    var body: some View {
+        LeanUpSurfaceCard {
+            VStack(alignment: .leading, spacing: 14) {
+                Label(title, systemImage: "calendar.badge.clock")
+                    .font(.headline.weight(.semibold))
+
+                Text(subtitle)
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+
+                Toggle(isOn: Binding(get: { isOn }, set: onChange)) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Marcar como en curso")
+                            .font(.subheadline.weight(.semibold))
+                        Text(canToggle ? "Esto ayuda a que LeanUp lea mejor tu carga actual." : "Si ya registraste una nota final, la materia deja de estar en curso.")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .tint(.unadCyan)
+                .disabled(!canToggle)
+            }
+        }
+    }
+}
+
 enum LeanUpGradeFormatter {
     static func parse(_ raw: String) -> Double? {
         var text = raw.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -1300,9 +1387,9 @@ private extension LeanUpMallaFilter {
         case .all:
             return true
         case .pending:
-            return status != .approved
-        case .inProgress:
             return status == .pending
+        case .inProgress:
+            return status == .inProgress
         case .approved:
             return status == .approved
         case .failed:
@@ -1320,9 +1407,9 @@ private extension LeanUpMallaFilter {
         case .all:
             return true
         case .pending:
-            return selected == nil || status != .approved
+            return selected == nil || status == .pending
         case .inProgress:
-            return selected != nil && status == .pending
+            return selected != nil && status == .inProgress
         case .approved:
             return status == .approved
         case .failed:

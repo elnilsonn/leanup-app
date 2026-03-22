@@ -35,6 +35,12 @@ The native iOS side stores the same JSON encoded as Base64 inside `UserDefaults`
   "electivosNotas": {
     "Electivo Componente Economico-Administrativo:::120002": 4.0
   },
+  "cursosEnCurso": {
+    "12": true
+  },
+  "electivosEnCurso": {
+    "Electivo Componente Social-Solidario": true
+  },
   "username": "Nelson",
   "darkMode": false,
   "themeMode": "system"
@@ -116,6 +122,29 @@ Compatibility rule:
 - if `themeMode` exists, it should drive the theme
 - if `themeMode` is missing, the app may fall back to `darkMode`
 
+### `cursosEnCurso`
+
+Dictionary of regular courses currently being taken without a final grade yet.
+
+- key: course `id` converted to string
+- value: boolean, normally `true`
+
+Important rule:
+
+- if a course already has a final grade in `notas`, it must not remain in `cursosEnCurso`
+
+### `electivosEnCurso`
+
+Dictionary of elective groups currently active without a final grade yet.
+
+- key: elective group name
+- value: boolean, normally `true`
+
+Important rules:
+
+- the group must also have a selected option in `electivosSeleccionados`
+- if the selected elective already has a final grade in `electivosNotas`, the group must not remain in `electivosEnCurso`
+
 ## Normalization rules
 
 Any future native code should follow these rules before saving:
@@ -124,7 +153,9 @@ Any future native code should follow these rules before saving:
 2. Keep `username` non-empty. If empty, use `"Usuario"`.
 3. Keep `themeMode` in the allowed set: `light`, `dark`, `system`.
 4. Keep `darkMode` as a compatibility mirror for older logic.
-5. Save numeric grades as numbers, not strings.
+5. Remove `cursosEnCurso` entries that already have a final grade.
+6. Remove `electivosEnCurso` entries without selected option or with final grade.
+7. Save numeric grades as numbers, not strings.
 
 ## Migration rules
 
@@ -153,4 +184,3 @@ This contract was extracted from:
 
 - `www/index.html`
 - `ios/App/App/AppDelegate.swift`
-

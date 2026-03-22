@@ -10,6 +10,8 @@ struct LeanUpSnapshot: Codable, Equatable {
     var notas: [String: Double]
     var electivosSeleccionados: [String: String]
     var electivosNotas: [String: Double]
+    var cursosEnCurso: [String: Bool]
+    var electivosEnCurso: [String: Bool]
     var username: String
     var darkMode: Bool
     var themeMode: LeanUpThemeMode
@@ -20,6 +22,8 @@ struct LeanUpSnapshot: Codable, Equatable {
         notas: [String: Double] = [:],
         electivosSeleccionados: [String: String] = [:],
         electivosNotas: [String: Double] = [:],
+        cursosEnCurso: [String: Bool] = [:],
+        electivosEnCurso: [String: Bool] = [:],
         username: String = "Usuario",
         darkMode: Bool = false,
         themeMode: LeanUpThemeMode = .light
@@ -27,6 +31,8 @@ struct LeanUpSnapshot: Codable, Equatable {
         self.notas = notas
         self.electivosSeleccionados = electivosSeleccionados
         self.electivosNotas = electivosNotas
+        self.cursosEnCurso = cursosEnCurso
+        self.electivosEnCurso = electivosEnCurso
         self.username = username
         self.darkMode = darkMode
         self.themeMode = themeMode
@@ -38,6 +44,8 @@ struct LeanUpSnapshot: Codable, Equatable {
         notas = try container.decodeIfPresent([String: Double].self, forKey: .notas) ?? [:]
         electivosSeleccionados = try container.decodeIfPresent([String: String].self, forKey: .electivosSeleccionados) ?? [:]
         electivosNotas = try container.decodeIfPresent([String: Double].self, forKey: .electivosNotas) ?? [:]
+        cursosEnCurso = try container.decodeIfPresent([String: Bool].self, forKey: .cursosEnCurso) ?? [:]
+        electivosEnCurso = try container.decodeIfPresent([String: Bool].self, forKey: .electivosEnCurso) ?? [:]
         username = try container.decodeIfPresent(String.self, forKey: .username) ?? "Usuario"
         darkMode = try container.decodeIfPresent(Bool.self, forKey: .darkMode) ?? false
         themeMode = try container.decodeIfPresent(LeanUpThemeMode.self, forKey: .themeMode) ?? .light
@@ -54,6 +62,16 @@ struct LeanUpSnapshot: Codable, Equatable {
             let parts = key.components(separatedBy: ":::")
             guard parts.count == 2 else { return false }
             return copy.electivosSeleccionados[parts[0]] == parts[1]
+        }
+
+        copy.cursosEnCurso = copy.cursosEnCurso.filter { key, value in
+            value && copy.notas[key] == nil
+        }
+
+        copy.electivosEnCurso = copy.electivosEnCurso.filter { groupName, value in
+            guard value, let selectedCode = copy.electivosSeleccionados[groupName] else { return false }
+            let noteKey = "\(groupName):::\(selectedCode)"
+            return copy.electivosNotas[noteKey] == nil
         }
 
         switch copy.themeMode {
@@ -380,6 +398,10 @@ final class LeanUpAppModel: ObservableObject {
         allGrades.filter { $0 < 3.0 }.count
     }
 
+    var inProgressCount: Int {
+        inProgressCourseCount + inProgressElectiveCount
+    }
+
     var selectedElectivesCount: Int {
         snapshot.electivosSeleccionados.count
     }
@@ -389,7 +411,7 @@ final class LeanUpAppModel: ObservableObject {
     }
 
     var pendingCount: Int {
-        max(totalTrackableItems - approvedCount - failedCount, 0)
+        max(totalTrackableItems - approvedCount - failedCount - inProgressCount, 0)
     }
 
     var earnedCredits: Int {
@@ -564,7 +586,18 @@ final class LeanUpAppModel: ObservableObject {
 
     var pendingCourses: [LeanUpCourse] {
         academics.courses
-            .filter { note(for: $0) == nil }
+            .filter { courseStatus(for: $0) == .pending }
+            .sorted {
+                if $0.period == $1.period {
+                    return $0.name < $1.name
+                }
+                return $0.period < $1.period
+            }
+    }
+
+    var inProgressCourses: [LeanUpCourse] {
+        academics.courses
+            .filter { courseStatus(for: $0) == .inProgress }
             .sorted {
                 if $0.period == $1.period {
                     return $0.name < $1.name
@@ -642,14 +675,14 @@ final class LeanUpAppModel: ObservableObject {
     var estimatedRemainingPeriods: Double? {
         let pace = paceEquivalentPeriodsPerStudiedPeriod
         guard pace > 0 else { return nil }
-        let remainingEquivalent = max(Double(max(periods.count, 1)) - completedEquivalentPeriods, 0)
+        let remainingEquivalent = max(Double(max(periods.count, 1)) - completedEquivalentPeriods - inProgressEquivalentPeriods, 0)
         return remainingEquivalent / pace
     }
 
     var estimatedGraduationDate: Date? {
         guard approvedCount < totalTrackableItems else { return Date() }
         guard let remainingPeriods = estimatedRemainingPeriods else { return nil }
-        let months = Int((remainingPeriods * 6.0).rounded())
+        let months = Int((remainingPeriods * 4.0).rounded())
         return Calendar.current.date(byAdding: .month, value: max(months, 0), to: Date())
     }
 
@@ -684,7 +717,11 @@ final class LeanUpAppModel: ObservableObject {
             return "Cuando registres mas notas en distintos periodos, LeanUp podra estimar mejor el cierre real de la carrera."
         }
 
-        return "La lectura usa tu avance aprobado, los periodos donde ya tienes notas y la velocidad real con la que has venido cerrando la malla."
+        if inProgressCount > 0 {
+            return "La lectura usa tu avance aprobado, tu carga actual marcada como en curso y la duracion real de ciclos de 4 meses."
+        }
+
+        return "La lectura usa tu avance aprobado, los periodos donde ya tienes notas y una duracion estimada de 4 meses por ciclo."
     }
 
     var paceValueText: String {
@@ -699,6 +736,10 @@ final class LeanUpAppModel: ObservableObject {
 
     var studiedPeriodsText: String {
         studiedPeriodsCount == 0 ? "--" : "\(studiedPeriodsCount)"
+    }
+
+    var inProgressCountText: String {
+        inProgressCount == 0 ? "--" : "\(inProgressCount)"
     }
 
     var periodAverageSeries: [LeanUpPeriodAveragePoint] {
@@ -847,13 +888,26 @@ final class LeanUpAppModel: ObservableObject {
         snapshot.electivosNotas["\(groupName):::\(optionCode)"]
     }
 
+    func isCourseInProgress(_ course: LeanUpCourse) -> Bool {
+        snapshot.cursosEnCurso[String(course.id)] == true && note(for: course) == nil
+    }
+
+    func isElectiveInProgress(_ group: LeanUpElectiveGroup) -> Bool {
+        snapshot.electivosEnCurso[group.name] == true &&
+        selectedOption(in: group) != nil &&
+        selectedOption(in: group).flatMap { electiveNote(groupName: group.name, optionCode: $0.code) } == nil
+    }
+
     func courseStatus(for course: LeanUpCourse) -> LeanUpProgressStatus {
-        LeanUpProgressStatus(grade: note(for: course))
+        LeanUpProgressStatus(grade: note(for: course), isInProgress: isCourseInProgress(course))
     }
 
     func electiveStatus(for group: LeanUpElectiveGroup) -> LeanUpProgressStatus {
         guard let option = selectedOption(in: group) else { return .pending }
-        return LeanUpProgressStatus(grade: electiveNote(groupName: group.name, optionCode: option.code))
+        return LeanUpProgressStatus(
+            grade: electiveNote(groupName: group.name, optionCode: option.code),
+            isInProgress: isElectiveInProgress(group)
+        )
     }
 
     func progress(for period: Int) -> LeanUpPeriodProgress {
@@ -867,7 +921,7 @@ final class LeanUpAppModel: ObservableObject {
             switch courseStatus(for: course) {
             case .approved: approved += 1
             case .failed: failed += 1
-            case .pending: break
+            case .pending, .inProgress: break
             }
         }
 
@@ -875,7 +929,7 @@ final class LeanUpAppModel: ObservableObject {
             switch electiveStatus(for: group) {
             case .approved: approved += 1
             case .failed: failed += 1
-            case .pending: break
+            case .pending, .inProgress: break
             }
         }
 
@@ -891,14 +945,30 @@ final class LeanUpAppModel: ObservableObject {
             let key = String(courseID)
             if let grade {
                 snapshot.notas[key] = grade
+                snapshot.cursosEnCurso.removeValue(forKey: key)
             } else {
                 snapshot.notas.removeValue(forKey: key)
             }
         }
     }
 
+    func setCourseInProgress(_ isInProgress: Bool, for courseID: Int) {
+        writeSnapshot { snapshot in
+            let key = String(courseID)
+            if isInProgress, snapshot.notas[key] == nil {
+                snapshot.cursosEnCurso[key] = true
+            } else {
+                snapshot.cursosEnCurso.removeValue(forKey: key)
+            }
+        }
+    }
+
     func selectElectiveOption(groupName: String, optionCode: String) {
-        writeSnapshot { $0.electivosSeleccionados[groupName] = optionCode }
+        writeSnapshot {
+            $0.electivosSeleccionados[groupName] = optionCode
+            let notePrefix = "\(groupName):::"
+            $0.electivosNotas = $0.electivosNotas.filter { $0.key == "\(notePrefix)\(optionCode)" || !$0.key.hasPrefix(notePrefix) }
+        }
     }
 
     func setElectiveGrade(_ grade: Double?, groupName: String, optionCode: String) {
@@ -907,8 +977,25 @@ final class LeanUpAppModel: ObservableObject {
             let key = "\(groupName):::\(optionCode)"
             if let grade {
                 snapshot.electivosNotas[key] = grade
+                snapshot.electivosEnCurso.removeValue(forKey: groupName)
             } else {
                 snapshot.electivosNotas.removeValue(forKey: key)
+            }
+        }
+    }
+
+    func setElectiveInProgress(_ isInProgress: Bool, groupName: String) {
+        writeSnapshot { snapshot in
+            guard let selectedCode = snapshot.electivosSeleccionados[groupName] else {
+                snapshot.electivosEnCurso.removeValue(forKey: groupName)
+                return
+            }
+
+            let key = "\(groupName):::\(selectedCode)"
+            if isInProgress, snapshot.electivosNotas[key] == nil {
+                snapshot.electivosEnCurso[groupName] = true
+            } else {
+                snapshot.electivosEnCurso.removeValue(forKey: groupName)
             }
         }
     }
@@ -953,16 +1040,35 @@ final class LeanUpAppModel: ObservableObject {
     private func gradeEntries(in period: Int) -> [LeanUpGradeEntry] {
         gradedItems.filter { $0.period == period }
     }
+
+    private var inProgressCourseCount: Int {
+        academics.courses.filter { isCourseInProgress($0) }.count
+    }
+
+    private var inProgressElectiveCount: Int {
+        academics.electiveGroups.filter { isElectiveInProgress($0) }.count
+    }
+
+    private var averageItemsPerPeriod: Double {
+        guard !periods.isEmpty else { return Double(totalTrackableItems) }
+        return Double(totalTrackableItems) / Double(periods.count)
+    }
+
+    private var inProgressEquivalentPeriods: Double {
+        guard averageItemsPerPeriod > 0 else { return 0 }
+        return Double(inProgressCount) / averageItemsPerPeriod
+    }
 }
 
 enum LeanUpProgressStatus: Equatable {
     case pending
+    case inProgress
     case approved
     case failed
 
-    init(grade: Double?) {
+    init(grade: Double?, isInProgress: Bool = false) {
         guard let grade else {
-            self = .pending
+            self = isInProgress ? .inProgress : .pending
             return
         }
         self = grade >= 3.0 ? .approved : .failed
@@ -971,6 +1077,7 @@ enum LeanUpProgressStatus: Equatable {
     var title: String {
         switch self {
         case .pending: return "Pendiente"
+        case .inProgress: return "En curso"
         case .approved: return "Aprobada"
         case .failed: return "Reprobada"
         }

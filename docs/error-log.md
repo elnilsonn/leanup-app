@@ -196,66 +196,23 @@ Regla:
 
 - Si un helper de SwiftUI consulta estado del modelo observable de pantalla, debe vivir en `MainActor` o recibir valores ya resueltos.
 
-### 10. Inventar controles custom cuando Apple ya ofrece un patron nativo
+### 10. Mojibake en `native-academics.json`
 
 Que paso:
 
-- Para la busqueda dentro del detalle de `Materia` y `Electiva` se intento primero un overlay custom con lupa flotante y panel propio.
+- La app empezo a mostrar textos con jeroglificos del tipo `TeÃ³rica`, `AprenderÃ¡s` y `AnÃ¡lisis`.
 
 Por que paso:
 
-- Se priorizo resolver rapido la interaccion sin verificar primero si `SwiftUI` ya tenia una API nativa del sistema para ese flujo.
-- Eso rompia el criterio acordado del proyecto: antes de inventar UI nueva, revisar siempre la guia Apple y las APIs nativas disponibles.
+- El archivo `ios/App/App/native-academics.json` quedo con texto mojibake por una conversion de codificacion incorrecta entre UTF-8 y Windows-1252.
+- El problema estaba en los datos academicos, no en `Dashboard`, `Malla` ni los componentes compartidos.
 
 Como se soluciono:
 
-- Se reemplazo ese enfoque por busqueda nativa del sistema con `searchable`, disparada desde la barra superior.
-- Se dejo el comportamiento dentro del mismo panel, sin abrir una ventana nueva.
+- Se hizo una reparacion de codificacion directamente sobre `native-academics.json`.
+- Se volvio a barrer todo `ios/App/App` buscando patrones tipicos (`Ã`, `Â`, `â`, `ð`, `�`) para confirmar que no quedaran restos visibles.
 
 Regla:
 
-- En LeanUp, antes de crear overlays, botones flotantes, buscadores o navegacion custom, revisar primero si Apple ya resuelve ese patron en `SwiftUI` o `UIKit`.
-- Si existe una solucion nativa razonable, usarla primero.
-- Solo crear una solucion custom cuando la alternativa nativa no cubra bien la necesidad real.
-
-### 11. Asumir que `if #available` basta dentro de un `ViewModifier`
-
-Que paso:
-
-- La busqueda nativa del detalle de `Malla` rompio compilacion al usar `.searchSuggestions`.
-
-Por que paso:
-
-- El proyecto compila con target minimo `iOS 15.0`.
-- Aunque la llamada estaba dentro de `if #available(iOS 16.0, *)`, el compilador no acepto esa API reciente dentro de un `ViewModifier` generico sin helpers con disponibilidad explicita.
-
-Como se soluciono:
-
-- Se separo la implementacion en helpers privados marcados con `@available(iOS 17.0, *)` y `@available(iOS 16.0, *)`.
-- Para `iOS 15` se dejo fallback nativo con `searchable`, pero sin `searchSuggestions`.
-
-Regla:
-
-- Si una API de SwiftUI tiene disponibilidad reciente, no asumir que un `if #available` dentro de un `ViewModifier` o un builder complejo sera suficiente.
-- Cuando el compilador siga fallando por disponibilidad, mover esa logica a helpers o tipos con `@available` explicito.
-
-### 12. Usar `ViewThatFits` en un proyecto que sigue compilando para iOS 15
-
-Que paso:
-
-- El `Dashboard` rompio compilacion al intentar usar `ViewThatFits` para controlar el ancho y evitar rebote lateral.
-
-Por que paso:
-
-- `ViewThatFits` solo esta disponible desde `iOS 16.0`.
-- El proyecto sigue compilando con target minimo `iOS 15.0`, asi que esa API no se puede usar sin aislarla o reemplazarla.
-
-Como se soluciono:
-
-- Se reemplazo `ViewThatFits` por layouts compatibles con iOS 15.
-- En vez de depender de adaptacion automatica del sistema, se dejaron composiciones verticales y filas mas controladas para evitar desborde horizontal.
-
-Regla:
-
-- Antes de meter una API moderna de layout en LeanUp, confirmar primero su disponibilidad contra el deployment target real del proyecto.
-- Si el objetivo minimo sigue siendo iOS 15, preferir `HStack`, `VStack`, `LazyVGrid` o helpers propios antes que APIs de ajuste nuevas.
+- Si aparecen jeroglificos en LeanUp, revisar primero `native-academics.json` antes de tocar vistas o layout.
+- Despues de editar o importar texto masivo, pasar una verificacion automatica de mojibake sobre `ios/App/App`.

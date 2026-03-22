@@ -511,7 +511,7 @@ Migrar LeanUp desde una base hibrida/web hacia una app nativa de iPhone con `Swi
 - El filtro por ruta no se metio en la malla general. Quedo dentro del detalle de la electiva en `LeanUpMallaScreen.swift`, que era el lugar correcto segun la aclaracion del usuario.
 - Desde el panel de detalle ya se puede cambiar entre rutas disciplinares sin salir de la electiva, manteniendo la seleccion y el contexto de cada bloque.
 
-### 45. Electivos disciplinares unificados por grupo y busqueda nativa dentro del detalle
+### 45. Electivos disciplinares unificados por grupo y busqueda inline dentro del detalle
 
 - Los 6 `Electivo Disciplinar Especifico` ahora cargan el mismo catalogo completo de 18 opciones dentro de `native-academics.json`.
 - Cada opcion disciplinar guarda internamente sus rutas (`Transformacion Digital`, `Competitividad`, `Sustentabilidad`) para que el banner del detalle solo filtre dentro del mismo grupo.
@@ -523,29 +523,7 @@ Migrar LeanUp desde una base hibrida/web hacia una app nativa de iPhone con `Swi
   - habilidades
   - traductor de LinkedIn
   - portafolio con prompt de IA efectivo
-- La busqueda dentro de `Materia` y `Electiva` ya no abre una ventana nueva.
-- El acceso sale desde la barra superior del sistema y la busqueda se resuelve con patron nativo de `SwiftUI`, dentro del mismo panel.
-- Se corrigio explicitamente el intento anterior de usar un overlay custom para este flujo.
-
-### 46. Ajuste fino de busqueda local en detalle y contencion del dashboard
-
-- La busqueda dentro del detalle de `Electiva` ya no consulta otros grupos disciplinares.
-- Ahora filtra solo dentro del mismo grupo abierto.
-- Si el usuario escribe en la busqueda, la consulta ignora temporalmente la ruta disciplinar seleccionada para buscar en todo el catalogo de ese mismo electivo.
-- En `Materia`, los resultados de busqueda ya aparecen dentro del mismo panel en vez de depender de una vista aparte.
-- Para iOS 26, el detalle adopta el patron nativo minimizado del sistema con `searchToolbarBehavior(.minimize)` para acercarse mas al comportamiento de Liquid Glass y dejar que el sistema resuelva la transicion de lupa a barra.
-- En `Dashboard` se recorto el desborde del hero y se suavizo el ajuste de las `pills` para reducir el pequeno scroll horizontal no deseado.
-
-### 47. Rebote lateral del dashboard rastreado fuera del archivo visual
-
-- El movimiento lateral tipo "estiramiento" del `Dashboard` no se trato como un problema principal de `LeanUpDashboardScreen.swift`.
-- La investigacion apunto mas bien al `UIScrollView` que SwiftUI genera para esa pantalla dentro de la shell nativa.
-- El ajuste se movio a `NativeRoot.swift`, donde el dashboard ahora se envuelve con una configuracion de scroll mas estricta:
-  - `scrollBounceBehavior(.basedOnSize, axes: .vertical)` cuando el sistema lo permite
-  - `alwaysBounceHorizontal = false`
-  - `directionalLockEnabled = true`
-  - ocultar indicador horizontal
-- Con esto la correccion se hace a nivel del comportamiento del contenedor, no del layout interno de la pantalla.
+- La busqueda dentro de `Materia` y `Electiva` ya no abre una ventana nueva: vive en el mismo panel mediante una lupa flotante que se expande a barra y permite saltar a otro detalle dentro del mismo sheet.
 
 ## Estado actual
 
@@ -593,3 +571,9 @@ Migrar LeanUp desde una base hibrida/web hacia una app nativa de iPhone con `Swi
 1. Ajustar fino el nuevo dashboard segun uso real en iPhone.
 2. Llevar la misma claridad estructural a `Perfil` y `Configuracion`.
 3. Luego entrar a la pasada grande de polish visual y consistencia total.
+
+## Actualizacion 2026-03-22 - Reparacion de textos rotos
+
+- Se corrigio la codificacion de `ios/App/App/native-academics.json`, que estaba provocando jeroglificos visibles en la app.
+- Se verifico el target iPhone completo (`ios/App/App`) para confirmar que ya no quedaran patrones tipicos de mojibake en archivos `.swift`, `.json` o `.plist`.
+- No se tocaron `Dashboard`, `Malla`, `NativeRoot` ni `LeanUpSharedUI` para esta reparacion.

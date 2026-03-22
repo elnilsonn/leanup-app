@@ -2799,10 +2799,10 @@
                                                                   "Proyectos sociales",
                                                                   "Impacto social",
                                                                   "RSE",
-                                                                  "Medición de impacto"
+                                                                  "MediciÃ³n de impacto"
                                                               ],
-                                                   "linkedinText":  "Proyectos empresariales socialmente responsables con metodología de medición de impacto",
-                                                   "portfolioProject":  "Proyecto socialmente responsable: diseño, implementación y medición de impacto",
+                                                   "linkedinText":  "Proyectos empresariales socialmente responsables con metodologÃ­a de mediciÃ³n de impacto",
+                                                   "portfolioProject":  "Proyecto socialmente responsable: diseÃ±o, implementaciÃ³n y mediciÃ³n de impacto",
                                                    "portfolioPrompt":  "",
                                                    "disciplinaryTracks":  [
                                                                               "sustainability"
@@ -2811,46 +2811,46 @@
                                            ]
                            },
                            {
-                               "name":  "Electivo Disciplinar Común III",
+                               "name":  "Electivo Disciplinar ComÃºn III",
                                "period":  7,
                                "options":  [
                                                {
                                                    "code":  "126001",
                                                    "name":  "Habilidades para la Toma de Decisiones",
                                                    "credits":  3,
-                                                   "summary":  "Aprenderás herramientas para tomar mejores decisiones en entornos complejos",
-                                                   "plainLanguage":  "Es aprender a elegir bien cuando la situación es difícil",
-                                                   "outcomes":  "Manager, Director, Consultor estratégico",
+                                                   "summary":  "AprenderÃ¡s herramientas para tomar mejores decisiones en entornos complejos",
+                                                   "plainLanguage":  "Es aprender a elegir bien cuando la situaciÃ³n es difÃ­cil",
+                                                   "outcomes":  "Manager, Director, Consultor estratÃ©gico",
                                                    "skills":  [
                                                                   "Toma de decisiones",
-                                                                  "Pensamiento crítico",
+                                                                  "Pensamiento crÃ­tico",
                                                                   "Risk management"
                                                               ],
-                                                   "linkedinText":  "Herramientas para toma de decisiones estratégicas en entornos de alta incertidumbre",
-                                                   "portfolioProject":  "Análisis de decisión estratégica usando marcos de decisión multicriterio",
+                                                   "linkedinText":  "Herramientas para toma de decisiones estratÃ©gicas en entornos de alta incertidumbre",
+                                                   "portfolioProject":  "AnÃ¡lisis de decisiÃ³n estratÃ©gica usando marcos de decisiÃ³n multicriterio",
                                                    "portfolioPrompt":  ""
                                                },
                                                {
                                                    "code":  "121003",
-                                                   "name":  "Gestión de la Innovación y Transferencia Tecnológica",
+                                                   "name":  "GestiÃ³n de la InnovaciÃ³n y Transferencia TecnolÃ³gica",
                                                    "credits":  3,
-                                                   "summary":  "Aprenderás a gestionar procesos de innovación y transferencia tecnológica",
-                                                   "plainLanguage":  "Es aprender cómo las empresas adoptan tecnología nueva",
-                                                   "outcomes":  "Innovation Manager, consultor de transformación digital",
+                                                   "summary":  "AprenderÃ¡s a gestionar procesos de innovaciÃ³n y transferencia tecnolÃ³gica",
+                                                   "plainLanguage":  "Es aprender cÃ³mo las empresas adoptan tecnologÃ­a nueva",
+                                                   "outcomes":  "Innovation Manager, consultor de transformaciÃ³n digital",
                                                    "skills":  [
-                                                                  "Gestión de la innovación",
-                                                                  "Transferencia tecnológica",
+                                                                  "GestiÃ³n de la innovaciÃ³n",
+                                                                  "Transferencia tecnolÃ³gica",
                                                                   "Open innovation"
                                                               ],
-                                                   "linkedinText":  "Innovación y transferencia tecnológica: gestión de proyectos de I+D, open innovation, adopción de nuevas tecnologías y construcción de ventajas competitivas en organizaciones digitales",
-                                                   "portfolioProject":  "Mapa de innovación para empresa colombiana con roadmap y alianzas",
+                                                   "linkedinText":  "InnovaciÃ³n y transferencia tecnolÃ³gica: gestiÃ³n de proyectos de I+D, open innovation, adopciÃ³n de nuevas tecnologÃ­as y construcciÃ³n de ventajas competitivas en organizaciones digitales",
+                                                   "portfolioProject":  "Mapa de innovaciÃ³n para empresa colombiana con roadmap y alianzas",
                                                    "portfolioPrompt":  ""
                                                },
                                                {
                                                    "code":  "121012",
-                                                   "name":  "Gestión del Talento Humano",
+                                                   "name":  "GestiÃ³n del Talento Humano",
                                                    "credits":  3,
-                                                   "summary":  "Aprenderás a atraer, desarrollar y retener personas talentosas",
+                                                   "summary":  "AprenderÃ¡s a atraer, desarrollar y retener personas talentosas",
                                                    "plainLanguage":  "Es aprender a conseguir buenos empleados y mantenerlos contentos",
                                                    "outcomes":  "Gerente de RRHH, Talent Acquisition, employer branding",
                                                    "skills":  [
@@ -2858,46 +2858,46 @@
                                                                   "Employer branding",
                                                                   "Cultura organizacional"
                                                               ],
-                                                   "linkedinText":  "Gestión del talento humano en reclutamiento y retención en empresas digitales",
+                                                   "linkedinText":  "GestiÃ³n del talento humano en reclutamiento y retenciÃ³n en empresas digitales",
                                                    "portfolioProject":  "Estrategia de employer branding para empresa de marketing digital",
                                                    "portfolioPrompt":  ""
                                                },
                                                {
                                                    "code":  "126008",
-                                                   "name":  "Gerencia Estratégica de Costos y Presupuestos",
+                                                   "name":  "Gerencia EstratÃ©gica de Costos y Presupuestos",
                                                    "credits":  3,
-                                                   "summary":  "Aprenderás a planificar y controlar costos y presupuestos estratégicamente",
-                                                   "plainLanguage":  "Es aprender a no gastar más de lo que tienes y saber en qué se va el dinero",
+                                                   "summary":  "AprenderÃ¡s a planificar y controlar costos y presupuestos estratÃ©gicamente",
+                                                   "plainLanguage":  "Es aprender a no gastar mÃ¡s de lo que tienes y saber en quÃ© se va el dinero",
                                                    "outcomes":  "Controller financiero, CFO de startups, gerente financiero",
                                                    "skills":  [
                                                                   "Presupuesto",
                                                                   "Control de costos",
-                                                                  "Análisis financiero"
+                                                                  "AnÃ¡lisis financiero"
                                                               ],
-                                                   "linkedinText":  "Gerencia de costos y presupuestos en planificación financiera de empresas digitales",
-                                                   "portfolioProject":  "Presupuesto anual de marketing con análisis de ROI por canal",
+                                                   "linkedinText":  "Gerencia de costos y presupuestos en planificaciÃ³n financiera de empresas digitales",
+                                                   "portfolioProject":  "Presupuesto anual de marketing con anÃ¡lisis de ROI por canal",
                                                    "portfolioPrompt":  ""
                                                },
                                                {
                                                    "code":  "116005",
-                                                   "name":  "Matemática Financiera",
+                                                   "name":  "MatemÃ¡tica Financiera",
                                                    "credits":  3,
-                                                   "summary":  "Aprenderás a calcular el valor del dinero en el tiempo y evaluar inversiones",
-                                                   "plainLanguage":  "Es aprender a calcular si vale más el dinero ahora o en el futuro",
-                                                   "outcomes":  "Analista financiero, emprendedor con visión financiera",
+                                                   "summary":  "AprenderÃ¡s a calcular el valor del dinero en el tiempo y evaluar inversiones",
+                                                   "plainLanguage":  "Es aprender a calcular si vale mÃ¡s el dinero ahora o en el futuro",
+                                                   "outcomes":  "Analista financiero, emprendedor con visiÃ³n financiera",
                                                    "skills":  [
                                                                   "Valor presente y futuro",
-                                                                  "Análisis de inversiones",
+                                                                  "AnÃ¡lisis de inversiones",
                                                                   "Flujo de caja"
                                                               ],
-                                                   "linkedinText":  "Matemática financiera aplicada a evaluación de rentabilidad e inversiones de marketing",
-                                                   "portfolioProject":  "Análisis de rentabilidad de tres opciones de inversión en marketing digital",
+                                                   "linkedinText":  "MatemÃ¡tica financiera aplicada a evaluaciÃ³n de rentabilidad e inversiones de marketing",
+                                                   "portfolioProject":  "AnÃ¡lisis de rentabilidad de tres opciones de inversiÃ³n en marketing digital",
                                                    "portfolioPrompt":  ""
                                                }
                                            ]
                            },
                            {
-                               "name":  "Electivo Formación Complementaria III",
+                               "name":  "Electivo FormaciÃ³n Complementaria III",
                                "period":  7,
                                "options":  [
                                                {

@@ -84,20 +84,12 @@ struct LeanUpDashboardHero: View {
                     LeanUpInlineMetric(title: "Periodo foco", value: model.focusPeriod.map(String.init) ?? "Listo")
                 }
 
-                ViewThatFits(in: .horizontal) {
+                VStack(alignment: .leading, spacing: 10) {
                     HStack(spacing: 10) {
                         LeanUpPill(text: "\(model.earnedCredits) creditos", icon: "bolt.fill")
                         LeanUpPill(text: "\(model.registeredCount) notas", icon: "chart.bar.fill")
-                        LeanUpPill(text: "\(model.completedPeriodsCount) periodos cerrados", icon: "flag.checkered")
                     }
-
-                    VStack(alignment: .leading, spacing: 10) {
-                        HStack(spacing: 10) {
-                            LeanUpPill(text: "\(model.earnedCredits) creditos", icon: "bolt.fill")
-                            LeanUpPill(text: "\(model.registeredCount) notas", icon: "chart.bar.fill")
-                        }
-                        LeanUpPill(text: "\(model.completedPeriodsCount) periodos cerrados", icon: "flag.checkered")
-                    }
+                    LeanUpPill(text: "\(model.completedPeriodsCount) periodos cerrados", icon: "flag.checkered")
                 }
             }
             .padding(24)
@@ -201,15 +193,15 @@ struct LeanUpDashboardPaceCard: View {
                     detail: model.paceDetail
                 )
 
-                ViewThatFits(in: .horizontal) {
-                    HStack(spacing: 12) {
-                        LeanUpDashboardAccentStat(
-                            title: "Ritmo",
-                            value: model.paceValueText,
-                            caption: "Periodos equivalentes por tramo cursado",
-                            tint: .unadBlue
-                        )
+                VStack(spacing: 12) {
+                    LeanUpDashboardAccentStat(
+                        title: "Ritmo",
+                        value: model.paceValueText,
+                        caption: "Periodos equivalentes por tramo cursado",
+                        tint: .unadBlue
+                    )
 
+                    HStack(spacing: 12) {
                         LeanUpDashboardAccentStat(
                             title: "Restan",
                             value: model.remainingPeriodsText,
@@ -223,31 +215,6 @@ struct LeanUpDashboardPaceCard: View {
                             caption: "Carga activa",
                             tint: .unadCyan
                         )
-                    }
-
-                    VStack(spacing: 12) {
-                        LeanUpDashboardAccentStat(
-                            title: "Ritmo",
-                            value: model.paceValueText,
-                            caption: "Periodos equivalentes por tramo cursado",
-                            tint: .unadBlue
-                        )
-
-                        HStack(spacing: 12) {
-                            LeanUpDashboardAccentStat(
-                                title: "Restan",
-                                value: model.remainingPeriodsText,
-                                caption: "Periodos estimados",
-                                tint: .unadGold
-                            )
-
-                            LeanUpDashboardAccentStat(
-                                title: "En curso",
-                                value: model.inProgressCountText,
-                                caption: "Carga activa",
-                                tint: .unadCyan
-                            )
-                        }
                     }
                 }
 
@@ -366,34 +333,18 @@ struct LeanUpDashboardPerformanceCard: View {
                         text: "Cuando registres notas de materias normales, aqui apareceran tus mejores resultados y las materias mas retadoras."
                     )
                 } else {
-                    ViewThatFits(in: .horizontal) {
-                        HStack(alignment: .top, spacing: 12) {
-                            LeanUpDashboardPerformanceColumn(
-                                title: "Mejor te fue en",
-                                tint: .green,
-                                items: model.strongestCourses
-                            )
+                    VStack(spacing: 12) {
+                        LeanUpDashboardPerformanceColumn(
+                            title: "Mejor te fue en",
+                            tint: .green,
+                            items: model.strongestCourses
+                        )
 
-                            LeanUpDashboardPerformanceColumn(
-                                title: "Mas retadoras",
-                                tint: model.mostDemandingCourses.contains(where: { $0.grade < 3.0 }) ? .red : .orange,
-                                items: model.mostDemandingCourses
-                            )
-                        }
-
-                        VStack(spacing: 12) {
-                            LeanUpDashboardPerformanceColumn(
-                                title: "Mejor te fue en",
-                                tint: .green,
-                                items: model.strongestCourses
-                            )
-
-                            LeanUpDashboardPerformanceColumn(
-                                title: "Mas retadoras",
-                                tint: model.mostDemandingCourses.contains(where: { $0.grade < 3.0 }) ? .red : .orange,
-                                items: model.mostDemandingCourses
-                            )
-                        }
+                        LeanUpDashboardPerformanceColumn(
+                            title: "Mas retadoras",
+                            tint: model.mostDemandingCourses.contains(where: { $0.grade < 3.0 }) ? .red : .orange,
+                            items: model.mostDemandingCourses
+                        )
                     }
                 }
             }

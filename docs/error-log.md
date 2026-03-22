@@ -238,3 +238,24 @@ Regla:
 
 - Si una API de SwiftUI tiene disponibilidad reciente, no asumir que un `if #available` dentro de un `ViewModifier` o un builder complejo sera suficiente.
 - Cuando el compilador siga fallando por disponibilidad, mover esa logica a helpers o tipos con `@available` explicito.
+
+### 12. Usar `ViewThatFits` en un proyecto que sigue compilando para iOS 15
+
+Que paso:
+
+- El `Dashboard` rompio compilacion al intentar usar `ViewThatFits` para controlar el ancho y evitar rebote lateral.
+
+Por que paso:
+
+- `ViewThatFits` solo esta disponible desde `iOS 16.0`.
+- El proyecto sigue compilando con target minimo `iOS 15.0`, asi que esa API no se puede usar sin aislarla o reemplazarla.
+
+Como se soluciono:
+
+- Se reemplazo `ViewThatFits` por layouts compatibles con iOS 15.
+- En vez de depender de adaptacion automatica del sistema, se dejaron composiciones verticales y filas mas controladas para evitar desborde horizontal.
+
+Regla:
+
+- Antes de meter una API moderna de layout en LeanUp, confirmar primero su disponibilidad contra el deployment target real del proyecto.
+- Si el objetivo minimo sigue siendo iOS 15, preferir `HStack`, `VStack`, `LazyVGrid` o helpers propios antes que APIs de ajuste nuevas.

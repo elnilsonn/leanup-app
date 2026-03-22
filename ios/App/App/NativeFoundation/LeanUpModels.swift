@@ -1,0 +1,780 @@
+import Foundation
+import SwiftUI
+enum LeanUpThemeMode: String, Codable, CaseIterable {
+    case light
+    case dark
+    case system
+}
+
+struct LeanUpSnapshot: Codable, Equatable {
+    var notas: [String: Double]
+    var electivosSeleccionados: [String: String]
+    var electivosNotas: [String: Double]
+    var username: String
+    var darkMode: Bool
+    var themeMode: LeanUpThemeMode
+
+    static let empty = LeanUpSnapshot()
+
+    init(
+        notas: [String: Double] = [:],
+        electivosSeleccionados: [String: String] = [:],
+        electivosNotas: [String: Double] = [:],
+        username: String = "Usuario",
+        darkMode: Bool = false,
+        themeMode: LeanUpThemeMode = .light
+    ) {
+        self.notas = notas
+        self.electivosSeleccionados = electivosSeleccionados
+        self.electivosNotas = electivosNotas
+        self.username = username
+        self.darkMode = darkMode
+        self.themeMode = themeMode
+        self = self.normalized()
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        notas = try container.decodeIfPresent([String: Double].self, forKey: .notas) ?? [:]
+        electivosSeleccionados = try container.decodeIfPresent([String: String].self, forKey: .electivosSeleccionados) ?? [:]
+        electivosNotas = try container.decodeIfPresent([String: Double].self, forKey: .electivosNotas) ?? [:]
+        username = try container.decodeIfPresent(String.self, forKey: .username) ?? "Usuario"
+        darkMode = try container.decodeIfPresent(Bool.self, forKey: .darkMode) ?? false
+        themeMode = try container.decodeIfPresent(LeanUpThemeMode.self, forKey: .themeMode) ?? .light
+        self = self.normalized()
+    }
+
+    func normalized() -> LeanUpSnapshot {
+        var copy = self
+
+        let trimmed = copy.username.trimmingCharacters(in: .whitespacesAndNewlines)
+        copy.username = trimmed.isEmpty ? "Usuario" : trimmed
+
+        copy.electivosNotas = copy.electivosNotas.filter { key, _ in
+            let parts = key.components(separatedBy: ":::")
+            guard parts.count == 2 else { return false }
+            return copy.electivosSeleccionados[parts[0]] == parts[1]
+        }
+
+        switch copy.themeMode {
+        case .light:
+            copy.darkMode = false
+        case .dark:
+            copy.darkMode = true
+        case .system:
+            break
+        }
+
+        return copy
+    }
+
+    func encodedString(prettyPrinted: Bool = false) throws -> String {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = prettyPrinted ? [.prettyPrinted, .sortedKeys] : [.sortedKeys]
+        let data = try encoder.encode(normalized())
+        guard let string = String(data: data, encoding: .utf8) else {
+            throw LeanUpSnapshotError.invalidUTF8
+        }
+        return string
+    }
+
+    static func decode(from string: String) throws -> LeanUpSnapshot {
+        guard let data = string.data(using: .utf8) else {
+            throw LeanUpSnapshotError.invalidUTF8
+        }
+        return try JSONDecoder().decode(LeanUpSnapshot.self, from: data)
+    }
+}
+
+enum LeanUpSnapshotError: Error {
+    case invalidUTF8
+    case invalidBase64
+}
+
+struct LeanUpSnapshotStore {
+    static let nativeBackupKey = "leanup_v4_backup"
+
+    private let userDefaults: UserDefaults
+
+    init(userDefaults: UserDefaults = .standard) {
+        self.userDefaults = userDefaults
+    }
+
+    func loadSnapshot() throws -> LeanUpSnapshot? {
+        guard let base64 = userDefaults.string(forKey: Self.nativeBackupKey) else {
+            return nil
+        }
+        guard let data = Data(base64Encoded: base64) else {
+            throw LeanUpSnapshotError.invalidBase64
+        }
+        guard let json = String(data: data, encoding: .utf8) else {
+            throw LeanUpSnapshotError.invalidUTF8
+        }
+        return try LeanUpSnapshot.decode(from: json)
+    }
+
+    @discardableResult
+    func saveSnapshot(_ snapshot: LeanUpSnapshot) throws -> String {
+        let normalized = snapshot.normalized()
+        let json = try normalized.encodedString()
+        let base64 = Data(json.utf8).base64EncodedString()
+        userDefaults.set(base64, forKey: Self.nativeBackupKey)
+        return json
+    }
+}
+
+struct LeanUpAcademicsPayload: Codable {
+    var courses: [LeanUpCourse]
+    var electiveGroups: [LeanUpElectiveGroup]
+
+    static let empty = LeanUpAcademicsPayload(courses: [], electiveGroups: [])
+}
+
+struct LeanUpCourse: Codable, Identifiable, Hashable {
+    let id: Int
+    let period: Int
+    let code: String
+    let name: String
+    let credits: Int
+    let difficulty: Int
+    let types: [String]
+    let summary: String
+    let plainLanguage: String
+    let outcomes: String
+    let skills: [String]
+    let linkedinText: String
+    let portfolioProject: String
+    let portfolioPrompt: String
+
+    init(
+        id: Int,
+        period: Int,
+        code: String,
+        name: String,
+        credits: Int,
+        difficulty: Int,
+        types: [String],
+        summary: String,
+        plainLanguage: String,
+        outcomes: String,
+        skills: [String] = [],
+        linkedinText: String = "",
+        portfolioProject: String = "",
+        portfolioPrompt: String = ""
+    ) {
+        self.id = id
+        self.period = period
+        self.code = code
+        self.name = name
+        self.credits = credits
+        self.difficulty = difficulty
+        self.types = types
+        self.summary = summary
+        self.plainLanguage = plainLanguage
+        self.outcomes = outcomes
+        self.skills = skills
+        self.linkedinText = linkedinText
+        self.portfolioProject = portfolioProject
+        self.portfolioPrompt = portfolioPrompt
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(Int.self, forKey: .id)
+        period = try container.decode(Int.self, forKey: .period)
+        code = try container.decode(String.self, forKey: .code)
+        name = try container.decode(String.self, forKey: .name)
+        credits = try container.decode(Int.self, forKey: .credits)
+        difficulty = try container.decode(Int.self, forKey: .difficulty)
+        types = try container.decodeIfPresent([String].self, forKey: .types) ?? []
+        summary = try container.decodeIfPresent(String.self, forKey: .summary) ?? ""
+        plainLanguage = try container.decodeIfPresent(String.self, forKey: .plainLanguage) ?? ""
+        outcomes = try container.decodeIfPresent(String.self, forKey: .outcomes) ?? ""
+        skills = try container.decodeIfPresent([String].self, forKey: .skills) ?? []
+        linkedinText = try container.decodeIfPresent(String.self, forKey: .linkedinText) ?? ""
+        portfolioProject = try container.decodeIfPresent(String.self, forKey: .portfolioProject) ?? ""
+        portfolioPrompt = try container.decodeIfPresent(String.self, forKey: .portfolioPrompt) ?? ""
+    }
+}
+
+struct LeanUpElectiveGroup: Codable, Identifiable, Hashable {
+    var id: String { name }
+
+    let name: String
+    let period: Int
+    let options: [LeanUpElectiveOption]
+}
+
+struct LeanUpElectiveOption: Codable, Identifiable, Hashable {
+    var id: String { code }
+
+    let code: String
+    let name: String
+    let credits: Int
+    let summary: String
+    let plainLanguage: String
+    let outcomes: String
+    let skills: [String]
+    let linkedinText: String
+    let portfolioProject: String
+    let portfolioPrompt: String
+
+    init(
+        code: String,
+        name: String,
+        credits: Int,
+        summary: String,
+        plainLanguage: String,
+        outcomes: String,
+        skills: [String] = [],
+        linkedinText: String = "",
+        portfolioProject: String = "",
+        portfolioPrompt: String = ""
+    ) {
+        self.code = code
+        self.name = name
+        self.credits = credits
+        self.summary = summary
+        self.plainLanguage = plainLanguage
+        self.outcomes = outcomes
+        self.skills = skills
+        self.linkedinText = linkedinText
+        self.portfolioProject = portfolioProject
+        self.portfolioPrompt = portfolioPrompt
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        code = try container.decode(String.self, forKey: .code)
+        name = try container.decode(String.self, forKey: .name)
+        credits = try container.decode(Int.self, forKey: .credits)
+        summary = try container.decodeIfPresent(String.self, forKey: .summary) ?? ""
+        plainLanguage = try container.decodeIfPresent(String.self, forKey: .plainLanguage) ?? ""
+        outcomes = try container.decodeIfPresent(String.self, forKey: .outcomes) ?? ""
+        skills = try container.decodeIfPresent([String].self, forKey: .skills) ?? []
+        linkedinText = try container.decodeIfPresent(String.self, forKey: .linkedinText) ?? ""
+        portfolioProject = try container.decodeIfPresent(String.self, forKey: .portfolioProject) ?? ""
+        portfolioPrompt = try container.decodeIfPresent(String.self, forKey: .portfolioPrompt) ?? ""
+    }
+}
+
+struct LeanUpAcademicsStore {
+    private static let cacheKey = "leanup_native_academics_cache"
+
+    func load() -> LeanUpAcademicsPayload {
+        for url in candidateURLs() {
+            guard let data = try? Data(contentsOf: url) else { continue }
+
+            if let payload = tryDecode(data: data) {
+                saveCachedPayload(payload)
+                return payload
+            }
+        }
+
+        if let cached = loadCachedPayload() {
+            return cached
+        }
+
+        return .empty
+    }
+
+    private func candidateURLs() -> [URL] {
+        let directCandidates = [
+            Bundle.main.url(forResource: "native-academics", withExtension: "json"),
+            Bundle.main.resourceURL?.appendingPathComponent("native-academics.json"),
+            Bundle.main.bundleURL.appendingPathComponent("native-academics.json"),
+        ]
+
+        var seen = Set<String>()
+        return directCandidates.compactMap { $0 }.filter { url in
+            let key = url.path
+            if seen.contains(key) { return false }
+            seen.insert(key)
+            return true
+        }
+    }
+
+    private func tryDecode(data: Data) -> LeanUpAcademicsPayload? {
+        if let payload = try? JSONDecoder().decode(LeanUpAcademicsPayload.self, from: data) {
+            return payload
+        }
+
+        if let latin1 = String(data: data, encoding: .isoLatin1),
+           let utf8Data = latin1.data(using: .utf8),
+           let payload = try? JSONDecoder().decode(LeanUpAcademicsPayload.self, from: utf8Data) {
+            return payload
+        }
+
+        return nil
+    }
+
+    private func loadCachedPayload() -> LeanUpAcademicsPayload? {
+        guard let raw = UserDefaults.standard.string(forKey: Self.cacheKey),
+              let data = raw.data(using: .utf8),
+              let payload = try? JSONDecoder().decode(LeanUpAcademicsPayload.self, from: data),
+              !payload.courses.isEmpty else {
+            return nil
+        }
+
+        return payload
+    }
+
+    private func saveCachedPayload(_ payload: LeanUpAcademicsPayload) {
+        guard !payload.courses.isEmpty,
+              let data = try? JSONEncoder().encode(payload),
+              let raw = String(data: data, encoding: .utf8) else {
+            return
+        }
+
+        UserDefaults.standard.set(raw, forKey: Self.cacheKey)
+    }
+}
+
+@MainActor
+final class LeanUpAppModel: ObservableObject {
+    @Published var snapshot: LeanUpSnapshot = .empty
+
+    let totalCourses = 38
+    let totalCredits = 144
+    let academics: LeanUpAcademicsPayload
+
+    private let store = LeanUpSnapshotStore()
+    private let academicsStore = LeanUpAcademicsStore()
+
+    init() {
+        academics = academicsStore.load()
+        load()
+    }
+
+    var allGrades: [Double] {
+        Array(snapshot.notas.values) + Array(snapshot.electivosNotas.values)
+    }
+
+    var registeredCount: Int {
+        allGrades.count
+    }
+
+    var approvedCount: Int {
+        allGrades.filter { $0 >= 3.0 }.count
+    }
+
+    var failedCount: Int {
+        allGrades.filter { $0 < 3.0 }.count
+    }
+
+    var selectedElectivesCount: Int {
+        snapshot.electivosSeleccionados.count
+    }
+
+    var totalTrackableItems: Int {
+        academics.courses.count + academics.electiveGroups.count
+    }
+
+    var pendingCount: Int {
+        max(totalTrackableItems - approvedCount - failedCount, 0)
+    }
+
+    var earnedCredits: Int {
+        approvedCourses.reduce(0) { $0 + $1.credits } +
+        approvedElectiveOptions.reduce(0) { $0 + $1.credits }
+    }
+
+    var electiveGroupsWithoutSelection: Int {
+        academics.electiveGroups.filter { selectedOption(in: $0) == nil }.count
+    }
+
+    var focusPeriod: Int? {
+        periods.first { progress(for: $0).approved < progress(for: $0).total } ?? periods.last
+    }
+
+    var completionPercentText: String {
+        guard totalTrackableItems > 0 else { return "0%" }
+        let ratio = Double(approvedCount) / Double(totalTrackableItems)
+        return "\(Int((ratio * 100).rounded()))%"
+    }
+
+    var careerReadinessPercent: Int {
+        guard totalTrackableItems > 0 else { return 0 }
+        let ratio = Double(approvedCount) / Double(totalTrackableItems)
+        return Int((ratio * 100).rounded())
+    }
+
+    var approvedCourses: [LeanUpCourse] {
+        academics.courses.filter { (snapshot.notas[String($0.id)] ?? 0) >= 3.0 }
+    }
+
+    var approvedElectiveOptions: [LeanUpElectiveOption] {
+        academics.electiveGroups.compactMap { group in
+            guard let selected = selectedOption(in: group),
+                  (electiveNote(groupName: group.name, optionCode: selected.code) ?? 0) >= 3.0 else {
+                return nil
+            }
+            return selected
+        }
+    }
+
+    var recommendedRoles: [String] {
+        var seen = Set<String>()
+        let sources = approvedCourses.map(\.outcomes) + approvedElectiveOptions.map(\.outcomes)
+
+        return sources
+            .flatMap { $0.components(separatedBy: ",") }
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+            .filter { role in
+                if seen.contains(role) { return false }
+                seen.insert(role)
+                return true
+            }
+    }
+
+    var activeFocusNames: [String] {
+        academics.electiveGroups.compactMap { group in
+            selectedOption(in: group)?.name
+        }
+    }
+
+    var careerItems: [LeanUpCareerItem] {
+        let approvedCourseItems = approvedCourses.map {
+            LeanUpCareerItem(
+                id: "course-\($0.id)",
+                period: $0.period,
+                name: $0.name,
+                summary: $0.summary,
+                outcomes: $0.outcomes,
+                skills: $0.skills,
+                linkedinText: $0.linkedinText,
+                portfolioProject: $0.portfolioProject,
+                isElective: false
+            )
+        }
+
+        let approvedElectiveItems = academics.electiveGroups.compactMap { group -> LeanUpCareerItem? in
+            guard let option = selectedOption(in: group),
+                  (electiveNote(groupName: group.name, optionCode: option.code) ?? 0) >= 3.0 else {
+                return nil
+            }
+
+            return LeanUpCareerItem(
+                id: "elective-\(group.name)-\(option.code)",
+                period: group.period,
+                name: option.name,
+                summary: option.summary,
+                outcomes: option.outcomes,
+                skills: option.skills,
+                linkedinText: option.linkedinText,
+                portfolioProject: option.portfolioProject,
+                isElective: true
+            )
+        }
+
+        return (approvedCourseItems + approvedElectiveItems)
+            .sorted {
+                if $0.period == $1.period {
+                    return $0.name < $1.name
+                }
+                return $0.period < $1.period
+            }
+    }
+
+    var linkedinHighlights: [LeanUpCareerItem] {
+        careerItems.filter { !$0.linkedinText.isEmpty }
+    }
+
+    var portfolioHighlights: [LeanUpCareerItem] {
+        careerItems.filter { !$0.portfolioProject.isEmpty }
+    }
+
+    var standoutSkills: [String] {
+        var seen = Set<String>()
+
+        return careerItems
+            .flatMap(\.skills)
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+            .filter { skill in
+                if seen.contains(skill) { return false }
+                seen.insert(skill)
+                return true
+            }
+    }
+
+    var periods: [Int] {
+        Array(
+            Set(academics.courses.map(\.period) + academics.electiveGroups.map(\.period))
+        ).sorted()
+    }
+
+    var averageText: String {
+        guard !allGrades.isEmpty else { return "-" }
+        let average = allGrades.reduce(0, +) / Double(allGrades.count)
+        return String(format: "%.2f", average)
+    }
+
+    var progressText: String {
+        "\(approvedCount) aprobadas"
+    }
+
+    var themeDescription: String {
+        switch snapshot.themeMode {
+        case .light: return "Claro"
+        case .dark: return "Oscuro"
+        case .system: return "Sistema"
+        }
+    }
+
+    var failedCourses: [LeanUpCourse] {
+        academics.courses
+            .filter { courseStatus(for: $0) == .failed }
+            .sorted {
+                if $0.period == $1.period {
+                    return $0.name < $1.name
+                }
+                return $0.period < $1.period
+            }
+    }
+
+    var pendingCourses: [LeanUpCourse] {
+        academics.courses
+            .filter { note(for: $0) == nil }
+            .sorted {
+                if $0.period == $1.period {
+                    return $0.name < $1.name
+                }
+                return $0.period < $1.period
+            }
+    }
+
+    var highlightedCareerItems: [LeanUpCareerItem] {
+        Array(careerItems.prefix(4))
+    }
+
+    var profileHeadline: String {
+        if let primaryRole = recommendedRoles.first {
+            return "Ya te estas perfilando hacia \(primaryRole)"
+        }
+
+        if let focus = activeFocusNames.first {
+            return "Tu perfil ya empieza a tomar forma alrededor de \(focus)"
+        }
+
+        return "Tu perfil profesional ya tiene una base academica clara"
+    }
+
+    var professionalHeadline: String {
+        profileHeadline
+    }
+
+    var profileSummary: String {
+        if careerItems.isEmpty {
+            return "Tu avance academico ya esta ordenado, pero aun necesitas registrar mas materias o electivas aprobadas para construir una narrativa profesional mas fuerte."
+        }
+
+        if let primaryRole = recommendedRoles.first {
+            return "Tu avance combina \(approvedCount) materias o electivas aprobadas, \(earnedCredits) creditos ganados y senales concretas que ya apuntan hacia \(primaryRole)."
+        }
+
+        return "Tu avance ya combina \(approvedCount) materias o electivas aprobadas, \(earnedCredits) creditos ganados y evidencias suficientes para empezar a construir una presentacion profesional mas clara."
+    }
+
+    var professionalSummary: String {
+        profileSummary
+    }
+
+    var nextProfessionalMove: String {
+        if failedCount > 0 {
+            return "Recupera primero las materias o electivas reprobadas. Eso mejora tu promedio y fortalece cualquier perfil profesional que quieras mostrar."
+        }
+
+        if electiveGroupsWithoutSelection > 0 {
+            return "Define las electivas pendientes. Es la forma mas directa de darle una direccion mas clara a tu perfil."
+        }
+
+        if let period = focusPeriod {
+            return "Empuja el periodo \(period). Ese bloque es el siguiente salto natural para ganar mas evidencia academica y profesional."
+        }
+
+        return "Tu base academica ya esta bastante clara. El siguiente paso es convertirla en historias y proyectos que puedas mostrar afuera."
+    }
+
+    var preferredColorScheme: ColorScheme? {
+        switch snapshot.themeMode {
+        case .light: return .light
+        case .dark: return .dark
+        case .system: return nil
+        }
+    }
+
+    func load() {
+        snapshot = (try? store.loadSnapshot()) ?? .empty
+    }
+
+    func setUsername(_ name: String) {
+        writeSnapshot { $0.username = name }
+    }
+
+    func resetUsername() {
+        writeSnapshot { $0.username = LeanUpSnapshot.empty.username }
+    }
+
+    func setTheme(_ theme: LeanUpThemeMode) {
+        writeSnapshot { $0.themeMode = theme }
+    }
+
+    func clearAcademicProgress() {
+        writeSnapshot {
+            $0.notas.removeAll()
+            $0.electivosSeleccionados.removeAll()
+            $0.electivosNotas.removeAll()
+        }
+    }
+
+    func courses(in period: Int) -> [LeanUpCourse] {
+        academics.courses.filter { $0.period == period }
+    }
+
+    func electiveGroups(in period: Int) -> [LeanUpElectiveGroup] {
+        academics.electiveGroups.filter { $0.period == period }
+    }
+
+    func note(for course: LeanUpCourse) -> Double? {
+        snapshot.notas[String(course.id)]
+    }
+
+    func note(for courseID: Int) -> Double? {
+        snapshot.notas[String(courseID)]
+    }
+
+    func selectedOption(in group: LeanUpElectiveGroup) -> LeanUpElectiveOption? {
+        guard let selectedCode = snapshot.electivosSeleccionados[group.name] else { return nil }
+        return group.options.first { $0.code == selectedCode }
+    }
+
+    func electiveNote(groupName: String, optionCode: String) -> Double? {
+        snapshot.electivosNotas["\(groupName):::\(optionCode)"]
+    }
+
+    func courseStatus(for course: LeanUpCourse) -> LeanUpProgressStatus {
+        LeanUpProgressStatus(grade: note(for: course))
+    }
+
+    func electiveStatus(for group: LeanUpElectiveGroup) -> LeanUpProgressStatus {
+        guard let option = selectedOption(in: group) else { return .pending }
+        return LeanUpProgressStatus(grade: electiveNote(groupName: group.name, optionCode: option.code))
+    }
+
+    func progress(for period: Int) -> LeanUpPeriodProgress {
+        let periodCourses = courses(in: period)
+        let periodElectives = electiveGroups(in: period)
+
+        var approved = 0
+        var failed = 0
+
+        for course in periodCourses {
+            switch courseStatus(for: course) {
+            case .approved: approved += 1
+            case .failed: failed += 1
+            case .pending: break
+            }
+        }
+
+        for group in periodElectives {
+            switch electiveStatus(for: group) {
+            case .approved: approved += 1
+            case .failed: failed += 1
+            case .pending: break
+            }
+        }
+
+        return LeanUpPeriodProgress(
+            approved: approved,
+            failed: failed,
+            total: periodCourses.count + periodElectives.count
+        )
+    }
+
+    func setCourseGrade(_ grade: Double?, for courseID: Int) {
+        writeSnapshot { snapshot in
+            let key = String(courseID)
+            if let grade {
+                snapshot.notas[key] = grade
+            } else {
+                snapshot.notas.removeValue(forKey: key)
+            }
+        }
+    }
+
+    func selectElectiveOption(groupName: String, optionCode: String) {
+        writeSnapshot { $0.electivosSeleccionados[groupName] = optionCode }
+    }
+
+    func setElectiveGrade(_ grade: Double?, groupName: String, optionCode: String) {
+        writeSnapshot { snapshot in
+            snapshot.electivosSeleccionados[groupName] = optionCode
+            let key = "\(groupName):::\(optionCode)"
+            if let grade {
+                snapshot.electivosNotas[key] = grade
+            } else {
+                snapshot.electivosNotas.removeValue(forKey: key)
+            }
+        }
+    }
+
+    private func writeSnapshot(_ mutate: (inout LeanUpSnapshot) -> Void) {
+        var updated = snapshot
+        mutate(&updated)
+        snapshot = updated.normalized()
+        _ = try? store.saveSnapshot(snapshot)
+    }
+}
+
+enum LeanUpProgressStatus: Equatable {
+    case pending
+    case approved
+    case failed
+
+    init(grade: Double?) {
+        guard let grade else {
+            self = .pending
+            return
+        }
+        self = grade >= 3.0 ? .approved : .failed
+    }
+
+    var title: String {
+        switch self {
+        case .pending: return "Pendiente"
+        case .approved: return "Aprobada"
+        case .failed: return "Reprobada"
+        }
+    }
+}
+
+struct LeanUpPeriodProgress {
+    let approved: Int
+    let failed: Int
+    let total: Int
+
+    var completionRatio: Double {
+        guard total > 0 else { return 0 }
+        return Double(approved) / Double(total)
+    }
+
+    var completionText: String {
+        "\(approved)/\(total)"
+    }
+}
+
+struct LeanUpCareerItem: Identifiable, Hashable {
+    let id: String
+    let period: Int
+    let name: String
+    let summary: String
+    let outcomes: String
+    let skills: [String]
+    let linkedinText: String
+    let portfolioProject: String
+    let isElective: Bool
+}
+
+

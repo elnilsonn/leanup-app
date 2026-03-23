@@ -2,6 +2,7 @@
 import UIKit
 
 struct LeanUpMallaView: View {
+    @Environment(\.scenePhase) private var scenePhase
     @ObservedObject var model: LeanUpAppModel
     @State private var route: LeanUpMallaDetailRoute?
     @State private var selectedPeriod: Int?
@@ -10,6 +11,7 @@ struct LeanUpMallaView: View {
     @State private var isSearchPresented = false
     @State private var isSearchClosing = false
     @State private var searchSessionHadContent = false
+    @State private var searchClosingGeneration = 0
     @State private var isReminderListPresented = false
     @State private var periodResetScrollToken = 0
     @State private var filterResetScrollToken = 0
@@ -142,26 +144,49 @@ struct LeanUpMallaView: View {
 
             if !trimmed.isEmpty {
                 searchSessionHadContent = true
+                searchClosingGeneration += 1
                 isSearchClosing = false
+            } else if !isSearchPresented {
+                searchSessionHadContent = false
             }
         }
         .onChange(of: isSearchPresented) { newValue in
             if newValue {
+                searchClosingGeneration += 1
                 isSearchClosing = false
                 searchSessionHadContent = !trimmedSearchQuery.isEmpty
                 return
             }
 
             guard searchSessionHadContent else {
+                searchClosingGeneration += 1
                 isSearchClosing = false
                 return
             }
 
+            searchClosingGeneration += 1
+            let generation = searchClosingGeneration
             isSearchClosing = true
 
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.26) {
-                guard !isSearchPresented else { return }
+                guard searchClosingGeneration == generation, !isSearchPresented else { return }
                 isSearchClosing = false
+                searchSessionHadContent = false
+            }
+        }
+        .onChange(of: scenePhase) { newValue in
+            guard newValue != .active else {
+                if !isSearchPresented && trimmedSearchQuery.isEmpty {
+                    searchSessionHadContent = false
+                    isSearchClosing = false
+                }
+                return
+            }
+
+            searchClosingGeneration += 1
+            isSearchClosing = false
+
+            if !isSearchPresented || trimmedSearchQuery.isEmpty {
                 searchSessionHadContent = false
             }
         }

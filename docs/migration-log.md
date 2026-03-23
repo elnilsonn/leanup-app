@@ -872,3 +872,9 @@ Migrar LeanUp desde una base hibrida/web hacia una app nativa de iPhone con `Swi
 - Cuando el usuario cierra la busqueda con resultados todavia visibles, `Malla` deja de pintar esa lista en cuanto empieza el cierre.
 - La transicion conserva solo la capa transitoria limpia mientras la barra del sistema termina de minimizarse.
 - Con eso el cierre directo desde resultados se alinea mejor con los otros dos casos ya corregidos.
+
+## Actualizacion 2026-03-23 - Estado transitorio de busqueda reforzado frente a background y bloqueo
+
+- La busqueda de `Malla` ahora invalida mejor sus cierres diferidos cuando cambia el ciclo de vida de la app.
+- Si el usuario bloquea el movil o deja la app un rato, la pantalla limpia estados transitorios viejos antes de reanudar.
+- Tambien se endurecio la gestion interna del cierre para que no quede una animacion diferida colgando de una sesion anterior.

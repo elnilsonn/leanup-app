@@ -1076,3 +1076,23 @@ Como se soluciono:
 Regla:
 
 - Si el cierre de una busqueda sigue fallando cuando hay resultados visibles, separar la capa de transicion de la capa de resultados; no mantener ambas al mismo tiempo.
+
+### 55. Dejar cierres diferidos vivos aunque la app cambie de estado o vuelva de background
+
+Que paso:
+
+- Ademas de los cierres manuales, quedaban comportamientos raros al bloquear el movil o salir de la app y volver dentro de `Malla`.
+
+Por que paso:
+
+- La busqueda estaba usando cierres diferidos con `DispatchQueue.main.asyncAfter`, pero sin invalidar formalmente transiciones viejas al cambiar de escena.
+- Eso puede dejar estados de cierre colgando aunque el contexto visual ya haya cambiado.
+
+Como se soluciono:
+
+- Se anadio una generacion interna para invalidar cierres viejos.
+- Tambien se limpian estados transitorios de busqueda cuando la app deja de estar activa y al volver, si ya no hay una busqueda real abierta.
+
+Regla:
+
+- Si una UI usa cierres diferidos y la app puede ir a background durante esa ventana, invalidar siempre las transiciones viejas al cambiar de escena.

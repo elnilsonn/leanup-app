@@ -956,15 +956,6 @@ struct LeanUpSelectedPeriodSection: View {
                             .font(.footnote)
                             .foregroundStyle(.secondary)
                     }
-
-                    Spacer()
-
-                    Text(progress.completionText)
-                        .font(.subheadline.weight(.semibold))
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 6)
-                        .background(Capsule().fill(Color.unadBlue.opacity(0.12)))
-                        .foregroundStyle(Color.unadBlue)
                 }
 
                 LeanUpProgressTrack(
@@ -1000,9 +991,6 @@ struct LeanUpSelectedPeriodSection: View {
                                     status: model.courseStatus(for: course)
                                 )
                                 .contentShape(Rectangle())
-                                .onTapGesture {
-                                    onOpen(.course(course))
-                                }
                                 .modifier(
                                     LeanUpQuickInProgressGesture(
                                         isEnabled: canQuickToggle(course: course),
@@ -1012,6 +1000,11 @@ struct LeanUpSelectedPeriodSection: View {
                                             model.setCourseInProgress(!model.isCourseInProgress(course), for: course.id)
                                         }
                                     )
+                                )
+                                .highPriorityGesture(
+                                    TapGesture().onEnded {
+                                        onOpen(.course(course))
+                                    }
                                 )
                             }
                         }
@@ -1043,9 +1036,6 @@ struct LeanUpSelectedPeriodSection: View {
                                     status: model.electiveStatus(for: group)
                                 )
                                 .contentShape(Rectangle())
-                                .onTapGesture {
-                                    onOpen(.electiveGroup(group))
-                                }
                                 .modifier(
                                     LeanUpQuickInProgressGesture(
                                         isEnabled: canQuickToggle(group: group),
@@ -1055,6 +1045,11 @@ struct LeanUpSelectedPeriodSection: View {
                                             model.setElectiveInProgress(!model.isElectiveInProgress(group), groupName: group.name)
                                         }
                                     )
+                                )
+                                .highPriorityGesture(
+                                    TapGesture().onEnded {
+                                        onOpen(.electiveGroup(group))
+                                    }
                                 )
                             }
                         }

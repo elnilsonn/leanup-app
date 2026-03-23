@@ -801,3 +801,9 @@ Migrar LeanUp desde una base hibrida/web hacia una app nativa de iPhone con `Swi
 - Se retiro la reconstruccion de la banda de `Periodos` para el reset.
 - Ahora `Periodos` anima el recentrado sobre la misma instancia viva del banner, igual que `Filtros`.
 - El reset sigue usando un target explicito, pero el disparo del token se hace en el siguiente ciclo principal para que el estado ya haya quedado asentado antes de animar.
+
+## Actualizacion 2026-03-23 - Limpieza del resumen de periodo y prioridad del tap en filas
+
+- Se elimino el badge superior duplicado con el progreso `5/8` en la cabecera del periodo.
+- El valor de progreso se conserva solo en la linea de `Cierre del periodo`.
+- Las filas de materias y electivas ahora dan prioridad al tap de apertura del detalle sobre la capa del gesto rapido de `En curso`.

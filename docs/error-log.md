@@ -854,3 +854,39 @@ Como se soluciono:
 Regla:
 
 - Si una banda debe animarse como otra que ya funciona, primero alinear su estructura de vida antes de seguir ajustando tiempos o retardos.
+
+### 44. Duplicar la misma senal de progreso en la cabecera del periodo
+
+Que paso:
+
+- El resumen del periodo mostraba el progreso `5/8` dos veces.
+
+Por que paso:
+
+- La cabecera tenia un badge extra arriba a la derecha aunque el mismo valor ya se mostraba junto a `Cierre del periodo`.
+
+Como se soluciono:
+
+- Se elimino el badge superior duplicado y se dejo una sola referencia visible al progreso.
+
+Regla:
+
+- Si una metrica ya aparece de forma clara dentro del bloque principal, no repetirla en un badge adicional sin aportar una funcion nueva.
+
+### 45. Perder el tap del detalle por priorizar demasiado la capa del gesto rapido
+
+Que paso:
+
+- Al tocar una materia o electiva, a veces no se abria el panel de detalle.
+
+Por que paso:
+
+- La capa usada para escuchar el gesto rapido de `En curso` podia quedarse con la interaccion de la fila antes que el tap normal.
+
+Como se soluciono:
+
+- El tap para abrir detalle paso a tener prioridad alta sobre la fila.
+
+Regla:
+
+- En una fila con gesto secundario y navegacion primaria, el tap de apertura debe tener prioridad clara sobre la capa auxiliar del gesto.

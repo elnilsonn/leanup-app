@@ -8,81 +8,89 @@ struct LeanUpMallaView: View {
     @State private var selectedFilter: LeanUpMallaFilter = .all
     @State private var searchQuery = ""
     @State private var isReminderListPresented = false
-    @State private var currentScrollOffset: CGFloat = 0
-    @State private var pendingScrollRequest: LeanUpScrollPositionRequest?
-    @State private var storedScrollOffsetBeforeSearch: CGFloat?
+    private let topAnchorID = "malla-top-anchor"
 
     var body: some View {
         GeometryReader { proxy in
-            ScrollView {
-                ZStack(alignment: .topLeading) {
-                    VStack(alignment: .leading, spacing: 20) {
-                        if !model.academics.courses.isEmpty && !isSearchMode {
-                            LeanUpMallaCompactOverviewCard(model: model, selectedPeriod: effectiveSelectedPeriod)
-                            LeanUpMallaMotivationCard(model: model)
-                            LeanUpMallaReminderPreviewCard(
-                                reminders: model.upcomingReminders()
-                            ) {
-                                isReminderListPresented = true
-                            }
-                        }
+            ZStack(alignment: .topLeading) {
+                ScrollViewReader { scrollProxy in
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 20) {
+                            Color.clear
+                                .frame(height: 0)
+                                .id(topAnchorID)
 
-                        if !model.academics.courses.isEmpty && !isSearchMode {
-                            LeanUpMallaStickyHeader(
-                                periods: model.periods,
-                                selectedPeriod: effectiveSelectedPeriod,
-                                selectedFilter: $selectedFilter,
-                                onSelectPeriod: { tappedPeriod in
-                                    if tappedPeriod == effectiveSelectedPeriod {
-                                        selectedPeriod = nil
-                                    } else {
-                                        selectedPeriod = tappedPeriod
-                                    }
+                            if !model.academics.courses.isEmpty && !isSearchMode {
+                                LeanUpMallaCompactOverviewCard(model: model, selectedPeriod: effectiveSelectedPeriod)
+                                LeanUpMallaMotivationCard(model: model)
+                                LeanUpMallaReminderPreviewCard(
+                                    reminders: model.upcomingReminders()
+                                ) {
+                                    isReminderListPresented = true
                                 }
-                            )
-                        }
+                            }
 
-                        if model.academics.courses.isEmpty {
-                            LeanUpSurfaceCard {
-                                Text("No pudimos cargar la base academica en este momento. Tu progreso guardado sigue intacto.")
-                                    .font(.subheadline)
-                                    .foregroundStyle(.secondary)
+                            if !model.academics.courses.isEmpty && !isSearchMode {
+                                LeanUpMallaStickyHeader(
+                                    periods: model.periods,
+                                    selectedPeriod: effectiveSelectedPeriod,
+                                    selectedFilter: selectedFilter,
+                                    onSelectPeriod: { tappedPeriod in
+                                        if tappedPeriod == effectiveSelectedPeriod {
+                                            selectedPeriod = nil
+                                        } else {
+                                            selectedPeriod = tappedPeriod
+                                        }
+                                        scrollToTop(using: scrollProxy)
+                                    },
+                                    onSelectFilter: { tappedFilter in
+                                        selectedFilter = selectedFilter == tappedFilter ? .all : tappedFilter
+                                        scrollToTop(using: scrollProxy)
+                                    }
+                                )
                             }
-                        } else {
-                            LeanUpSelectedPeriodSection(
-                                period: effectiveSelectedPeriod,
-                                model: model,
-                                filter: selectedFilter
-                            ) { item in
-                                route = item
+
+                            if model.academics.courses.isEmpty {
+                                LeanUpSurfaceCard {
+                                    Text("No pudimos cargar la base academica en este momento. Tu progreso guardado sigue intacto.")
+                                        .font(.subheadline)
+                                        .foregroundStyle(.secondary)
+                                }
+                            } else {
+                                LeanUpSelectedPeriodSection(
+                                    period: effectiveSelectedPeriod,
+                                    model: model,
+                                    filter: selectedFilter
+                                ) { item in
+                                    route = item
+                                }
                             }
                         }
+                        .frame(width: max(proxy.size.width - 40, 0), alignment: .leading)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 18)
                     }
                     .opacity(showsSearchResults ? 0 : 1)
                     .allowsHitTesting(!showsSearchResults)
                     .accessibilityHidden(showsSearchResults)
+                    .transaction { transaction in
+                        transaction.animation = nil
+                    }
+                }
 
-                    if showsSearchResults {
+                if showsSearchResults {
+                    ScrollView {
                         LeanUpMallaInlineSearchSection(
                             query: trimmedSearchQuery,
                             results: searchResults
                         ) { item in
                             route = item
                         }
-                        .zIndex(1)
                     }
-                }
-                .frame(width: max(proxy.size.width - 40, 0), alignment: .leading)
-                .padding(.horizontal, 20)
-                .padding(.vertical, 18)
-                .background(
-                    LeanUpScrollViewBridge(
-                        offset: $currentScrollOffset,
-                        request: $pendingScrollRequest
-                    )
-                )
-                .transaction { transaction in
-                    transaction.animation = nil
+                    .frame(width: max(proxy.size.width - 40, 0), alignment: .leading)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 18)
+                    .zIndex(1)
                 }
             }
         }
@@ -107,19 +115,6 @@ struct LeanUpMallaView: View {
                 selectedPeriod = model.focusPeriod ?? model.periods.first
             }
         }
-        .onChange(of: searchQuery) { newValue in
-            let trimmed = newValue.trimmingCharacters(in: .whitespacesAndNewlines)
-
-            if !trimmed.isEmpty {
-                if storedScrollOffsetBeforeSearch == nil {
-                    storedScrollOffsetBeforeSearch = currentScrollOffset
-                    pendingScrollRequest = LeanUpScrollPositionRequest(offset: 0, animated: true)
-                }
-            } else if let previousScrollOffset = storedScrollOffsetBeforeSearch {
-                pendingScrollRequest = LeanUpScrollPositionRequest(offset: previousScrollOffset, animated: true)
-                self.storedScrollOffsetBeforeSearch = nil
-            }
-        }
     }
 }
 
@@ -140,6 +135,10 @@ private extension LeanUpMallaView {
 
     var searchResults: [LeanUpMallaSearchResult] {
         leanUpMallaSearchResults(model: model, query: trimmedSearchQuery)
+    }
+
+    func scrollToTop(using proxy: ScrollViewProxy) {
+        proxy.scrollTo(topAnchorID, anchor: .top)
     }
 }
 
@@ -798,8 +797,9 @@ enum LeanUpMallaFilter: String, CaseIterable, Identifiable {
 struct LeanUpMallaStickyHeader: View {
     let periods: [Int]
     let selectedPeriod: Int
-    @Binding var selectedFilter: LeanUpMallaFilter
+    let selectedFilter: LeanUpMallaFilter
     let onSelectPeriod: (Int) -> Void
+    let onSelectFilter: (LeanUpMallaFilter) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -829,7 +829,7 @@ struct LeanUpMallaStickyHeader: View {
                 HStack(spacing: 8) {
                     ForEach(LeanUpMallaFilter.allCases) { filter in
                         Button {
-                            selectedFilter = selectedFilter == filter ? .all : filter
+                            onSelectFilter(filter)
                         } label: {
                             Text(filter.title)
                                 .font(.caption.weight(.bold))
@@ -1077,97 +1077,17 @@ private struct LeanUpQuickInProgressGesture: ViewModifier {
         return RoundedRectangle(cornerRadius: 22, style: .continuous)
             .fill((isActive ? Color.gray : Color.unadCyan).opacity(0.14))
             .overlay(alignment: .leading) {
-                HStack(spacing: 8) {
-                    Image(systemName: isActive ? "xmark.circle" : "calendar.badge.clock")
-                        .font(.subheadline.weight(.semibold))
-                    Text(isActive ? "Quitar en curso" : "Marcar en curso")
-                        .font(.caption.weight(.bold))
-                }
-                .foregroundStyle(isActive ? Color.gray : Color.unadCyan)
-                .padding(.leading, 14)
+                Image(systemName: isActive ? "bookmark.slash.fill" : "bookmark.fill")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(isActive ? Color.gray : Color.unadCyan)
+                    .frame(width: 34, height: 34)
+                    .background(
+                        Circle()
+                            .fill(Color.white.opacity(0.86))
+                    )
+                    .padding(.leading, 14)
                 .opacity(progress)
             }
-    }
-}
-
-private struct LeanUpScrollPositionRequest: Equatable {
-    let id = UUID()
-    let offset: CGFloat
-    let animated: Bool
-}
-
-private struct LeanUpScrollViewBridge: UIViewRepresentable {
-    @Binding var offset: CGFloat
-    @Binding var request: LeanUpScrollPositionRequest?
-
-    func makeCoordinator() -> Coordinator {
-        Coordinator(offset: $offset, request: $request)
-    }
-
-    func makeUIView(context: Context) -> UIView {
-        let view = UIView(frame: .zero)
-        view.isUserInteractionEnabled = false
-        DispatchQueue.main.async {
-            context.coordinator.attachIfNeeded(from: view)
-        }
-        return view
-    }
-
-    func updateUIView(_ uiView: UIView, context: Context) {
-        DispatchQueue.main.async {
-            context.coordinator.attachIfNeeded(from: uiView)
-            context.coordinator.applyIfNeeded()
-        }
-    }
-
-    final class Coordinator: NSObject {
-        @Binding var offset: CGFloat
-        @Binding var request: LeanUpScrollPositionRequest?
-        weak var scrollView: UIScrollView?
-        var observation: NSKeyValueObservation?
-        var lastAppliedRequestID: UUID?
-
-        init(offset: Binding<CGFloat>, request: Binding<LeanUpScrollPositionRequest?>) {
-            _offset = offset
-            _request = request
-        }
-
-        func attachIfNeeded(from view: UIView) {
-            guard scrollView == nil else { return }
-
-            var currentSuperview = view.superview
-            while let superview = currentSuperview {
-                if let scrollView = superview as? UIScrollView {
-                    self.scrollView = scrollView
-                    observation = scrollView.observe(\.contentOffset, options: [.initial, .new]) { [weak self] scrollView, _ in
-                        self?.offset = scrollView.contentOffset.y
-                    }
-                    break
-                }
-                currentSuperview = superview.superview
-            }
-        }
-
-        func applyIfNeeded() {
-            guard let request else { return }
-            guard lastAppliedRequestID != request.id else { return }
-            guard let scrollView else { return }
-
-            lastAppliedRequestID = request.id
-
-            let minOffset = -scrollView.adjustedContentInset.top
-            let maxOffset = max(
-                minOffset,
-                scrollView.contentSize.height - scrollView.bounds.height + scrollView.adjustedContentInset.bottom
-            )
-            let targetOffset = min(max(request.offset, minOffset), maxOffset)
-
-            scrollView.setContentOffset(CGPoint(x: 0, y: targetOffset), animated: request.animated)
-
-            DispatchQueue.main.async { [weak self] in
-                self?.request = nil
-            }
-        }
     }
 }
 

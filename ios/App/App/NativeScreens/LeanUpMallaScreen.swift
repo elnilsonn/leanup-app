@@ -864,30 +864,34 @@ struct LeanUpMallaStickyHeader: View {
     }
 
     private func scrollPeriodBanner(using proxy: ScrollViewProxy, animated: Bool) {
-        let action = {
-            proxy.scrollTo("period-\(selectedPeriod)", anchor: .center)
-        }
+        DispatchQueue.main.async {
+            let action = {
+                proxy.scrollTo("period-\(selectedPeriod)", anchor: .center)
+            }
 
-        if animated {
-            withAnimation(.easeInOut(duration: 0.24)) {
+            if animated {
+                withAnimation(.easeInOut(duration: 0.24)) {
+                    action()
+                }
+            } else {
                 action()
             }
-        } else {
-            action()
         }
     }
 
     private func scrollFilterBanner(using proxy: ScrollViewProxy, animated: Bool) {
-        let action = {
-            proxy.scrollTo("filter-\(selectedFilter.rawValue)", anchor: .center)
-        }
+        DispatchQueue.main.async {
+            let action = {
+                proxy.scrollTo("filter-\(selectedFilter.rawValue)", anchor: .center)
+            }
 
-        if animated {
-            withAnimation(.easeInOut(duration: 0.24)) {
+            if animated {
+                withAnimation(.easeInOut(duration: 0.24)) {
+                    action()
+                }
+            } else {
                 action()
             }
-        } else {
-            action()
         }
     }
 }
@@ -1089,9 +1093,14 @@ private struct LeanUpQuickInProgressGesture: ViewModifier {
                 }
             }
             .offset(x: max(0, dragOffset * 0.14))
-            .overlay {
+            .overlay(alignment: .topLeading) {
                 GeometryReader { proxy in
                     Color.clear
+                        .frame(
+                            width: proxy.size.width,
+                            height: max(0, proxy.size.height - bottomGestureExclusionHeight),
+                            alignment: .topLeading
+                        )
                         .contentShape(Rectangle())
                         .simultaneousGesture(
                             DragGesture(minimumDistance: 28)

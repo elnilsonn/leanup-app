@@ -753,3 +753,9 @@ Migrar LeanUp desde una base hibrida/web hacia una app nativa de iPhone con `Swi
 - El gesto rapido de `En curso` ahora ignora una franja inferior de la fila en materias, para no activarse mientras se arrastran los tags horizontales.
 - Tambien permite quitar `En curso` con el mismo gesto cuando la materia sigue activa sin nota final.
 - La `Malla` principal ya no se desplaza arriba al tocar periodos o filtros; solo se recentran sus banners horizontales.
+
+## Actualizacion 2026-03-23 - Sincronizacion final de banners horizontales y capa del gesto
+
+- El recentrado de `Periodos` y `Filtros` ahora se ejecuta despues del ciclo de layout para evitar desalineaciones entre el chip azul y el scroll horizontal del banner.
+- La capa que escucha el gesto rapido de `En curso` quedo anclada solo a la parte superior util de la fila.
+- Con esto, la zona inferior de tags vuelve a quedar libre para el scroll horizontal sin competir con la materia.

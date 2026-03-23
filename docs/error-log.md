@@ -666,3 +666,21 @@ Como se soluciono:
 Regla:
 
 - Si una fila mezcla accion horizontal propia y subcomponentes con scroll horizontal, separar explicitamente sus zonas interactivas.
+
+### 34. Recentrar un banner horizontal antes de que su layout termine
+
+Que paso:
+
+- A veces el chip activo de `Periodos` o `Filtros` cambiaba, pero el scroll horizontal del banner quedaba apuntando a otra zona.
+
+Por que paso:
+
+- El recentrado podia dispararse demasiado pronto, antes de que SwiftUI terminara de recomponer el contenido y su ancho efectivo.
+
+Como se soluciono:
+
+- El `scrollTo` del banner se difirio al siguiente ciclo principal antes de aplicar la animacion.
+
+Regla:
+
+- Si un `ScrollViewReader` horizontal se desincroniza del estado visual, primero asegurar que el recentrado ocurra despues del layout y no en paralelo a la mutacion.

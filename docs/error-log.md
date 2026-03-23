@@ -957,3 +957,25 @@ Como se soluciono:
 Regla:
 
 - Si un bug de cierre aparece solo en la variante de `large title`, no forzar `.inline` como parche global; primero conservar el comportamiento nativo del titulo y aislar solo el handoff del `searchable`.
+
+### 49. Tratar igual el cierre de busqueda en top y fuera del top aunque la navegacion este en estados distintos
+
+Que paso:
+
+- Al dejar el titulo siempre en `.large`, se quitaba el `Malla` pequeno fantasma en el top, pero se dañaba otra vez parte de la animacion que ya estaba bien en otros desplazamientos.
+
+Por que paso:
+
+- El cierre no ocurre siempre desde el mismo contexto visual.
+- Cuando `Malla` esta arriba del todo, la navegacion esta en estado de `large title`.
+- Cuando el usuario esta mas abajo, la misma pantalla ya esta en una logica visual equivalente a titulo reducido.
+- Aplicar el mismo parche a ambos casos vuelve a romper uno de los dos.
+
+Como se soluciono:
+
+- `Malla` ahora guarda si la busqueda se abrio desde el top o no.
+- El cierre usa esa referencia para decidir si debe mantener el contexto de `large title` o el contexto inline.
+
+Regla:
+
+- Si una animacion de navegacion falla solo en una posicion concreta del scroll, no asumir un unico estado global; primero distinguir desde que contexto visual real entro el usuario a la transicion.

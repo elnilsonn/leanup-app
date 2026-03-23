@@ -41,7 +41,9 @@ struct LeanUpMallaView: View {
                                     if tappedPeriod == effectiveSelectedPeriod {
                                         periodResetScrollTarget = model.focusPeriod ?? model.periods.first ?? 1
                                         selectedPeriod = nil
-                                        periodResetScrollToken += 1
+                                        DispatchQueue.main.async {
+                                            periodResetScrollToken += 1
+                                        }
                                     } else {
                                         selectedPeriod = tappedPeriod
                                     }
@@ -833,16 +835,11 @@ struct LeanUpMallaStickyHeader: View {
                     }
                     .padding(.horizontal, 2)
                 }
-                .id("period-strip-\(periodResetScrollToken)")
                 .onAppear {
-                    let delay: TimeInterval = periodResetScrollToken == 0 ? 0.0 : 0.12
-                    DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
-                        scrollPeriodBanner(
-                            using: proxy,
-                            targetPeriod: periodResetScrollToken == 0 ? selectedPeriod : periodResetScrollTarget,
-                            animated: periodResetScrollToken != 0
-                        )
-                    }
+                    scrollPeriodBanner(using: proxy, animated: false)
+                }
+                .onChange(of: periodResetScrollToken) { _ in
+                    scrollPeriodBanner(using: proxy, targetPeriod: periodResetScrollTarget, animated: true)
                 }
             }
 

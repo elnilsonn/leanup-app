@@ -795,3 +795,9 @@ Migrar LeanUp desde una base hibrida/web hacia una app nativa de iPhone con `Swi
 
 - El reset animado de `Periodos` ahora espera una pequena fraccion adicional antes de disparar el recentrado.
 - Esto le da tiempo al strip reconstruido a montarse para que el desplazamiento horizontal se vea de forma visible y no entre "seco".
+
+## Actualizacion 2026-03-23 - Periodos vuelve a animar sobre la misma banda viva
+
+- Se retiro la reconstruccion de la banda de `Periodos` para el reset.
+- Ahora `Periodos` anima el recentrado sobre la misma instancia viva del banner, igual que `Filtros`.
+- El reset sigue usando un target explicito, pero el disparo del token se hace en el siguiente ciclo principal para que el estado ya haya quedado asentado antes de animar.

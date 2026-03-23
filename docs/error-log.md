@@ -834,3 +834,23 @@ Como se corrige de ahora en adelante:
 Regla:
 
 - No marcar una correccion como lista sin una verificacion adicional centrada en el sintoma exacto que sigue describiendo el usuario.
+
+### 43. Intentar animar un reset reconstruyendo la banda en vez de animar la banda viva
+
+Que paso:
+
+- `Periodos` llegaba al destino correcto, pero seguia sin sentirse como una animacion horizontal igual a `Filtros`.
+
+Por que paso:
+
+- `Filtros` animaba sobre la misma banda viva.
+- `Periodos` estaba reconstruyendo la banda y luego recentrando, lo que favorece el aterrizaje correcto pero no una transicion equivalente.
+
+Como se soluciono:
+
+- `Periodos` vuelve a animar sobre la misma banda viva.
+- Se mantiene el target explicito del reset y el token se dispara en el siguiente ciclo principal para no perder el destino correcto.
+
+Regla:
+
+- Si una banda debe animarse como otra que ya funciona, primero alinear su estructura de vida antes de seguir ajustando tiempos o retardos.

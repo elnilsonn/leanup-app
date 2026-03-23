@@ -742,3 +742,22 @@ Como se soluciono:
 Regla:
 
 - Si un reset de estado ya es correcto pero el banner no termina centrado, revisar el timing del `scrollTo` antes de volver a tocar la logica de seleccion.
+
+### 38. Recentrar usando solo estado derivado cuando el reset necesita un destino explicito
+
+Que paso:
+
+- El segundo toque ya cambiaba bien al periodo o filtro correcto, pero el banner horizontal seguia sin recentrarse al destino final.
+
+Por que paso:
+
+- El recentrado seguia leyendo el estado derivado del momento, en lugar de recibir un objetivo explicito del reset.
+
+Como se soluciono:
+
+- El reset ahora manda un target concreto al banner.
+- El banner recentra contra ese target y repite el ajuste en varias pasadas cortas.
+
+Regla:
+
+- Si un reset visual debe aterrizar en un chip especifico, pasar ese chip como objetivo explicito en vez de confiar solo en el estado recomputado.

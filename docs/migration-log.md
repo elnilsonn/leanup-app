@@ -771,3 +771,8 @@ Migrar LeanUp desde una base hibrida/web hacia una app nativa de iPhone con `Swi
 
 - El banner horizontal de `Periodos` y `Filtros` ahora hace el recentrado con una pequena segunda pasada diferida.
 - Esto refuerza el caso del segundo toque sobre el mismo chip activo, donde el estado ya resetea bien pero el `scrollTo` podia llegar antes de que el layout terminara de asentarse.
+
+## Actualizacion 2026-03-23 - Recentrado guiado por objetivo explicito
+
+- El segundo toque de reset en `Periodos` y `Filtros` ahora envia al banner un objetivo explicito de recentrado, en vez de depender solo del estado visible ya recompuesto.
+- El banner usa varias pasadas cortas con animacion para asegurar que el chip activo final quede centrado tras el reset.

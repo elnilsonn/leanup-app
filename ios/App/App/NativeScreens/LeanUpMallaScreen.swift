@@ -10,6 +10,8 @@ struct LeanUpMallaView: View {
     @State private var isReminderListPresented = false
     @State private var periodResetScrollToken = 0
     @State private var filterResetScrollToken = 0
+    @State private var periodResetScrollTarget: Int?
+    @State private var filterResetScrollTarget: LeanUpMallaFilter = .all
 
     var body: some View {
         GeometryReader { proxy in
@@ -33,8 +35,11 @@ struct LeanUpMallaView: View {
                                 selectedFilter: selectedFilter,
                                 periodResetScrollToken: periodResetScrollToken,
                                 filterResetScrollToken: filterResetScrollToken,
+                                periodResetScrollTarget: periodResetScrollTarget ?? effectiveSelectedPeriod,
+                                filterResetScrollTarget: filterResetScrollTarget,
                                 onSelectPeriod: { tappedPeriod in
                                     if tappedPeriod == effectiveSelectedPeriod {
+                                        periodResetScrollTarget = model.focusPeriod ?? model.periods.first ?? 1
                                         selectedPeriod = nil
                                         periodResetScrollToken += 1
                                     } else {
@@ -43,6 +48,7 @@ struct LeanUpMallaView: View {
                                 },
                                 onSelectFilter: { tappedFilter in
                                     if selectedFilter == tappedFilter {
+                                        filterResetScrollTarget = .all
                                         selectedFilter = .all
                                         filterResetScrollToken += 1
                                     } else {
@@ -797,6 +803,8 @@ struct LeanUpMallaStickyHeader: View {
     let selectedFilter: LeanUpMallaFilter
     let periodResetScrollToken: Int
     let filterResetScrollToken: Int
+    let periodResetScrollTarget: Int
+    let filterResetScrollTarget: LeanUpMallaFilter
     let onSelectPeriod: (Int) -> Void
     let onSelectFilter: (LeanUpMallaFilter) -> Void
 
@@ -829,7 +837,7 @@ struct LeanUpMallaStickyHeader: View {
                     scrollPeriodBanner(using: proxy, animated: false)
                 }
                 .onChange(of: periodResetScrollToken) { _ in
-                    scrollPeriodBanner(using: proxy, animated: true)
+                    scrollPeriodBanner(using: proxy, targetPeriod: periodResetScrollTarget, animated: true)
                 }
             }
 
@@ -860,7 +868,7 @@ struct LeanUpMallaStickyHeader: View {
                     scrollFilterBanner(using: proxy, animated: false)
                 }
                 .onChange(of: filterResetScrollToken) { _ in
-                    scrollFilterBanner(using: proxy, animated: true)
+                    scrollFilterBanner(using: proxy, targetFilter: filterResetScrollTarget, animated: true)
                 }
             }
         }
@@ -876,23 +884,31 @@ struct LeanUpMallaStickyHeader: View {
     }
 
     private func scrollPeriodBanner(using proxy: ScrollViewProxy, animated: Bool) {
+        scrollPeriodBanner(using: proxy, targetPeriod: selectedPeriod, animated: animated)
+    }
+
+    private func scrollPeriodBanner(using proxy: ScrollViewProxy, targetPeriod: Int, animated: Bool) {
         scheduleCenteredScroll(
             using: proxy,
-            targetID: "period-\(selectedPeriod)",
+            targetID: "period-\(targetPeriod)",
             animated: animated
         )
     }
 
     private func scrollFilterBanner(using proxy: ScrollViewProxy, animated: Bool) {
+        scrollFilterBanner(using: proxy, targetFilter: selectedFilter, animated: animated)
+    }
+
+    private func scrollFilterBanner(using proxy: ScrollViewProxy, targetFilter: LeanUpMallaFilter, animated: Bool) {
         scheduleCenteredScroll(
             using: proxy,
-            targetID: "filter-\(selectedFilter.rawValue)",
+            targetID: "filter-\(targetFilter.rawValue)",
             animated: animated
         )
     }
 
     private func scheduleCenteredScroll(using proxy: ScrollViewProxy, targetID: String, animated: Bool) {
-        let delays: [TimeInterval] = animated ? [0.0, 0.08] : [0.0]
+        let delays: [TimeInterval] = animated ? [0.0, 0.08, 0.18] : [0.0]
 
         for delay in delays {
             DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
@@ -901,7 +917,7 @@ struct LeanUpMallaStickyHeader: View {
                 }
 
                 if animated {
-                    withAnimation(.easeInOut(duration: 0.26)) {
+                    withAnimation(.spring(response: 0.32, dampingFraction: 0.88)) {
                         action()
                     }
                 } else {

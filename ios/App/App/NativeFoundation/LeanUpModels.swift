@@ -805,40 +805,16 @@ final class LeanUpAppModel: ObservableObject {
     }
 
     var mallaMotivationMessage: LeanUpMotivationMessage {
-        let titles = [
-            "Sigue empujando con claridad.",
-            "Hoy tambien cuenta.",
-            "Tu avance se esta notando.",
-            "No estas construyendo poco.",
-            "Lo importante es sostener el ritmo.",
-            "Cada registro ordena la carrera.",
-            "La constancia se vuelve visible.",
-            "Tu proceso merece continuidad.",
-            "No pierdas el hilo que ya agarraste.",
-            "Cerrar una cosa a la vez tambien es estrategia."
-        ]
-
-        let endings = [
-            "A veces basta con cerrar una tarea concreta para que todo vuelva a verse manejable.",
-            "Cuando ordenas lo que llevas encima, la carga se siente menos pesada y mas realista.",
-            "Lo importante no es hacerlo perfecto, sino evitar que se te vuelva ruido.",
-            "Un paso claro hoy vale mas que muchas intenciones sueltas.",
-            "Si mantienes visibilidad sobre tus materias, te cuesta menos sostener el proceso.",
-            "Seguir presente en tu malla ya es una forma real de no soltar la carrera.",
-            "La claridad que ganas aqui tambien te ahorra desgaste mental afuera.",
-            "Cada materia que ubicas bien te devuelve un poco de control.",
-            "No todo se resuelve en un dia, pero si puedes dejar mejor ubicado lo de hoy.",
-            "Tener el panorama claro evita que el semestre se te monte encima sin darte cuenta."
-        ]
-
         let hourToken = Int(Date().timeIntervalSince1970 / 3600.0)
-        let shuffledIndex = ((hourToken * 37) + 11) % 100
-        let title = titles[shuffledIndex / 10]
-        let ending = endings[shuffledIndex % 10]
+        let shuffledIndex = ((hourToken * 73) + 19) % LeanUpMotivationLibrary.totalCount
+        let title = LeanUpMotivationLibrary.titles[shuffledIndex / LeanUpMotivationLibrary.endings.count]
+        let ending = LeanUpMotivationLibrary.endings[shuffledIndex % LeanUpMotivationLibrary.endings.count]
+        let contextPool = motivationContextPool
+        let context = contextPool[(hourToken * 29 + 7) % contextPool.count]
 
         return LeanUpMotivationMessage(
             title: title,
-            detail: "\(motivationContextLead) \(ending)"
+            detail: "\(context) \(ending)"
         )
     }
 
@@ -1204,32 +1180,72 @@ final class LeanUpAppModel: ObservableObject {
         return Double(inProgressCount) / averageItemsPerPeriod
     }
 
-    private var motivationContextLead: String {
+    private var motivationContextPool: [String] {
+        var contexts = [
+            personalizedLead(
+                named: "Sigue leyendo tu proceso con mas suavidad, \(displayName).",
+                unnamed: "Sigue leyendo tu proceso con mas suavidad."
+            ),
+            personalizedLead(
+                named: "No todo lo importante se nota de inmediato, \(displayName).",
+                unnamed: "No todo lo importante se nota de inmediato."
+            ),
+            personalizedLead(
+                named: "Tu carrera tambien se esta construyendo en como vuelves hoy, \(displayName).",
+                unnamed: "Tu carrera tambien se esta construyendo en como vuelves hoy."
+            ),
+            personalizedLead(
+                named: "Mereces mirarte con un poco mas de justicia, \(displayName).",
+                unnamed: "Mereces mirarte con un poco mas de justicia."
+            )
+        ]
+
         if failedCount > 0 {
-            return personalizedLead(
-                named: "Tienes materias por recuperar, \(displayName), y eso no invalida lo que ya avanzaste.",
-                unnamed: "Tienes materias por recuperar y eso no invalida lo que ya avanzaste."
+            contexts.append(
+                personalizedLead(
+                    named: "Tener una materia por recuperar no borra lo que ya has levantado, \(displayName).",
+                    unnamed: "Tener una materia por recuperar no borra lo que ya has levantado."
+                )
+            )
+            contexts.append(
+                personalizedLead(
+                    named: "Esa materia pendiente no define toda tu historia academica, \(displayName).",
+                    unnamed: "Esa materia pendiente no define toda tu historia academica."
+                )
             )
         }
 
         if inProgressCount >= 4 {
-            return personalizedLead(
-                named: "Estas sosteniendo una carga fuerte, \(displayName), y verlo con orden ya es parte del trabajo bien hecho.",
-                unnamed: "Estas sosteniendo una carga fuerte y verlo con orden ya es parte del trabajo bien hecho."
+            contexts.append(
+                personalizedLead(
+                    named: "Estas sosteniendo bastante carga a la vez, \(displayName), y eso tambien merece reconocimiento.",
+                    unnamed: "Estas sosteniendo bastante carga a la vez, y eso tambien merece reconocimiento."
+                )
+            )
+            contexts.append(
+                personalizedLead(
+                    named: "Que hoy haya mucho encima no significa que estes haciendolo mal, \(displayName).",
+                    unnamed: "Que hoy haya mucho encima no significa que estes haciendolo mal."
+                )
             )
         }
 
         if approvedCount >= 20 {
-            return personalizedLead(
-                named: "Ya llevas una base academica seria, \(displayName), y eso merece que tambien te hables con mas criterio.",
-                unnamed: "Ya llevas una base academica seria y eso merece que tambien te hables con mas criterio."
+            contexts.append(
+                personalizedLead(
+                    named: "Ya hay una base seria debajo de ti, \(displayName), incluso si a veces no la sientes.",
+                    unnamed: "Ya hay una base seria debajo de ti, incluso si a veces no la sientes."
+                )
+            )
+            contexts.append(
+                personalizedLead(
+                    named: "Tu carrera ya tiene camino recorrido, \(displayName), no estas empezando de cero cada semana.",
+                    unnamed: "Tu carrera ya tiene camino recorrido, no estas empezando de cero cada semana."
+                )
             )
         }
 
-        return personalizedLead(
-            named: "Vas construyendo una carrera con mas forma, \(displayName), incluso en los dias que parecen pequenos.",
-            unnamed: "Vas construyendo una carrera con mas forma, incluso en los dias que parecen pequenos."
-        )
+        return contexts
     }
 
     private var displayName: String {

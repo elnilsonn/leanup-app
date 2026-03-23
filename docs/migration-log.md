@@ -689,3 +689,19 @@ Migrar LeanUp desde una base hibrida/web hacia una app nativa de iPhone con `Swi
 
 - `LeanUpSurfaceCard` paso a fondo blanco como base visual compartida.
 - Con esto el tono blanco ya no queda solo en la cabecera de `Malla`, sino que se vuelve el default visual para los banners y cards principales de la app.
+
+## Actualizacion 2026-03-23 - Busqueda de Malla simplificada al patron nativo estable
+
+- La busqueda principal de `Malla` dejo de controlar su apertura con `isPresented`.
+- Ahora usa `searchable` nativo con query simple y `searchToolbarBehavior(.minimize)` en iOS 26.
+- La pantalla ya no cambia al tocar la barra: solo se enfoca el campo, y los resultados aparecen cuando el query deja de estar vacio.
+
+## Actualizacion 2026-03-23 - Libreria de mensajes separada del modelo
+
+- Los mensajes motivacionales salieron de `LeanUpModels.swift`.
+- Ahora viven en `LeanUpMotivationLibrary.swift` para no seguir inflando el archivo principal del modelo.
+- La libreria nueva aporta:
+  - 20 titulos
+  - 10 cierres
+  - 200 combinaciones posibles
+- La rotacion sigue siendo horaria, sin repeticion temprana, y el contexto ya no se queda atrapado casi siempre en "materia por recuperar".

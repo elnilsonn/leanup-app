@@ -409,3 +409,43 @@ Como se soluciono:
 Regla:
 
 - Cuando se retire una feature de una vista, barrer tambien computadas auxiliares y textos derivados para evitar referencias colgantes.
+
+### 21. Busqueda inline de Malla demasiado controlada desde estado propio
+
+Que paso:
+
+- La barra de busqueda de `Malla` seguia teniendo glitches visuales al cerrar y daba sensacion de que la pantalla "cambiaba" al enfocarla.
+
+Por que paso:
+
+- Se estaba mezclando el patron del sistema (`searchable`) con control programatico de apertura mediante `isPresented`.
+- Para este caso, esa combinacion volvia mas fragil la transicion entre icono, barra, teclado y contenido.
+
+Como se soluciono:
+
+- Se simplifico `Malla` a `searchable(text:prompt:)` como fuente principal.
+- En iOS 26 se mantuvo `searchToolbarBehavior(.minimize)` para aprovechar el comportamiento del sistema.
+- Los resultados se muestran solo cuando el query ya tiene texto.
+
+Regla:
+
+- Si la busqueda principal debe sentirse nativa y estable, preferir el flujo base del sistema y evitar controlar a mano la presentacion salvo que sea estrictamente necesario.
+
+### 22. Mensajes masivos metidos en el modelo principal
+
+Que paso:
+
+- La logica motivacional empezo a crecer demasiado dentro de `LeanUpModels.swift`.
+
+Por que paso:
+
+- Aunque el comportamiento funcionaba, dejar el catalogo de mensajes dentro del modelo hacia mas pesado el archivo y hacia mas dificil mantenerlo.
+
+Como se soluciono:
+
+- Se creo una libreria aparte (`LeanUpMotivationLibrary.swift`) para alojar el catalogo de mensajes.
+- `LeanUpModels` quedo solo con la seleccion y el contexto dinamico.
+
+Regla:
+
+- Si un catalogo de strings crece de forma significativa, sacarlo del modelo principal a un archivo dedicado antes de que se vuelva deuda de mantenimiento.

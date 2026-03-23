@@ -15,6 +15,7 @@
 		A10000000000000000000007 /* LeanUpProfileScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000007 /* LeanUpProfileScreen.swift */; };
 		A10000000000000000000008 /* LeanUpSharedUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000008 /* LeanUpSharedUI.swift */; };
 		A10000000000000000000009 /* native-academics.json in Resources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000009 /* native-academics.json */; };
+		A10000000000000000000010 /* LeanUpMotivationLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000010 /* LeanUpMotivationLibrary.swift */; };
 		504EC3081FED79650016851F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 504EC3071FED79650016851F /* AppDelegate.swift */; };
 		504EC30D1FED79650016851F /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC30B1FED79650016851F /* Main.storyboard */; };
 		504EC30F1FED79650016851F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 504EC30E1FED79650016851F /* Assets.xcassets */; };
@@ -30,6 +31,7 @@
 		A20000000000000000000007 /* LeanUpProfileScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeanUpProfileScreen.swift; sourceTree = "<group>"; };
 		A20000000000000000000008 /* LeanUpSharedUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeanUpSharedUI.swift; sourceTree = "<group>"; };
 		A20000000000000000000009 /* native-academics.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "native-academics.json"; sourceTree = "<group>"; };
+		A20000000000000000000010 /* LeanUpMotivationLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeanUpMotivationLibrary.swift; sourceTree = "<group>"; };
 		504EC3041FED79650016851F /* App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = App.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		504EC3071FED79650016851F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		504EC30C1FED79650016851F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -53,6 +55,7 @@
 			isa = PBXGroup;
 			children = (
 				A20000000000000000000002 /* LeanUpModels.swift */,
+				A20000000000000000000010 /* LeanUpMotivationLibrary.swift */,
 				A20000000000000000000003 /* NativeRoot.swift */,
 			);
 			path = NativeFoundation;
@@ -193,6 +196,7 @@
 				A10000000000000000000006 /* LeanUpMallaScreen.swift in Sources */,
 				A10000000000000000000007 /* LeanUpProfileScreen.swift in Sources */,
 				A10000000000000000000008 /* LeanUpSharedUI.swift in Sources */,
+				A10000000000000000000010 /* LeanUpMotivationLibrary.swift in Sources */,
 				504EC3081FED79650016851F /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

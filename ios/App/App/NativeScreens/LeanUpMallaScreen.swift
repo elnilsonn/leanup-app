@@ -7,7 +7,6 @@ struct LeanUpMallaView: View {
     @State private var selectedPeriod: Int?
     @State private var selectedFilter: LeanUpMallaFilter = .all
     @State private var searchQuery = ""
-    @State private var isSearchPresented = false
     @State private var isReminderListPresented = false
 
     var body: some View {
@@ -68,7 +67,6 @@ struct LeanUpMallaView: View {
         .modifier(
             LeanUpNativeMallaSearchModifier(
                 query: $searchQuery,
-                isPresented: $isSearchPresented,
                 prompt: "Busca materia, codigo, electiva o habilidad"
             )
         )
@@ -81,15 +79,6 @@ struct LeanUpMallaView: View {
         .onAppear {
             if selectedPeriod == nil {
                 selectedPeriod = model.focusPeriod ?? model.periods.first
-            }
-        }
-        .onChange(of: isSearchPresented) { isPresented in
-            if !isPresented {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.08) {
-                    if !isSearchPresented {
-                        searchQuery = ""
-                    }
-                }
             }
         }
     }
@@ -108,9 +97,7 @@ private extension LeanUpMallaView {
         !trimmedSearchQuery.isEmpty
     }
 
-    var isSearchMode: Bool {
-        isSearchPresented || hasActiveSearch
-    }
+    var isSearchMode: Bool { hasActiveSearch }
 
     var searchResults: [LeanUpMallaSearchResult] {
         leanUpMallaSearchResults(model: model, query: trimmedSearchQuery)
@@ -1952,7 +1939,6 @@ private struct LeanUpNativeDetailSearchModifier: ViewModifier {
 
 private struct LeanUpNativeMallaSearchModifier: ViewModifier {
     @Binding var query: String
-    @Binding var isPresented: Bool
     let prompt: String
 
     @ViewBuilder
@@ -1961,19 +1947,10 @@ private struct LeanUpNativeMallaSearchModifier: ViewModifier {
             content
                 .searchable(
                     text: $query,
-                    isPresented: $isPresented,
                     placement: .automatic,
                     prompt: prompt
                 )
                 .searchToolbarBehavior(.minimize)
-        } else if #available(iOS 17.0, *) {
-            content
-                .searchable(
-                    text: $query,
-                    isPresented: $isPresented,
-                    placement: .navigationBarDrawer(displayMode: .always),
-                    prompt: prompt
-                )
         } else {
             content
                 .searchable(

@@ -449,3 +449,62 @@ Como se soluciono:
 Regla:
 
 - Si un catalogo de strings crece de forma significativa, sacarlo del modelo principal a un archivo dedicado antes de que se vuelva deuda de mantenimiento.
+
+### 23. `swipeActions` en el borde equivocado para "deslizar a la derecha"
+
+Que paso:
+
+- El gesto de marcar `En curso` seguia sin responder como esperaba el usuario.
+
+Por que paso:
+
+- La accion estaba puesta en `edge: .trailing`.
+- El requerimiento real era deslizar a la derecha, que en interfaces LTR corresponde al borde `leading`.
+
+Como se soluciono:
+
+- Se movieron las acciones de `Malla` a `swipeActions(edge: .leading, ...)`.
+
+Regla:
+
+- Si el gesto pedido es "deslizar a la derecha" en iPhone con interfaz LTR, usar `leading`, no `trailing`.
+
+### 24. Cierre visual brusco en la busqueda inline de Malla
+
+Que paso:
+
+- Al cerrar la barra de busqueda de `Malla`, la cabecera reaparecia de forma brusca y producia un artefacto visual.
+
+Por que paso:
+
+- El sistema limpiaba el query y el contenido principal reaparecia demasiado pronto, mientras la animacion de la barra aun seguia en curso.
+
+Como se soluciono:
+
+- Se introdujo un latch corto para mantener el modo de resultados unas decimas despues de vaciar el query.
+- Tambien se desactivo la animacion implicita del cambio entre resultados y cabecera.
+
+Regla:
+
+- Cuando una vista intercambia bloques grandes durante el cierre de `searchable`, evitar que el cambio de layout compita con la animacion del sistema.
+
+### 25. Resultados de electiva demasiado generales desde la busqueda principal
+
+Que paso:
+
+- La busqueda de `Malla` encontraba una electiva, pero al tocar el resultado solo abria el grupo general.
+- Eso obligaba al usuario a volver a buscar manualmente la opcion dentro de la lista.
+
+Por que paso:
+
+- La ruta de detalle solo modelaba el grupo de electivas y no la opcion objetivo dentro de ese grupo.
+
+Como se soluciono:
+
+- La ruta de `Malla` ahora puede cargar un `targetOptionCode`.
+- Los resultados de busqueda de electivas salen como opciones independientes.
+- El detalle abre el grupo completo, ajusta la ruta interna si hace falta y hace scroll hasta la opcion encontrada.
+
+Regla:
+
+- Si un resultado de busqueda apunta a un elemento hijo dentro de un contenedor, la navegacion debe preservar tambien el objetivo interno y no quedarse solo en el contenedor padre.

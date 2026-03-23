@@ -705,3 +705,20 @@ Migrar LeanUp desde una base hibrida/web hacia una app nativa de iPhone con `Swi
   - 10 cierres
   - 200 combinaciones posibles
 - La rotacion sigue siendo horaria, sin repeticion temprana, y el contexto ya no se queda atrapado casi siempre en "materia por recuperar".
+
+## Actualizacion 2026-03-23 - Ajuste fino de busqueda y swipe en Malla
+
+- La busqueda principal de `Malla` ahora mantiene un pequeno latch visual al cerrar para que la cabecera no reaparezca en medio de la animacion del sistema.
+- Tambien se desactivo la animacion implicita del swap entre cabecera y resultados para evitar glitches visuales.
+- El cambio de mensajes motivacionales paso de intervalo horario a cada 5 minutos.
+- El gesto de `En curso` se alineo con el comportamiento esperado del sistema: `swipeActions` sobre el borde `leading`, que es el deslizamiento hacia la derecha.
+
+## Actualizacion 2026-03-23 - Resultados de electivas con aterrizaje dirigido
+
+- La busqueda principal de `Malla` ahora devuelve coincidencias de opciones de electiva como resultados independientes, no escondidas dentro del grupo.
+- Al tocar una opcion encontrada:
+  - se abre el grupo de electivas correspondiente
+  - la lista completa se mantiene normal
+  - la vista hace scroll automatico hasta la opcion buscada
+  - la opcion recibe un resaltado corto para ubicarla rapido
+- Si la opcion pertenece a otra ruta interna del disciplinar, el filtro se ajusta solo antes del scroll para que la coincidencia no quede oculta.

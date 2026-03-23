@@ -805,12 +805,12 @@ final class LeanUpAppModel: ObservableObject {
     }
 
     var mallaMotivationMessage: LeanUpMotivationMessage {
-        let hourToken = Int(Date().timeIntervalSince1970 / 3600.0)
-        let shuffledIndex = ((hourToken * 73) + 19) % LeanUpMotivationLibrary.totalCount
+        let intervalToken = Int(Date().timeIntervalSince1970 / 300.0)
+        let shuffledIndex = ((intervalToken * 73) + 19) % LeanUpMotivationLibrary.totalCount
         let title = LeanUpMotivationLibrary.titles[shuffledIndex / LeanUpMotivationLibrary.endings.count]
         let ending = LeanUpMotivationLibrary.endings[shuffledIndex % LeanUpMotivationLibrary.endings.count]
         let contextPool = motivationContextPool
-        let context = contextPool[(hourToken * 29 + 7) % contextPool.count]
+        let context = contextPool[(intervalToken * 29 + 7) % contextPool.count]
 
         return LeanUpMotivationMessage(
             title: title,

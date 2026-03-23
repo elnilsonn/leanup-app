@@ -1139,38 +1139,6 @@ Regla:
 
 - Si una animacion depende de `query` e `isPresented`, no dejar que ambos cierren por separado el mismo estado transitorio; elegir una sola autoridad para terminar la sesion.
 
-### 58. Intentar estabilizar el search chrome nativo con una maquina de estados paralela
-
-Que paso:
-
-- La busqueda de `Malla` acumulo varios parches de cierre:
-  - overlay duplicado
-  - title mode manual
-  - latches
-  - delays
-  - estados transitorios propios
-- Aun asi seguian apareciendo variantes rotas al escribir, borrar, cerrar o volver del background.
-
-Por que paso:
-
-- El sistema ya estaba animando su propio `searchable`.
-- Nuestra vista intentaba acompañarlo con otra coreografia paralela, cambiando a la vez:
-  - la jerarquia del scroll
-  - el contenido visible
-  - el title mode
-  - el tiempo del cierre
-
-Como se soluciono:
-
-- Se elimino la maquina de estados manual del cierre.
-- Se dejo una sola jerarquia de contenido viva.
-- Los resultados ahora cambian dentro del mismo `ScrollView`.
-- El search chrome vuelve a depender principalmente del sistema.
-
-Regla:
-
-- Si una animacion nativa sigue rompiendose pese a muchos ajustes de timing, dejar de pelear con el sistema y mover la variacion al contenido dentro de una sola jerarquia estable.
-
 ### 58. Seguir asumiendo que todo el glitch de `searchable` viene de la app sin validar primero limitaciones del framework
 
 Que paso:

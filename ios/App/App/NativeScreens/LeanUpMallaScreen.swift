@@ -146,8 +146,6 @@ struct LeanUpMallaView: View {
                 searchSessionHadContent = true
                 searchClosingGeneration += 1
                 isSearchClosing = false
-            } else if !isSearchPresented {
-                searchSessionHadContent = false
             }
         }
         .onChange(of: isSearchPresented) { newValue in
@@ -206,7 +204,13 @@ private extension LeanUpMallaView {
 
     var isSearchMode: Bool { hasActiveSearch }
 
-    var showsSearchOverlay: Bool { hasActiveSearch || isSearchClosing }
+    var shouldHoldSearchOverlayWhilePresented: Bool {
+        isSearchPresented && searchSessionHadContent && !hasActiveSearch
+    }
+
+    var showsSearchOverlay: Bool {
+        hasActiveSearch || isSearchClosing || shouldHoldSearchOverlayWhilePresented
+    }
 
     var shouldShowLiveSearchResults: Bool { hasActiveSearch && !isSearchClosing }
 

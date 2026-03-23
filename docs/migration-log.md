@@ -878,3 +878,15 @@ Migrar LeanUp desde una base hibrida/web hacia una app nativa de iPhone con `Swi
 - La busqueda de `Malla` ahora invalida mejor sus cierres diferidos cuando cambia el ciclo de vida de la app.
 - Si el usuario bloquea el movil o deja la app un rato, la pantalla limpia estados transitorios viejos antes de reanudar.
 - Tambien se endurecio la gestion interna del cierre para que no quede una animacion diferida colgando de una sesion anterior.
+
+## Actualizacion 2026-03-23 - La Malla no reaparece mientras la barra siga presentada tras una busqueda con texto
+
+- Se detecto una ventana intermedia donde el query ya estaba vacio, pero la barra de busqueda del sistema seguia presentada.
+- En ese lapso, `Malla` estaba volviendo demasiado pronto y hacia que la animacion se sintiera retenida o poco fluida.
+- Ahora la capa de transicion se mantiene mientras la barra siga presentada si esa sesion de busqueda ya habia tenido contenido.
+
+## Actualizacion 2026-03-23 - El reset de sesion de busqueda deja de correr desde dos estados distintos
+
+- Se retiro el reseteo anticipado de `searchSessionHadContent` desde el cambio de `query`.
+- Ahora el fin de la sesion lo gobierna el cierre real de la barra y no una carrera entre `query` vacio e `isPresented`.
+- Esto endurece la fluidez del search chrome en cierres donde el sistema vacia el texto y minimiza casi al mismo tiempo.

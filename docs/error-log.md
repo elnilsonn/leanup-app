@@ -1096,3 +1096,45 @@ Como se soluciono:
 Regla:
 
 - Si una UI usa cierres diferidos y la app puede ir a background durante esa ventana, invalidar siempre las transiciones viejas al cambiar de escena.
+
+### 56. Hacer reaparecer la Malla apenas el query se vacia aunque la barra siga presentada
+
+Que paso:
+
+- A veces, despues de escribir y cerrar, la animacion se quedaba un instante en un estado intermedio poco fluido.
+
+Por que paso:
+
+- El `query` ya se habia vaciado, pero la barra `searchable` del sistema seguia presentada.
+- Como la vista estaba usando el query vacio para decidir el overlay, `Malla` reaparecia demasiado pronto debajo de una barra que todavia no habia terminado su propio cierre.
+
+Como se soluciono:
+
+- La capa de transicion ahora tambien se mantiene mientras la barra siga presentada, siempre que esa sesion ya hubiera tenido texto.
+- La vista principal ya no reaparece en esa ventana intermedia.
+
+Regla:
+
+- Si una busqueda se siente retenida entre dos estados, revisar no solo el cierre final sino tambien el tramo donde el query ya esta vacio pero la barra del sistema sigue presentada.
+
+### 57. Dejar que `query` vacio y `isPresented` intenten cerrar la misma sesion al mismo tiempo
+
+Que paso:
+
+- Aun quedaban cierres de busqueda poco fluidos o con un frame retenido en algunas variantes.
+
+Por que paso:
+
+- `searchSessionHadContent` todavia podia resetearse desde `query` vacio antes de que el cierre real del `searchable` terminara.
+- Eso dejaba una carrera entre dos fuentes de verdad:
+  - el texto actual
+  - la presentacion real de la barra del sistema
+
+Como se soluciono:
+
+- Se retiro ese reset prematuro desde `query`.
+- Ahora la sesion de busqueda se cierra desde la logica del search chrome y no desde dos caminos simultaneos.
+
+Regla:
+
+- Si una animacion depende de `query` e `isPresented`, no dejar que ambos cierren por separado el mismo estado transitorio; elegir una sola autoridad para terminar la sesion.

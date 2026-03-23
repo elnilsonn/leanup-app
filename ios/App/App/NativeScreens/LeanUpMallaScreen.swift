@@ -891,7 +891,8 @@ struct LeanUpMallaStickyHeader: View {
         scheduleCenteredScroll(
             using: proxy,
             targetID: "period-\(targetPeriod)",
-            animated: animated
+            animated: animated,
+            delays: animated ? [0.0, 0.08, 0.18, 0.32] : [0.0, 0.08]
         )
     }
 
@@ -903,13 +904,17 @@ struct LeanUpMallaStickyHeader: View {
         scheduleCenteredScroll(
             using: proxy,
             targetID: "filter-\(targetFilter.rawValue)",
-            animated: animated
+            animated: animated,
+            delays: animated ? [0.0, 0.08, 0.18] : [0.0]
         )
     }
 
-    private func scheduleCenteredScroll(using proxy: ScrollViewProxy, targetID: String, animated: Bool) {
-        let delays: [TimeInterval] = animated ? [0.0, 0.08, 0.18] : [0.0]
-
+    private func scheduleCenteredScroll(
+        using proxy: ScrollViewProxy,
+        targetID: String,
+        animated: Bool,
+        delays: [TimeInterval]
+    ) {
         for delay in delays {
             DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
                 let action = {

@@ -776,3 +776,8 @@ Migrar LeanUp desde una base hibrida/web hacia una app nativa de iPhone con `Swi
 
 - El segundo toque de reset en `Periodos` y `Filtros` ahora envia al banner un objetivo explicito de recentrado, en vez de depender solo del estado visible ya recompuesto.
 - El banner usa varias pasadas cortas con animacion para asegurar que el chip activo final quede centrado tras el reset.
+
+## Actualizacion 2026-03-23 - Refuerzo del primer recentrado en Periodos
+
+- `Periodos` recibio una pasada adicional de recentrado diferido para reforzar el primer reset del banner horizontal.
+- `Filtros` no se tocaron porque ya estaban funcionando bien.

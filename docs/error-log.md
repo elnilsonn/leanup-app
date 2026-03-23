@@ -761,3 +761,22 @@ Como se soluciono:
 Regla:
 
 - Si un reset visual debe aterrizar en un chip especifico, pasar ese chip como objetivo explicito en vez de confiar solo en el estado recomputado.
+
+### 39. Primer recentrado de Periodos mas debil que los siguientes
+
+Que paso:
+
+- El reset de `Periodos` ya recentraba bien, pero la primera vez podia quedarse corto y solo a partir de la segunda quedaba perfecto.
+
+Por que paso:
+
+- El banner de `Periodos` necesitaba un poco mas de margen temporal en ese primer flujo para asentarse por completo antes del centrado final.
+
+Como se soluciono:
+
+- Se agrego una pasada diferida extra solo para `Periodos`.
+- `Filtros` se dejaron intactos porque no presentaban ese problema.
+
+Regla:
+
+- Si un banner horizontal falla solo la primera vez pero luego funciona, reforzar el timing inicial del recentrado en esa banda concreta, no en todas.

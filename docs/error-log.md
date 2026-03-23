@@ -817,3 +817,20 @@ Como se soluciono:
 Regla:
 
 - Si una banda reconstruida ya centra bien pero pierde la sensacion de animacion, retrasar el disparo del `scrollTo` un ciclo principal antes de volver a tocar su logica.
+
+### 42. No cerrar un ajuste sin verificar si realmente corrigio el sintoma exacto
+
+Que paso:
+
+- Hubo varias iteraciones donde la direccion del arreglo parecia razonable, pero el sintoma exacto que el usuario seguia viendo no desaparecia del todo.
+
+Como se corrige de ahora en adelante:
+
+- Antes de dar por cerrada una correccion, revisar otra vez:
+  - que el cambio apunte al sintoma exacto reportado
+  - que no se haya corregido solo una parte parecida
+  - que el comportamiento final esperado quede cubierto por la logica nueva
+
+Regla:
+
+- No marcar una correccion como lista sin una verificacion adicional centrada en el sintoma exacto que sigue describiendo el usuario.

@@ -835,7 +835,8 @@ struct LeanUpMallaStickyHeader: View {
                 }
                 .id("period-strip-\(periodResetScrollToken)")
                 .onAppear {
-                    DispatchQueue.main.async {
+                    let delay: TimeInterval = periodResetScrollToken == 0 ? 0.0 : 0.12
+                    DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
                         scrollPeriodBanner(
                             using: proxy,
                             targetPeriod: periodResetScrollToken == 0 ? selectedPeriod : periodResetScrollTarget,

@@ -790,3 +790,8 @@ Migrar LeanUp desde una base hibrida/web hacia una app nativa de iPhone con `Swi
 ## Actualizacion 2026-03-23 - Animacion restaurada en el reset de Periodos
 
 - Tras reconstruir la banda de `Periodos`, el recentrado se reprogramo al siguiente ciclo principal para que la animacion horizontal vuelva a sentirse como en `Filtros`.
+
+## Actualizacion 2026-03-23 - Arranque diferido de la animacion en Periodos
+
+- El reset animado de `Periodos` ahora espera una pequena fraccion adicional antes de disparar el recentrado.
+- Esto le da tiempo al strip reconstruido a montarse para que el desplazamiento horizontal se vea de forma visible y no entre "seco".

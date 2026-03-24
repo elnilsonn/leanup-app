@@ -1,6 +1,4 @@
-import UIKit
 import SwiftUI
-import UniformTypeIdentifiers
 
 struct LeanUpProfileView: View {
     @ObservedObject var model: LeanUpAppModel
@@ -8,65 +6,13 @@ struct LeanUpProfileView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
-                LeanUpProfileHeroCard(model: model)
-                LeanUpProfileStrategyCard(model: model)
-
-                if !model.highlightedCareerItems.isEmpty {
-                    LeanUpSurfaceCard {
-                        VStack(alignment: .leading, spacing: 12) {
-                            Label("Evidencia de tu avance", systemImage: "checkmark.seal.fill")
-                                .font(.headline.weight(.semibold))
-
-                            Text("Estas materias y electivas ya funcionan como pruebas concretas de lo que vienes construyendo.")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-
-                            VStack(alignment: .leading, spacing: 12) {
-                                ForEach(model.highlightedCareerItems) { item in
-                                    LeanUpCareerEvidenceCard(item: item)
-                                }
-                            }
-                        }
-                    }
-                }
-
-                LeanUpSurfaceCard {
-                    VStack(alignment: .leading, spacing: 12) {
-                        Label("LinkedIn listo para adaptar", systemImage: "text.badge.checkmark")
-                            .font(.headline.weight(.semibold))
-
-                        if model.linkedinHighlights.isEmpty {
-                            Text("Cuando acumules mas evidencia academica, aqui apareceran textos que te ayuden a describir mejor tu perfil en LinkedIn.")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                        } else {
-                            VStack(alignment: .leading, spacing: 12) {
-                                ForEach(Array(model.linkedinHighlights.prefix(3))) { item in
-                                    LeanUpLinkedInCard(item: item)
-                                }
-                            }
-                        }
-                    }
-                }
-
-                LeanUpSurfaceCard {
-                    VStack(alignment: .leading, spacing: 12) {
-                        Label("Portafolio con lo que ya sabes", systemImage: "folder.fill.badge.plus")
-                            .font(.headline.weight(.semibold))
-
-                        if model.portfolioHighlights.isEmpty {
-                            Text("Aqui iran apareciendo ideas de proyecto a medida que tu recorrido deje mas evidencia util para portafolio.")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                        } else {
-                            VStack(alignment: .leading, spacing: 12) {
-                                ForEach(Array(model.portfolioHighlights.prefix(3))) { item in
-                                    LeanUpPortfolioCard(item: item)
-                                }
-                            }
-                        }
-                    }
-                }
+                LeanUpProfileSnapshotCard(model: model)
+                LeanUpProfileAlignmentCard(model: model)
+                LeanUpProfileMilestoneCard(model: model)
+                LeanUpProfileTypeMapCard(model: model)
+                LeanUpProfileServiceCard(model: model)
+                LeanUpProfilePortfolioCard(model: model)
+                LeanUpProfileFreelancerCard(model: model)
             }
             .padding(.horizontal, 20)
             .padding(.vertical, 18)
@@ -78,29 +24,129 @@ struct LeanUpProfileView: View {
     }
 }
 
-struct LeanUpProfileHeroCard: View {
+private struct LeanUpProfileSnapshotCard: View {
     @ObservedObject var model: LeanUpAppModel
 
     var body: some View {
         LeanUpSurfaceCard {
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 14) {
                 HStack(alignment: .top, spacing: 12) {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text(model.snapshot.username)
-                            .font(.system(size: 30, weight: .bold, design: .rounded))
-                        Text(model.profileHeadline)
-                            .font(.title3.weight(.bold))
-                        Text(model.profileSummary)
+                        Text(model.preferredDisplayName ?? model.snapshot.username)
+                            .font(.title2.weight(.bold))
+
+                        Text(model.profileStrategicSummary)
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
 
-                    Spacer()
+                    Spacer(minLength: 12)
 
-                    Image(systemName: "person.crop.circle.badge.checkmark")
-                        .font(.system(size: 34))
-                        .foregroundStyle(Color.unadBlue)
+                    VStack(alignment: .trailing, spacing: 8) {
+                        LeanUpProfileStatusPill(
+                            text: model.electiveAlignmentInsight.statusTitle,
+                            tone: model.electiveAlignmentInsight.tone
+                        )
+                        LeanUpProfileMetricBadge(
+                            title: "Proximo hito",
+                            value: model.profileNextMilestone.badgeText
+                        )
+                    }
                 }
+            }
+        }
+    }
+}
+
+private struct LeanUpProfileAlignmentCard: View {
+    @ObservedObject var model: LeanUpAppModel
+
+    var body: some View {
+        let insight = model.electiveAlignmentInsight
+
+        return LeanUpSurfaceCard {
+            VStack(alignment: .leading, spacing: 14) {
+                LeanUpSectionHeader(
+                    eyebrow: "Direccion",
+                    title: "Que tan alineado estas",
+                    detail: insight.detail
+                )
+
+                HStack(alignment: .center, spacing: 10) {
+                    LeanUpProfileStatusPill(text: insight.statusTitle, tone: insight.tone)
+                    Text(insight.confidenceText)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                }
+
+                if !insight.detectedAreas.isEmpty {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Areas detectadas")
+                            .font(.subheadline.weight(.semibold))
+                        FlowTagList(items: insight.detectedAreas)
+                    }
+                }
+
+                LeanUpProfileCallout(
+                    title: insight.title,
+                    detail: insight.recommendation,
+                    tone: insight.tone
+                )
+            }
+        }
+    }
+}
+
+private struct LeanUpProfileMilestoneCard: View {
+    @ObservedObject var model: LeanUpAppModel
+
+    var body: some View {
+        let milestone = model.profileNextMilestone
+
+        return LeanUpSurfaceCard {
+            VStack(alignment: .leading, spacing: 14) {
+                LeanUpSectionHeader(
+                    eyebrow: "Momentum",
+                    title: "Proximo hito",
+                    detail: milestone.detail
+                )
+
+                LeanUpProgressTrack(
+                    title: "Camino al \(milestone.targetPercent)%",
+                    valueText: milestone.badgeText,
+                    progress: milestone.progress,
+                    tint: Color.unadBlue
+                )
+
+                HStack(spacing: 12) {
+                    LeanUpProfileMetricBadge(
+                        title: "Creditos hoy",
+                        value: "\(model.earnedCredits)"
+                    )
+                    LeanUpProfileMetricBadge(
+                        title: "Faltan",
+                        value: "\(milestone.creditsRemaining)"
+                    )
+                }
+            }
+        }
+    }
+}
+
+private struct LeanUpProfileTypeMapCard: View {
+    @ObservedObject var model: LeanUpAppModel
+
+    var body: some View {
+        let typeMap = model.subjectTypeMap
+
+        return LeanUpSurfaceCard {
+            VStack(alignment: .leading, spacing: 14) {
+                LeanUpSectionHeader(
+                    eyebrow: "Cobertura",
+                    title: "Mapa de tipos de materia",
+                    detail: typeMap.summary
+                )
 
                 LazyVGrid(
                     columns: [
@@ -109,88 +155,79 @@ struct LeanUpProfileHeroCard: View {
                     ],
                     spacing: 12
                 ) {
-                    LeanUpInlineMetric(title: "Preparacion", value: "\(model.careerReadinessPercent)%")
-                    LeanUpInlineMetric(title: "Aprobadas", value: "\(model.approvedCount)")
-                    LeanUpInlineMetric(title: "Habilidades", value: "\(model.standoutSkills.count)")
-                    LeanUpInlineMetric(title: "Evidencias", value: "\(model.careerItems.count)")
+                    ForEach(typeMap.entries) { entry in
+                        LeanUpProfileTypeTile(entry: entry)
+                    }
                 }
             }
         }
     }
 }
 
-struct LeanUpProfileStrategyCard: View {
+private struct LeanUpProfileServiceCard: View {
+    @ObservedObject var model: LeanUpAppModel
+
+    var body: some View {
+        let service = model.recommendedStarterService
+
+        return LeanUpSurfaceCard {
+            VStack(alignment: .leading, spacing: 14) {
+                LeanUpSectionHeader(
+                    eyebrow: "Salida real",
+                    title: "Primer servicio vendible",
+                    detail: service.summary
+                )
+
+                HStack(alignment: .top, spacing: 10) {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(service.title)
+                            .font(.title3.weight(.bold))
+                        Text(service.whyYouCanOfferIt)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Spacer(minLength: 12)
+
+                    VStack(alignment: .trailing, spacing: 8) {
+                        LeanUpProfileStatusPill(text: service.confidenceText, tone: service.tone)
+                        LeanUpProfileMetricBadge(title: "Referencia", value: service.priceText)
+                    }
+                }
+
+                if !service.supportingSignals.isEmpty {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Senales que ya lo sostienen")
+                            .font(.subheadline.weight(.semibold))
+                        FlowTagList(items: service.supportingSignals)
+                    }
+                }
+
+                LeanUpProfileCallout(
+                    title: "Siguiente evidencia que te falta",
+                    detail: service.nextEvidence,
+                    tone: .blue
+                )
+            }
+        }
+    }
+}
+
+private struct LeanUpProfilePortfolioCard: View {
     @ObservedObject var model: LeanUpAppModel
 
     var body: some View {
         LeanUpSurfaceCard {
-            VStack(alignment: .leading, spacing: 12) {
-                Label("Panorama profesional", systemImage: "waveform.path.ecg.rectangle.fill")
-                    .font(.headline.weight(.semibold))
-
-                Text(model.nextProfessionalMove)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+            VStack(alignment: .leading, spacing: 14) {
+                LeanUpSectionHeader(
+                    eyebrow: "Portafolio",
+                    title: "Portafolio minimo viable",
+                    detail: "Estas son las 3 piezas que hoy mas te conviene construir para salir mejor parado al buscar tu primer cliente."
+                )
 
                 VStack(alignment: .leading, spacing: 12) {
-                    LeanUpPriorityRow(
-                        icon: "chart.bar.fill",
-                        tint: .unadBlue,
-                        title: "\(model.earnedCredits) creditos ya respaldan tu perfil",
-                        detail: "Tu avance academico ya no es abstracto. Ya tienes una base cuantificable para hablar de progreso real."
-                    )
-
-                    LeanUpPriorityRow(
-                        icon: model.standoutSkills.isEmpty ? "sparkles" : "star.square.on.square.fill",
-                        tint: model.standoutSkills.isEmpty ? .secondary : .green,
-                        title: model.standoutSkills.isEmpty ? "Aun faltan habilidades visibles" : "\(model.standoutSkills.count) habilidades empiezan a repetirse",
-                        detail: model.standoutSkills.isEmpty
-                            ? "Cuando apruebes mas materias y electivas, esta lectura se volvera mas precisa."
-                            : "Cuando una habilidad aparece varias veces en tu recorrido, ya empieza a sentirse como una senal profesional."
-                    )
-
-                    LeanUpPriorityRow(
-                        icon: model.careerItems.isEmpty ? "clock.fill" : "folder.fill.badge.plus",
-                        tint: model.careerItems.isEmpty ? .orange : .unadGold,
-                        title: model.careerItems.isEmpty ? "Aun no hay evidencia lista para mostrar" : "\(model.careerItems.count) piezas ya alimentan tu narrativa",
-                        detail: model.careerItems.isEmpty
-                            ? "Registra mas notas aprobadas para que Perfil conecte mejor tu malla con salidas reales."
-                            : "Tus materias y electivas aprobadas ya se convierten en texto, skills y proyectos concretos."
-                    )
-                }
-
-                if !model.activeFocusNames.isEmpty {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Rutas activas")
-                            .font(.subheadline.weight(.semibold))
-                        FlowTagList(items: Array(model.activeFocusNames.prefix(6)))
-                    }
-                }
-
-                if !model.recommendedRoles.isEmpty {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Roles que toman forma")
-                            .font(.subheadline.weight(.semibold))
-
-                        LazyVGrid(
-                            columns: [
-                                GridItem(.flexible(), spacing: 12),
-                                GridItem(.flexible(), spacing: 12)
-                            ],
-                            spacing: 12
-                        ) {
-                            ForEach(Array(model.recommendedRoles.prefix(6)), id: \.self) { role in
-                                LeanUpRoleCard(role: role)
-                            }
-                        }
-                    }
-                }
-
-                if !model.standoutSkills.isEmpty {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Habilidades mas visibles")
-                            .font(.subheadline.weight(.semibold))
-                        FlowTagList(items: Array(model.standoutSkills.prefix(8)))
+                    ForEach(model.minimumViablePortfolio) { item in
+                        LeanUpProfilePortfolioRoadmapCard(item: item)
                     }
                 }
             }
@@ -198,157 +235,269 @@ struct LeanUpProfileStrategyCard: View {
     }
 }
 
-struct LeanUpCareerEvidenceCard: View {
-    let item: LeanUpCareerItem
+private struct LeanUpProfileFreelancerCard: View {
+    @ObservedObject var model: LeanUpAppModel
 
     var body: some View {
-        LeanUpSurfaceInsetCard {
-            VStack(alignment: .leading, spacing: 10) {
-                HStack(alignment: .top, spacing: 10) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(item.name)
-                            .font(.subheadline.weight(.semibold))
-                        Text("Periodo \(item.period)\(item.isElective ? " - Electiva" : " - Materia")")
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
+        let checklist = model.freelancerChecklist
+
+        return LeanUpSurfaceCard {
+            VStack(alignment: .leading, spacing: 14) {
+                LeanUpSectionHeader(
+                    eyebrow: "Independencia",
+                    title: "Checklist de freelancer",
+                    detail: checklist.overallDetail
+                )
+
+                LeanUpProfileCallout(
+                    title: checklist.overallTitle,
+                    detail: "Esta lectura junta perfil, habilidades, portafolio y herramientas para decirte que tan cerca estas de cobrar algo pequeno sin improvisar.",
+                    tone: checklistTone(for: checklist)
+                )
+
+                VStack(alignment: .leading, spacing: 10) {
+                    ForEach(checklist.items) { item in
+                        LeanUpProfileChecklistRow(item: item)
                     }
-
-                    Spacer()
-
-                    Image(systemName: item.isElective ? "square.grid.2x2.fill" : "book.closed.fill")
-                        .foregroundStyle(item.isElective ? Color.unadGold : Color.unadBlue)
-                }
-
-                Text(item.summary)
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-
-                Text(item.outcomes)
-                    .font(.footnote.weight(.semibold))
-                    .foregroundStyle(.primary)
-
-                if !item.skills.isEmpty {
-                    FlowTagList(items: Array(item.skills.prefix(4)))
                 }
             }
         }
     }
+
+    private func checklistTone(for checklist: LeanUpFreelancerChecklist) -> LeanUpProfileInsightTone {
+        if checklist.overallTitle.contains("Listo") {
+            return .green
+        }
+        if checklist.overallTitle.contains("Cerca") {
+            return .blue
+        }
+        return .orange
+    }
 }
 
-struct LeanUpRoleCard: View {
-    let role: String
+private struct LeanUpProfileTypeTile: View {
+    let entry: LeanUpSubjectTypeCount
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Image(systemName: "briefcase.circle.fill")
-                .font(.system(size: 20))
-                .foregroundStyle(Color.unadBlue)
-            Text(role)
+        VStack(alignment: .leading, spacing: 10) {
+            Text(entry.type)
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(.primary)
-                .fixedSize(horizontal: false, vertical: true)
+
+            HStack(spacing: 12) {
+                LeanUpProfileTinyMetric(label: "Llevas", value: "\(entry.approved)")
+                LeanUpProfileTinyMetric(label: "Faltan", value: "\(entry.remaining)")
+            }
+
+            let total = max(entry.approved + entry.remaining, 1)
+            LeanUpProgressTrack(
+                title: "Cobertura",
+                valueText: "\(entry.approved)/\(total)",
+                progress: Double(entry.approved) / Double(total),
+                tint: Color.unadCyan
+            )
         }
-        .frame(maxWidth: .infinity, minHeight: 88, alignment: .topLeading)
         .padding(14)
         .background(
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(Color.unadBlue.opacity(0.08))
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .fill(Color.primary.opacity(0.04))
         )
     }
 }
 
-struct LeanUpLinkedInCard: View {
-    let item: LeanUpCareerItem
-    @State private var copied = false
+private struct LeanUpProfilePortfolioRoadmapCard: View {
+    let item: LeanUpPortfolioRoadmapItem
 
     var body: some View {
-        LeanUpSurfaceInsetCard {
-            VStack(alignment: .leading, spacing: 10) {
-                HStack(alignment: .top, spacing: 10) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(item.name)
-                            .font(.subheadline.weight(.semibold))
-                        Text("Periodo \(item.period)\(item.isElective ? " - Electiva" : "")")
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
-                    }
-
-                    Spacer()
-
-                    Button {
-                        UIPasteboard.general.setItems(
-                            [[UTType.plainText.identifier: item.linkedinText]],
-                            options: [:]
-                        )
-                        UINotificationFeedbackGenerator().notificationOccurred(.success)
-                        withAnimation(.spring(response: 0.2, dampingFraction: 0.75)) {
-                            copied = true
-                        }
-
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.4) {
-                            withAnimation(.spring(response: 0.2, dampingFraction: 0.8)) {
-                                copied = false
-                            }
-                        }
-                    } label: {
-                        Label(copied ? "Copiado" : "Copiar", systemImage: copied ? "checkmark.circle.fill" : "doc.on.doc")
-                            .font(.caption.weight(.semibold))
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 10)
-                    }
-                    .foregroundStyle(copied ? Color.white : Color.primary)
-                    .background(
-                        RoundedRectangle(cornerRadius: 20, style: .continuous)
-                            .fill(copied ? Color.green : Color.primary.opacity(0.08))
-                    )
-                    .frame(width: 108)
-                    .scaleEffect(copied ? 1.03 : 1.0)
-                    .animation(.spring(response: 0.22, dampingFraction: 0.72), value: copied)
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .top, spacing: 10) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(item.title)
+                        .font(.subheadline.weight(.semibold))
+                    Text(item.objective)
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
                 }
 
-                Text(item.linkedinText)
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
+                Spacer(minLength: 12)
+
+                LeanUpProfileStatusPill(
+                    text: item.readiness.title,
+                    tone: tone(for: item.readiness)
+                )
             }
+
+            Text(item.whyItMatters)
+                .font(.footnote)
+                .foregroundStyle(.primary)
+
+            if !item.supportingSignals.isEmpty {
+                FlowTagList(items: item.supportingSignals)
+            }
+        }
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .fill(Color.primary.opacity(0.04))
+        )
+    }
+
+    private func tone(for readiness: LeanUpPortfolioReadinessState) -> LeanUpProfileInsightTone {
+        switch readiness {
+        case .ready: return .green
+        case .almostReady: return .blue
+        case .missingBase: return .orange
         }
     }
 }
 
-struct LeanUpPortfolioCard: View {
-    let item: LeanUpCareerItem
+private struct LeanUpProfileChecklistRow: View {
+    let item: LeanUpFreelancerChecklistItem
 
     var body: some View {
-        LeanUpSurfaceInsetCard {
-            VStack(alignment: .leading, spacing: 10) {
-                Text(item.name)
-                    .font(.subheadline.weight(.semibold))
+        HStack(alignment: .top, spacing: 12) {
+            Circle()
+                .fill(statusColor.opacity(0.18))
+                .frame(width: 34, height: 34)
+                .overlay(
+                    Image(systemName: statusIcon)
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundStyle(statusColor)
+                )
 
-                Text(item.portfolioProject)
+            VStack(alignment: .leading, spacing: 4) {
+                HStack(spacing: 8) {
+                    Text(item.title)
+                        .font(.subheadline.weight(.semibold))
+                    LeanUpProfileStatusPill(text: item.status.title, tone: tone(for: item.status))
+                }
+                Text(item.detail)
                     .font(.footnote)
                     .foregroundStyle(.secondary)
-
-                if !item.skills.isEmpty {
-                    FlowTagList(items: Array(item.skills.prefix(4)))
-                }
             }
+        }
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .fill(Color.primary.opacity(0.04))
+        )
+    }
+
+    private var statusColor: Color {
+        switch item.status {
+        case .ready: return .green
+        case .inProgress: return .unadBlue
+        case .pending: return .orange
+        }
+    }
+
+    private var statusIcon: String {
+        switch item.status {
+        case .ready: return "checkmark"
+        case .inProgress: return "arrow.forward"
+        case .pending: return "minus"
+        }
+    }
+
+    private func tone(for status: LeanUpFreelancerChecklistStatus) -> LeanUpProfileInsightTone {
+        switch status {
+        case .ready: return .green
+        case .inProgress: return .blue
+        case .pending: return .orange
         }
     }
 }
 
-struct LeanUpSurfaceInsetCard<Content: View>: View {
-    let content: Content
-
-    init(@ViewBuilder content: () -> Content) {
-        self.content = content()
-    }
+private struct LeanUpProfileCallout: View {
+    let title: String
+    let detail: String
+    let tone: LeanUpProfileInsightTone
 
     var body: some View {
-        content
-            .padding(14)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .fill(Color.primary.opacity(0.04))
-            )
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(toneColor)
+            Text(detail)
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(toneColor.opacity(0.08))
+        )
+    }
+
+    private var toneColor: Color {
+        switch tone {
+        case .blue: return .unadBlue
+        case .green: return .green
+        case .gold: return .unadGold
+        case .orange: return .orange
+        case .red: return .red
+        }
+    }
+}
+
+private struct LeanUpProfileStatusPill: View {
+    let text: String
+    let tone: LeanUpProfileInsightTone
+
+    var body: some View {
+        Text(text)
+            .font(.caption.weight(.semibold))
+            .padding(.horizontal, 12)
+            .padding(.vertical, 7)
+            .background(Capsule().fill(toneColor.opacity(0.14)))
+            .foregroundStyle(toneColor)
+    }
+
+    private var toneColor: Color {
+        switch tone {
+        case .blue: return .unadBlue
+        case .green: return .green
+        case .gold: return .unadGold
+        case .orange: return .orange
+        case .red: return .red
+        }
+    }
+}
+
+private struct LeanUpProfileMetricBadge: View {
+    let title: String
+    let value: String
+
+    var body: some View {
+        VStack(alignment: .trailing, spacing: 2) {
+            Text(title)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            Text(value)
+                .font(.subheadline.weight(.bold))
+                .foregroundStyle(.primary)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(Color.primary.opacity(0.06))
+        )
+    }
+}
+
+private struct LeanUpProfileTinyMetric: View {
+    let label: String
+    let value: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(value)
+                .font(.headline.weight(.bold))
+            Text(label)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
     }
 }

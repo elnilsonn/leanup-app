@@ -902,3 +902,44 @@ Migrar LeanUp desde una base hibrida/web hacia una app nativa de iPhone con `Swi
 - Para LeanUp, esto cambia la estrategia:
   - primero reducir interaccion entre estados propios y el search chrome del sistema
   - y si la animacion sigue fallando, considerar un search chrome propio en SwiftUI antes de seguir parchando el `searchable` del sistema.
+
+## Actualizacion 2026-03-24 - Rollback manual del usuario en la busqueda de `Malla`
+
+- El usuario decidio revertir manualmente la implementacion de busqueda de `Malla` a una version anterior que se comporta como referencia actual.
+- A partir de este punto, esa version restaurada por el usuario es el estado valido a respetar.
+- Las entradas anteriores sobre latches, overlays, cierres diferidos, title modes y experimentos del cierre de busqueda se conservan como historial tecnico de investigacion, no como descripcion garantizada del estado actual del codigo.
+- El patron por defecto para futuras busquedas nativas sigue siendo el que el usuario dejo funcionando bien en `Malla` despues de ese rollback manual.
+
+## Actualizacion 2026-03-24 - `Perfil` se rehace como asesor estrategico
+
+- `Perfil` dejo de usar el enfoque anterior de hero + panorama + evidencia + LinkedIn + portafolio repetido.
+- La pantalla ahora se reorganiza como lectura estrategica de carrera con estos modulos:
+  - snapshot compacto
+  - alineacion de electivos
+  - proximo hito por creditos
+  - mapa de tipos de materia
+  - primer servicio vendible
+  - portafolio minimo viable
+  - checklist de freelancer
+- El tono del primer servicio vendible se mantiene conservador y la moneda de referencia pasa a USD.
+
+## Actualizacion 2026-03-24 - Nuevo motor curado de estrategia profesional
+
+- Se agrego una libreria nativa separada para `Perfil` con:
+  - clusters de electivos
+  - catalogo de servicios iniciales
+  - catalogo de proyectos de portafolio
+  - estados de checklist freelancer
+- La logica estrategica deja de vivir dentro de la vista y ahora se resuelve desde el modelo con tipos de dominio propios.
+
+## Actualizacion 2026-03-24 - Nuevos insights calculados para `Perfil`
+
+- `LeanUpAppModel` ahora expone lecturas nuevas para `Perfil`:
+  - `profileNextMilestone`
+  - `electiveAlignmentInsight`
+  - `subjectTypeMap`
+  - `recommendedStarterService`
+  - `minimumViablePortfolio`
+  - `freelancerChecklist`
+  - `profileStrategicSummary`
+- La pantalla ya no recicla bloques de progreso de `Dashboard`; usa una narrativa propia orientada a direccion, oferta y readiness profesional.

@@ -1164,3 +1164,45 @@ Como se corrige de ahora en adelante:
 Regla:
 
 - Si una animacion de barra nativa en SwiftUI sigue fallando tras varios ajustes coherentes, detener la iteracion reactiva y verificar si el framework tiene regresiones conocidas en esa combinacion de APIs.
+
+### 59. No dejar registrado con claridad cuando el usuario hace rollback manual a un estado anterior
+
+Que paso:
+
+- Despues de varias iteraciones sobre la busqueda de `Malla`, el usuario restauró manualmente una version anterior que volvio a comportarse como queria.
+- Los logs todavia dejaban mezcladas muchas entradas experimentales sin una nota final clara sobre cual era el estado vigente.
+
+Por que paso:
+
+- Se fue documentando cada intento tecnico, pero falto una entrada de cierre que distinguiera entre:
+  - historial de experimentos
+  - y estado final realmente adoptado por el usuario
+
+Como se corrige de ahora en adelante:
+
+- Cuando el usuario haga un rollback manual o restaure una version previa, registrar de inmediato una nota final indicando que esa version pasa a ser la referencia vigente.
+- No asumir que la ultima iteracion documentada coincide con el estado actual del codigo si el usuario ya la revirtio por su cuenta.
+
+Regla:
+
+- Si el usuario restaura manualmente una version anterior, los logs deben dejar explicito el nuevo punto de verdad para no confundir intentos historicos con estado actual.
+
+### 60. Asumir que las electivas traen las mismas familias de tipo que las materias
+
+Que paso:
+
+- Al redisenar `Perfil`, el mapa de tipos pedia contar `Teorica`, `Practica`, `Lectura` y `Numeros` tanto en materias como en electivas.
+
+Por que paso:
+
+- Las materias del JSON si traen `types`.
+- Las electivas no traen esas familias; traen `disciplinaryTracks`, que es una clasificacion distinta.
+
+Como se resolvio:
+
+- El mapa de tipos de `Perfil` se calcula solo con materias que traen tipologia explicita.
+- No se invento una conversion artificial de `disciplinaryTracks` a `types`.
+
+Regla:
+
+- Si una lectura visual depende de una taxonomia concreta, confirmar primero que esa taxonomia exista realmente en los datos antes de extrapolar desde otro campo parecido.

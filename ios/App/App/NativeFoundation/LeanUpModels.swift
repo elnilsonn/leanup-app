@@ -507,6 +507,10 @@ final class LeanUpAppModel: ObservableObject {
         }
     }
 
+    var selectedElectiveOptions: [LeanUpElectiveOption] {
+        academics.electiveGroups.compactMap { selectedOption(in: $0) }
+    }
+
     var recommendedRoles: [String] {
         var seen = Set<String>()
         let sources = approvedCourses.map(\.outcomes) + approvedElectiveOptions.map(\.outcomes)
@@ -710,6 +714,355 @@ final class LeanUpAppModel: ObservableObject {
         }
 
         return "Tu base academica ya esta bastante clara. El siguiente paso es convertirla en historias y proyectos que puedas mostrar afuera."
+    }
+
+    var profileNextMilestone: LeanUpMilestoneInsight {
+        let thresholds = [25, 50, 75, 100]
+        let earned = min(earnedCredits, totalCredits)
+        let currentPercent = totalCredits == 0 ? 0 : Int((Double(earned) / Double(totalCredits) * 100).rounded())
+
+        if earned >= totalCredits {
+            return LeanUpMilestoneInsight(
+                title: "Ya cerraste el 100% de la carrera",
+                detail: "Tu siguiente hito ya no es academico: toca convertir esa base en una oferta, un portafolio y una narrativa profesional propia.",
+                badgeText: "100%",
+                targetPercent: 100,
+                creditsRemaining: 0,
+                progress: 1
+            )
+        }
+
+        let nextPercent = thresholds.first { percent in
+            let targetCredits = Int((Double(totalCredits) * Double(percent) / 100.0).rounded())
+            return earned < targetCredits
+        } ?? 100
+        let targetCredits = Int((Double(totalCredits) * Double(nextPercent) / 100.0).rounded())
+        let remaining = max(targetCredits - earned, 0)
+        let detail: String
+
+        switch nextPercent {
+        case 25:
+            detail = "Te faltan \(remaining) creditos para llegar al 25% y dejar de estar en fase de arranque. Ese punto ya te da una base mas estable para hablar de criterio y disciplina."
+        case 50:
+            detail = "Te faltan \(remaining) creditos para llegar al 50% de la carrera. Ahí ya se empieza a sentir media carrera real detrás de tu perfil."
+        case 75:
+            detail = "Te faltan \(remaining) creditos para llegar al 75%. Ese umbral ya te acerca a propuestas mucho mas serias y con mejor sustento."
+        default:
+            detail = "Te faltan \(remaining) creditos para cerrar la carrera. Ya no es una base inicial: estas afinando el tramo final."
+        }
+
+        return LeanUpMilestoneInsight(
+            title: "Te faltan \(remaining) creditos para llegar al \(nextPercent)%",
+            detail: detail,
+            badgeText: "\(currentPercent)%",
+            targetPercent: nextPercent,
+            creditsRemaining: remaining,
+            progress: totalCredits == 0 ? 0 : Double(earned) / Double(totalCredits)
+        )
+    }
+
+    var electiveAlignmentInsight: LeanUpProfileAlignmentInsight {
+        let selections = selectedElectiveOptions
+        guard !selections.isEmpty else {
+            return LeanUpProfileAlignmentInsight(
+                statusTitle: "Aun sin lectura fuerte",
+                title: "Todavia no hay suficientes electivos definidos",
+                detail: "Tu direccion todavia no se puede leer con claridad porque aun faltan electivos por escoger. Aqui vale mas definir que acumular señales sueltas.",
+                detectedAreas: [],
+                recommendation: "Empieza por escoger los electivos que mas se acerquen al tipo de trabajo que te gustaria probar primero.",
+                confidenceText: "Confianza baja",
+                tone: .orange
+            )
+        }
+
+        let areaScores = alignmentAreaScores(for: selections)
+        let sortedAreas = areaScores
+            .sorted {
+                if $0.value == $1.value {
+                    return $0.key < $1.key
+                }
+                return $0.value > $1.value
+            }
+
+        let topAreas = sortedAreas.prefix(3).map(\.key)
+        let topScore = sortedAreas.first?.value ?? 0
+        let secondScore = sortedAreas.dropFirst().first?.value ?? 0
+        let totalScore = max(areaScores.values.reduce(0, +), 1)
+        let dominantShare = Double(topScore) / Double(totalScore)
+
+        if selections.count < 2 {
+            return LeanUpProfileAlignmentInsight(
+                statusTitle: "Aun temprano",
+                title: "Ya asoma una direccion, pero aun es muy pronto",
+                detail: "Por ahora tu eleccion empieza a apuntar a \(topAreas.first ?? "una linea posible"), pero una sola senal todavia no alcanza para hablar de especializacion.",
+                detectedAreas: topAreas,
+                recommendation: electiveGroupsWithoutSelection > 0
+                    ? "Define el siguiente electivo en la misma linea si quieres que tu perfil se lea mas coherente."
+                    : "Si quieres reforzar esa linea, procura que tus siguientes proyectos y materias aprobadas vayan en la misma direccion.",
+                confidenceText: "Confianza baja",
+                tone: .orange
+            )
+        }
+
+        if dominantShare >= 0.58 && (topScore - secondScore) >= 2 {
+            return LeanUpProfileAlignmentInsight(
+                statusTitle: "Alineado",
+                title: "Tus electivos ya apuntan a una linea bastante clara",
+                detail: "Lo mas fuerte hoy es \(topAreas.first ?? "tu linea principal"). No se siente disperso: empieza a leerse como una direccion concreta.",
+                detectedAreas: topAreas,
+                recommendation: electiveGroupsWithoutSelection > 0
+                    ? "Si mantienes esa misma linea en los proximos electivos, tu perfil se va a leer cada vez mas especializado."
+                    : "Ahora conviene que tu portafolio y tu primer servicio giren alrededor de esa misma linea.",
+                confidenceText: selections.count >= 3 ? "Confianza media-alta" : "Confianza media",
+                tone: .green
+            )
+        }
+
+        if dominantShare >= 0.40 {
+            return LeanUpProfileAlignmentInsight(
+                statusTitle: "Mixto",
+                title: "Tu perfil mezcla dos lineas con bastante peso",
+                detail: "Hay una combinacion visible entre \(topAreas.prefix(2).joined(separator: " y ")). No es ruido, pero tampoco una sola especializacion cerrada.",
+                detectedAreas: topAreas,
+                recommendation: "Si quieres venderte mas claro afuera, define cual de esas lineas quieres que mande y usa las otras como apoyo.",
+                confidenceText: "Confianza media",
+                tone: .blue
+            )
+        }
+
+        return LeanUpProfileAlignmentInsight(
+            statusTitle: "Diversificado",
+            title: "Tus electivos hoy se sienten mas diversos que especializados",
+            detail: "Hay varias senales abiertas al mismo tiempo y ninguna domina del todo. Eso no es malo, pero hoy tu perfil se lee mas exploratorio que enfocado.",
+            detectedAreas: topAreas,
+            recommendation: "El siguiente electivo y tu proximo proyecto deberian empujar una sola linea si quieres que el perfil gane nitidez.",
+            confidenceText: "Confianza media",
+            tone: .gold
+        )
+    }
+
+    var subjectTypeMap: LeanUpSubjectTypeMap {
+        let typedEntries = LeanUpProfileStrategyLibrary.trackedSubjectTypes.map { type in
+            LeanUpSubjectTypeCount(
+                type: type,
+                approved: approvedTypedItems.filter { normalizedTypes(for: $0).contains(type) }.count,
+                remaining: remainingTypedItems.filter { normalizedTypes(for: $0).contains(type) }.count
+            )
+        }
+
+        let dominant = typedEntries.max { lhs, rhs in
+            if lhs.approved == rhs.approved {
+                return lhs.type > rhs.type
+            }
+            return lhs.approved < rhs.approved
+        }?.type
+
+        let lagging = typedEntries.max { lhs, rhs in
+            if lhs.remaining == rhs.remaining {
+                return lhs.type > rhs.type
+            }
+            return lhs.remaining < rhs.remaining
+        }?.type
+
+        let summary: String
+        if let dominant, let lagging {
+            summary = "Lo mas avanzado hoy va por \(dominant), mientras que \(lagging) es donde mas recorrido visible te sigue faltando en las materias que si traen tipologia explicita."
+        } else {
+            summary = "A medida que apruebes mas materias y definas mas electivos, este mapa se volvera mas legible."
+        }
+
+        return LeanUpSubjectTypeMap(
+            entries: typedEntries,
+            dominantType: dominant,
+            laggingType: lagging,
+            summary: summary
+        )
+    }
+
+    var recommendedStarterService: LeanUpServiceRecommendation {
+        let matchedRules = LeanUpProfileStrategyLibrary.serviceRules.map { rule -> (LeanUpServiceRule, Int) in
+            let areaScore = rule.requiredAreas.reduce(0) { partial, area in
+                partial + (alignmentAreaScoresSnapshot[area] ?? 0)
+            }
+            let keywordScore = matchCount(for: rule.keywords, in: approvedSignalCorpus) * 2
+            let creditScore = earnedCredits >= rule.minCredits ? 3 : max(earnedCredits / 12, 0)
+            return (rule, areaScore + keywordScore + creditScore)
+        }
+        let bestRule = matchedRules.sorted {
+            if $0.1 == $1.1 {
+                return $0.0.minCredits < $1.0.minCredits
+            }
+            return $0.1 > $1.1
+        }.first?.0 ?? LeanUpProfileStrategyLibrary.serviceRules[0]
+
+        let confidence: String
+        switch earnedCredits {
+        case 0..<18:
+            confidence = "Confianza baja"
+        case 18..<36:
+            confidence = "Confianza media-baja"
+        case 36..<72:
+            confidence = "Confianza media"
+        default:
+            confidence = "Confianza media-alta"
+        }
+
+        let supportingSignals = Array(profileSupportSignals(matching: bestRule.keywords).prefix(4))
+        let reason: String
+        if supportingSignals.isEmpty {
+            reason = "Tu base actual ya deja ver una combinacion inicial de criterio academico y habilidades transferibles para empezar pequeno y con prudencia."
+        } else {
+            reason = "Hoy ya puedes justificarlo desde señales reales como \(supportingSignals.joined(separator: ", "))."
+        }
+
+        let tone: LeanUpProfileInsightTone = earnedCredits >= bestRule.minCredits ? .green : .blue
+
+        return LeanUpServiceRecommendation(
+            title: bestRule.title,
+            summary: bestRule.summary,
+            whyYouCanOfferIt: reason,
+            priceText: LeanUpProfileStrategyLibrary.priceText(for: bestRule.priceRangeUSD),
+            nextEvidence: bestRule.nextEvidence,
+            confidenceText: confidence,
+            supportingSignals: supportingSignals,
+            tone: tone
+        )
+    }
+
+    var minimumViablePortfolio: [LeanUpPortfolioRoadmapItem] {
+        let rankedRules = LeanUpProfileStrategyLibrary.portfolioRules
+            .map { rule -> (LeanUpPortfolioRule, Int) in
+                (rule, matchCount(for: rule.keywords, in: approvedSignalCorpus))
+            }
+            .sorted {
+                if $0.1 == $1.1 {
+                    return $0.0.title < $1.0.title
+                }
+                return $0.1 > $1.1
+            }
+
+        return Array(rankedRules.prefix(3)).map { rule, score in
+            let readiness: LeanUpPortfolioReadinessState
+            switch score {
+            case 4...:
+                readiness = .ready
+            case 2...3:
+                readiness = .almostReady
+            default:
+                readiness = .missingBase
+            }
+
+            return LeanUpPortfolioRoadmapItem(
+                id: rule.id,
+                title: rule.title,
+                objective: rule.objective,
+                whyItMatters: rule.whyItMatters,
+                readiness: readiness,
+                supportingSignals: Array(profileSupportSignals(matching: rule.keywords).prefix(3))
+            )
+        }
+    }
+
+    var freelancerChecklist: LeanUpFreelancerChecklist {
+        let profileStatus: LeanUpFreelancerChecklistStatus
+        if preferredDisplayName != nil && earnedCredits >= 24 {
+            profileStatus = .ready
+        } else if preferredDisplayName != nil || earnedCredits >= 12 {
+            profileStatus = .inProgress
+        } else {
+            profileStatus = .pending
+        }
+
+        let skillStatus: LeanUpFreelancerChecklistStatus
+        if standoutSkills.count >= 10 && careerItems.count >= 6 {
+            skillStatus = .ready
+        } else if standoutSkills.count >= 5 {
+            skillStatus = .inProgress
+        } else {
+            skillStatus = .pending
+        }
+
+        let readyPortfolioItems = minimumViablePortfolio.filter { $0.readiness == .ready }.count
+        let portfolioStatus: LeanUpFreelancerChecklistStatus
+        if readyPortfolioItems >= 2 {
+            portfolioStatus = .ready
+        } else if minimumViablePortfolio.contains(where: { $0.readiness != .missingBase }) {
+            portfolioStatus = .inProgress
+        } else {
+            portfolioStatus = .pending
+        }
+
+        let toolsScore = matchCount(for: LeanUpProfileStrategyLibrary.toolKeywords, in: approvedSignalCorpus)
+        let toolsStatus: LeanUpFreelancerChecklistStatus
+        if toolsScore >= 5 {
+            toolsStatus = .ready
+        } else if toolsScore >= 2 {
+            toolsStatus = .inProgress
+        } else {
+            toolsStatus = .pending
+        }
+
+        let items = [
+            LeanUpFreelancerChecklistItem(
+                id: "profile",
+                title: "Perfil profesional",
+                detail: profileStatus == .ready
+                    ? "Ya hay suficiente base para presentarte con una narrativa inicial bastante clara."
+                    : "Tu narrativa ya arranco, pero aun conviene darle mas forma antes de salir a vender fuerte.",
+                status: profileStatus
+            ),
+            LeanUpFreelancerChecklistItem(
+                id: "skills",
+                title: "Habilidades demostrables",
+                detail: skillStatus == .ready
+                    ? "Tus materias aprobadas ya dejan ver habilidades repetidas y con bastante evidencia."
+                    : "Todavia conviene consolidar mejor que sabes hacer y en que se repite tu fortaleza.",
+                status: skillStatus
+            ),
+            LeanUpFreelancerChecklistItem(
+                id: "portfolio",
+                title: "Portafolio minimo",
+                detail: portfolioStatus == .ready
+                    ? "Ya hay al menos dos piezas que podrian empezar a sostener conversaciones reales con clientes."
+                    : "Aun te conviene convertir mejor tu recorrido academico en proyectos visibles.",
+                status: portfolioStatus
+            ),
+            LeanUpFreelancerChecklistItem(
+                id: "tools",
+                title: "Herramientas base",
+                detail: toolsStatus == .ready
+                    ? "Tu recorrido ya muestra herramientas y flujos suficientemente utiles para un trabajo independiente inicial."
+                    : "Todavia sirve reforzar herramientas operativas antes de ofrecerte con mas seguridad.",
+                status: toolsStatus
+            )
+        ]
+
+        let readyCount = items.filter { $0.status == .ready }.count
+        let progressCount = items.filter { $0.status == .inProgress }.count
+        let overallTitle: String
+        let overallDetail: String
+
+        if readyCount >= 3 {
+            overallTitle = "Listo para probar ofertas pequenas"
+            overallDetail = "Todavia conviene moverte con prudencia, pero ya tienes base suficiente para empezar a cobrar proyectos acotados."
+        } else if readyCount + progressCount >= 3 {
+            overallTitle = "Cerca de cobrar tu primer servicio"
+            overallDetail = "Tu base ya no esta verde del todo. Falta ordenar mejor evidencia y propuesta, no empezar desde cero."
+        } else {
+            overallTitle = "Aun verde"
+            overallDetail = "La base va creciendo, pero todavia conviene seguir acumulando evidencia antes de salir a vender fuerte."
+        }
+
+        return LeanUpFreelancerChecklist(
+            items: items,
+            overallTitle: overallTitle,
+            overallDetail: overallDetail
+        )
+    }
+
+    var profileStrategicSummary: String {
+        let name = preferredDisplayName ?? "Tu perfil"
+        return "\(name) hoy se lee mejor cuando unes \(electiveAlignmentInsight.statusTitle.lowercased()), el siguiente hito en \(profileNextMilestone.targetPercent)% y una oferta inicial como \(recommendedStarterService.title.lowercased())."
     }
 
     var completionRatio: Double {
@@ -1180,6 +1533,86 @@ final class LeanUpAppModel: ObservableObject {
         return Double(inProgressCount) / averageItemsPerPeriod
     }
 
+    private var approvedTypedItems: [LeanUpTypeTrackable] {
+        approvedCourses.map { LeanUpTypeTrackable(types: $0.types) }
+    }
+
+    private var remainingTypedItems: [LeanUpTypeTrackable] {
+        pendingCourses.map { LeanUpTypeTrackable(types: $0.types) } +
+        failedCourses.map { LeanUpTypeTrackable(types: $0.types) } +
+        inProgressCourses.map { LeanUpTypeTrackable(types: $0.types) }
+    }
+
+    private var approvedSignalCorpus: [String] {
+        let courseSignals = approvedCourses.flatMap { course in
+            [course.name, course.summary, course.plainLanguage, course.outcomes, course.linkedinText, course.portfolioProject] + course.skills
+        }
+        let electiveSignals = academics.electiveGroups.compactMap { group -> [String]? in
+            guard let option = selectedOption(in: group),
+                  electiveStatus(for: group) == .approved else {
+                return nil
+            }
+            return [group.name, option.name, option.summary, option.outcomes, option.linkedinText, option.portfolioProject] + option.skills
+        }.flatMap { $0 }
+
+        return (courseSignals + electiveSignals).map(\.leanUpProfileKey)
+    }
+
+    private var alignmentAreaScoresSnapshot: [String: Int] {
+        alignmentAreaScores(for: selectedElectiveOptions)
+    }
+
+    private func alignmentAreaScores(for options: [LeanUpElectiveOption]) -> [String: Int] {
+        let corpus = options.flatMap { option in
+            [option.name, option.summary, option.outcomes, option.linkedinText, option.portfolioProject] + option.skills
+        }.map(\.leanUpProfileKey)
+
+        guard !corpus.isEmpty else { return [:] }
+
+        return Dictionary(
+            uniqueKeysWithValues: LeanUpProfileStrategyLibrary.electiveClusters.map { cluster in
+                (cluster.area, matchCount(for: cluster.keywords, in: corpus))
+            }
+        ).filter { $0.value > 0 }
+    }
+
+    private func normalizedTypes(for item: LeanUpTypeTrackable) -> [String] {
+        let rawTypes = item.types.map(\.leanUpProfileKey)
+        return LeanUpProfileStrategyLibrary.trackedSubjectTypes.filter { target in
+            rawTypes.contains(target.leanUpProfileKey)
+        }
+    }
+
+    private func matchCount(for keywords: [String], in corpus: [String]) -> Int {
+        keywords.reduce(0) { total, keyword in
+            let normalizedKeyword = keyword.leanUpProfileKey
+            let found = corpus.contains { token in
+                token.contains(normalizedKeyword) || normalizedKeyword.contains(token)
+            }
+            return total + (found ? 1 : 0)
+        }
+    }
+
+    private func profileSupportSignals(matching keywords: [String]) -> [String] {
+        let signals = careerItems.flatMap { item in
+            [item.name] + item.skills
+        }
+
+        var seen = Set<String>()
+        return signals.filter { signal in
+            let normalized = signal.leanUpProfileKey
+            let matches = keywords.contains { keyword in
+                let normalizedKeyword = keyword.leanUpProfileKey
+                return normalized.contains(normalizedKeyword) || normalizedKeyword.contains(normalized)
+            }
+            guard matches else { return false }
+            let key = signal.leanUpProfileKey
+            guard !seen.contains(key) else { return false }
+            seen.insert(key)
+            return true
+        }
+    }
+
     private var motivationContextPool: [String] {
         var contexts = [
             personalizedLead(
@@ -1255,6 +1688,10 @@ final class LeanUpAppModel: ObservableObject {
     private func personalizedLead(named: String, unnamed: String) -> String {
         preferredDisplayName == nil ? unnamed : named
     }
+}
+
+private struct LeanUpTypeTrackable {
+    let types: [String]
 }
 
 enum LeanUpProgressStatus: Equatable {

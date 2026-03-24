@@ -1733,7 +1733,7 @@ final class LeanUpAppModel: ObservableObject {
         let inProgressEquivalentPeriods = averageItemsPerPeriod > 0 ? Double(inProgressCount) / averageItemsPerPeriod : 0
         let completedEquivalentPeriods = completionRatio * Double(max(derived.periods.count, 1))
         let paceEquivalentPeriodsPerStudiedPeriod = selectedPeriodsCount > 0 ? completedEquivalentPeriods / Double(selectedPeriodsCount) : 0
-        let estimatedRemainingPeriods = {
+        let estimatedRemainingPeriods: Double? = {
             guard paceEquivalentPeriodsPerStudiedPeriod > 0 else { return nil }
             let remainingEquivalent = max(Double(max(derived.periods.count, 1)) - completedEquivalentPeriods - inProgressEquivalentPeriods, 0)
             return remainingEquivalent / paceEquivalentPeriodsPerStudiedPeriod

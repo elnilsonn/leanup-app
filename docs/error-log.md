@@ -1400,3 +1400,22 @@ Como se corrige:
 Regla:
 
 - Si el lag se siente global, mirar primero `SharedUI` y la raiz nativa antes de culpar a una sola pantalla.
+
+## Actualizacion 2026-03-24 - Las closures con `nil` en estado derivado necesitan tipo explicito
+
+Problema:
+
+- En `LeanUpModels`, una closure que calculaba `estimatedRemainingPeriods` devolvia `nil` sin tener un tipo opcional explicito.
+- Swift perdio el contexto y rompio la compilacion con `'nil' requires a contextual type`.
+
+Por que pasa:
+
+- Cuando una closure local mezcla `nil` y un `Double` sin anotacion de tipo, la inferencia no siempre basta dentro de una construccion grande.
+
+Como se corrige:
+
+- Declarar el valor como `Double?` desde la asignacion de la closure.
+
+Regla:
+
+- Si una closure local puede devolver `nil`, tiparla de forma explicita antes de confiar en la inferencia del compilador.

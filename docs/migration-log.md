@@ -949,3 +949,31 @@ Migrar LeanUp desde una base hibrida/web hacia una app nativa de iPhone con `Swi
 - Durante el rediseño de `Perfil`, `LeanUpSurfaceInsetCard` habia quedado eliminado junto con la pantalla vieja.
 - `Malla` todavia dependia de ese componente para cards internas de apoyo.
 - El helper se restauro en `LeanUpSharedUI.swift`, que es su ubicacion correcta por ser un componente compartido.
+
+## Actualizacion 2026-03-24 - `Configuracion` se rehace como centro de control
+
+- `Configuracion` dejo de sentirse como una suma de cards genericas y se reorganizo como centro de control.
+- La nueva estructura queda asi:
+  - control rapido
+  - identidad
+  - apariencia
+  - datos locales
+  - acerca de la app
+- Se mantuvo intacta la logica real existente para:
+  - guardar nombre
+  - reiniciar nombre
+  - cambiar tema
+  - limpiar progreso academico
+
+## Actualizacion 2026-03-24 - `Configuracion` evita repetir informacion de otras pantallas
+
+- Se decidio no incluir reminders dentro de `Configuracion`.
+- La pantalla se centra solo en nombre, apariencia, datos locales y metadatos de la app.
+- Esto evita repetir informacion que ya vive mejor en `Malla` y mantiene `Configuracion` con identidad propia.
+
+## Actualizacion 2026-03-24 - Nuevas lecturas cortas para `Configuracion`
+
+- `LeanUpAppModel` ahora expone lecturas livianas para limpiar la UI de `Configuracion`:
+  - `currentDisplayName`
+  - `localStorageStatusText`
+- Asi la pantalla deja de hardcodear parte de su narrativa y mantiene una salida mas coherente con el estado real del modelo.

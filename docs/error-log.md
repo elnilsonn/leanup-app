@@ -1226,3 +1226,27 @@ Como se soluciono:
 Regla:
 
 - Si un componente ya es usado por mas de una pantalla, moverlo a `SharedUI` antes de eliminar o reemplazar la pantalla donde nacio.
+
+### 62. Repetir en `Configuracion` informacion que ya es protagonista en otras pantallas
+
+Que paso:
+
+- Al replantear `Configuracion`, aparecia la tentacion de sumar tambien reminders u otros bloques informativos que ya viven mejor en `Malla`.
+
+Por que pasa:
+
+- Cuando una pantalla de ajustes queda muy vacia, es facil llenarla con datos reales de otras secciones aunque no sean settings de verdad.
+
+Como se corrige:
+
+- `Configuracion` se queda solo con controles y lecturas que si pertenecen a un centro de control:
+  - nombre
+  - apariencia
+  - estado local
+  - datos guardados
+  - informacion de la app
+- No se meten reminders ni otros modulos que repitan protagonismo funcional de otra pantalla.
+
+Regla:
+
+- Si un dato ya tiene su pantalla natural, no usar `Configuracion` como contenedor comodin solo para llenar espacio.

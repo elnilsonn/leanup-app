@@ -631,6 +631,18 @@ final class LeanUpAppModel: ObservableObject {
         }
     }
 
+    var currentDisplayName: String {
+        preferredDisplayName ?? snapshot.username
+    }
+
+    var localStorageStatusText: String {
+        if registeredCount == 0 && selectedElectivesCount == 0 {
+            return "Listo para empezar a guardar progreso local"
+        }
+
+        return "Guardado local activo en este iPhone"
+    }
+
     var failedCourses: [LeanUpCourse] {
         academics.courses
             .filter { courseStatus(for: $0) == .failed }

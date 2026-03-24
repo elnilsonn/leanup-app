@@ -1037,3 +1037,14 @@ Migrar LeanUp desde una base hibrida/web hacia una app nativa de iPhone con `Swi
 - Se hizo explicito el tipo de `estimatedRemainingPeriods` como `Double?` dentro de la construccion del estado derivado.
 - Esto corrige un fallo de compilacion donde Swift no podia inferir el tipo contextual del `nil` dentro de la closure.
 - Tambien se hizo explicito el tipo del `compactMap` que construye `periodAverageSeries`, para que el `return nil` de la closure quede contextualizado como `LeanUpPeriodAveragePoint?`.
+
+## Actualizacion 2026-03-24 - El modo claro ahora sigue la misma simplificacion visual del dark mode
+
+- El `light mode` dejo de depender de fondos tan brillantes y superficies tan elevadas.
+- `LeanUpSharedUI` ahora usa tokens claros semanticos para fondo, superficie principal, superficie secundaria y stroke sutil.
+- Se redujo la intensidad de:
+  - blooms del fondo claro
+  - sombra de `LeanUpSurfaceCard`
+  - brillo de metricas internas
+  - contraste artificial en pills y botones secundarios
+- `Dashboard` tambien recorto un poco la intensidad visual del hero en claro para alinearlo con la estrategia que ya habia mejorado el dark mode.

@@ -1421,3 +1421,26 @@ Regla:
 - Si una closure local puede devolver `nil`, tiparla de forma explicita antes de confiar en la inferencia del compilador.
 
 - La misma regla aplica a `compactMap`: si la closure devuelve `nil` y un modelo concreto, conviene anotar `Element?` en la closure o tipar el resultado explicitamente.
+
+## Actualizacion 2026-03-24 - Si el dark mode mejora el rendimiento, el light mode no debe seguir caro
+
+Problema:
+
+- El dark mode se habia aligerado visualmente, pero el light mode seguia usando mas brillo, mas contraste aparente y superficies mas "flotantes".
+- Eso dejaba una diferencia rara: la app se sentia mas liviana en oscuro que en claro.
+
+Por que pasa:
+
+- Aunque la estructura sea la misma, el modo claro puede seguir costando mas si conserva fondos decorativos fuertes, cards muy luminosas y sombras mas largas.
+
+Como se corrige:
+
+- Aplicar al light mode la misma filosofia del dark:
+  - fondo mas plano
+  - surfaces por tono, no por brillo
+  - menos sombra
+  - menos bloom decorativo
+
+Regla:
+
+- Si una simplificacion visual ayuda en dark, revisar si el light aun esta pagando una version mas cara del mismo sistema.

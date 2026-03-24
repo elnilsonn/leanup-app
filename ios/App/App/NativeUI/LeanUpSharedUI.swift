@@ -46,7 +46,7 @@ struct LeanUpProgressTrack: View {
 
                 ZStack(alignment: .leading) {
                     Capsule()
-                        .fill(scheme == .dark ? Color.unadDarkSurfaceSecondary : Color.primary.opacity(0.08))
+                        .fill(scheme == .dark ? Color.unadDarkSurfaceSecondary : Color.unadLightSurfaceSecondary)
 
                     Capsule()
                         .fill(
@@ -86,7 +86,7 @@ struct LeanUpStatusChip: View {
     private var backgroundColor: Color {
         switch status {
         case .pending:
-            return scheme == .dark ? Color.unadDarkSurfaceSecondary : Color.primary.opacity(0.08)
+            return scheme == .dark ? Color.unadDarkSurfaceSecondary : Color.unadLightSurfaceSecondary
         case .inProgress:
             return scheme == .dark ? Color.unadCyan.opacity(0.22) : Color.unadCyan.opacity(0.16)
         case .approved:
@@ -119,7 +119,7 @@ struct LeanUpTag: View {
             .font(.caption.weight(.semibold))
             .padding(.horizontal, 10)
             .padding(.vertical, 6)
-            .background(Capsule().fill(scheme == .dark ? Color.unadDarkSurfaceSecondary : Color.primary.opacity(0.08)))
+            .background(Capsule().fill(scheme == .dark ? Color.unadDarkSurfaceSecondary : Color.unadLightSurfaceSecondary))
             .foregroundStyle(scheme == .dark ? Color.unadDarkTextSecondary : .secondary)
     }
 }
@@ -164,8 +164,8 @@ struct LeanUpInlineMetric: View {
 
         return LinearGradient(
             colors: [
-                Color.white.opacity(0.24),
-                Color.white.opacity(0.08)
+                Color.unadLightSurfaceSecondary,
+                Color.unadLightSurfacePrimary
             ],
             startPoint: .topLeading,
             endPoint: .bottomTrailing
@@ -173,7 +173,7 @@ struct LeanUpInlineMetric: View {
     }
 
     private var metricStroke: Color {
-        scheme == .dark ? Color.white.opacity(0.06) : Color.white.opacity(0.18)
+        scheme == .dark ? Color.white.opacity(0.06) : Color.unadLightSurfaceStroke
     }
 }
 
@@ -220,19 +220,19 @@ struct LeanUpSurfaceCard<Content: View>: View {
                     .strokeBorder(cardStroke, lineWidth: 1)
             )
             .shadow(
-                color: scheme == .dark ? Color.clear : Color.unadNavy.opacity(0.025),
-                radius: scheme == .dark ? 0 : 3,
+                color: scheme == .dark ? Color.clear : Color.unadNavy.opacity(0.014),
+                radius: scheme == .dark ? 0 : 2,
                 x: 0,
-                y: scheme == .dark ? 0 : 2
+                y: scheme == .dark ? 0 : 1
             )
     }
 
     private var cardFill: Color {
-        scheme == .dark ? Color.unadDarkSurfacePrimary.opacity(0.98) : Color.white.opacity(0.98)
+        scheme == .dark ? Color.unadDarkSurfacePrimary.opacity(0.98) : Color.unadLightSurfacePrimary.opacity(0.98)
     }
 
     private var cardStroke: Color {
-        scheme == .dark ? Color.unadDarkSurfaceStroke : Color.unadBlue.opacity(0.08)
+        scheme == .dark ? Color.unadDarkSurfaceStroke : Color.unadLightSurfaceStroke
     }
 }
 
@@ -250,7 +250,7 @@ struct LeanUpSurfaceInsetCard<Content: View>: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(
                 RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .fill(scheme == .dark ? Color.unadDarkSurfaceSecondary : Color.primary.opacity(0.04))
+                    .fill(scheme == .dark ? Color.unadDarkSurfaceSecondary : Color.unadLightSurfaceSecondary)
             )
     }
 }
@@ -311,7 +311,7 @@ struct LeanUpPill: View {
         .font(.footnote.weight(.semibold))
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
-        .background(Capsule().fill(scheme == .dark ? Color.white.opacity(0.10) : Color.white.opacity(0.16)))
+        .background(Capsule().fill(scheme == .dark ? Color.white.opacity(0.10) : Color.white.opacity(0.12)))
         .foregroundStyle(.white)
     }
 }
@@ -329,9 +329,9 @@ struct LeanUpPageBackground: View {
                         Color.unadDarkBackgroundSecondary
                     ]
                     : [
-                        Color(red: 248 / 255, green: 250 / 255, blue: 255 / 255),
-                        Color(red: 237 / 255, green: 245 / 255, blue: 252 / 255),
-                        Color(red: 228 / 255, green: 240 / 255, blue: 248 / 255)
+                        Color.unadLightBackgroundPrimary,
+                        Color.unadLightBackgroundPrimary,
+                        Color.unadLightBackgroundSecondary
                     ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
@@ -339,26 +339,26 @@ struct LeanUpPageBackground: View {
 
             RadialGradient(
                 colors: [
-                    Color.unadBlue.opacity(scheme == .dark ? 0.035 : 0.12),
+                    Color.unadBlue.opacity(scheme == .dark ? 0.035 : 0.06),
                     .clear
                 ],
                 center: .topTrailing,
                 startRadius: 24,
-                endRadius: scheme == .dark ? 140 : 200
+                endRadius: scheme == .dark ? 140 : 160
             )
-            .offset(x: 70, y: -80)
+            .offset(x: 56, y: -72)
 
             if scheme != .dark {
                 RadialGradient(
                     colors: [
-                        Color.unadGold.opacity(0.08),
+                        Color.unadGold.opacity(0.045),
                         .clear
                     ],
                     center: .bottomLeading,
                     startRadius: 20,
-                    endRadius: 150
+                    endRadius: 120
                 )
-                .offset(x: -50, y: 140)
+                .offset(x: -42, y: 132)
             }
         }
         .ignoresSafeArea()
@@ -386,11 +386,11 @@ struct LeanUpSecondaryButtonStyle: ButtonStyle {
             .foregroundStyle(.primary)
             .background(
                 RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .fill(scheme == .dark ? Color.unadDarkSurfaceSecondary : Color.primary.opacity(0.08))
+                    .fill(scheme == .dark ? Color.unadDarkSurfaceSecondary : Color.unadLightSurfaceSecondary)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .stroke(scheme == .dark ? Color.white.opacity(0.05) : Color.clear, lineWidth: 1)
+                    .stroke(scheme == .dark ? Color.white.opacity(0.05) : Color.unadLightSurfaceStroke, lineWidth: 1)
             )
             .scaleEffect(configuration.isPressed ? 0.98 : 1)
             .animation(.spring(response: 0.2, dampingFraction: 0.7), value: configuration.isPressed)

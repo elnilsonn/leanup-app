@@ -154,12 +154,12 @@ struct LeanUpDashboardHero: View {
                 .fill(heroGradient)
 
             Circle()
-                .stroke(Color.white.opacity(0.14), lineWidth: 1)
+                .stroke(Color.white.opacity(scheme == .dark ? 0.14 : 0.10), lineWidth: 1)
                 .frame(width: 216, height: 216)
                 .offset(x: 178, y: -84)
 
             Circle()
-                .fill(Color.unadGold.opacity(0.12))
+                .fill(Color.unadGold.opacity(scheme == .dark ? 0.12 : 0.08))
                 .frame(width: 96, height: 96)
                 .offset(x: 216, y: -10)
 
@@ -211,15 +211,15 @@ struct LeanUpDashboardHero: View {
             }
             .padding(24)
         }
-        .shadow(color: Color.unadNavy.opacity(scheme == .dark ? 0.035 : 0.07), radius: scheme == .dark ? 2 : 6, x: 0, y: scheme == .dark ? 1 : 4)
+        .shadow(color: Color.unadNavy.opacity(scheme == .dark ? 0.035 : 0.03), radius: scheme == .dark ? 2 : 4, x: 0, y: scheme == .dark ? 1 : 2)
     }
 
     private var heroGradient: LinearGradient {
         LinearGradient(
             colors: [
-                Color.unadNavy.opacity(scheme == .dark ? 0.98 : 0.94),
-                Color.unadBlue.opacity(scheme == .dark ? 0.90 : 0.86),
-                Color.unadCyan.opacity(scheme == .dark ? 0.76 : 0.70)
+                Color.unadNavy.opacity(scheme == .dark ? 0.98 : 0.92),
+                Color.unadBlue.opacity(scheme == .dark ? 0.90 : 0.82),
+                Color.unadCyan.opacity(scheme == .dark ? 0.76 : 0.62)
             ],
             startPoint: .topLeading,
             endPoint: .bottomTrailing

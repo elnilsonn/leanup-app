@@ -6,6 +6,11 @@ extension Color {
     static let unadBlue = Color(red: 0 / 255, green: 70 / 255, blue: 173 / 255)
     static let unadCyan = Color(red: 0 / 255, green: 157 / 255, blue: 196 / 255)
     static let unadGold = Color(red: 255 / 255, green: 184 / 255, blue: 28 / 255)
+    static let unadLightBackgroundPrimary = Color(red: 249 / 255, green: 250 / 255, blue: 253 / 255)
+    static let unadLightBackgroundSecondary = Color(red: 239 / 255, green: 244 / 255, blue: 249 / 255)
+    static let unadLightSurfacePrimary = Color(red: 252 / 255, green: 253 / 255, blue: 255 / 255)
+    static let unadLightSurfaceSecondary = Color(red: 243 / 255, green: 246 / 255, blue: 250 / 255)
+    static let unadLightSurfaceStroke = Color.unadNavy.opacity(0.06)
     static let unadDarkBackgroundPrimary = Color(red: 5 / 255, green: 6 / 255, blue: 8 / 255)
     static let unadDarkBackgroundSecondary = Color(red: 12 / 255, green: 14 / 255, blue: 18 / 255)
     static let unadDarkSurfacePrimary = Color(red: 22 / 255, green: 24 / 255, blue: 28 / 255)
@@ -78,7 +83,7 @@ final class NativeRootViewController: UIViewController {
             tabAppearance.backgroundColor = UIColor(red: 8 / 255, green: 10 / 255, blue: 14 / 255, alpha: 0.94)
         } else {
             tabAppearance.backgroundEffect = nil
-            tabAppearance.backgroundColor = UIColor.white.withAlphaComponent(0.92)
+            tabAppearance.backgroundColor = UIColor(red: 249 / 255, green: 250 / 255, blue: 253 / 255, alpha: 0.94)
         }
 
         let selected = UIColor(red: 0 / 255, green: 70 / 255, blue: 173 / 255, alpha: 1)

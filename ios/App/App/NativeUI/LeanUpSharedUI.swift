@@ -26,6 +26,7 @@ struct LeanUpProgressTrack: View {
     let valueText: String
     let progress: Double
     let tint: Color
+    @Environment(\.colorScheme) private var scheme
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -45,7 +46,7 @@ struct LeanUpProgressTrack: View {
 
                 ZStack(alignment: .leading) {
                     Capsule()
-                        .fill(Color.primary.opacity(0.08))
+                        .fill(scheme == .dark ? Color.unadDarkSurfaceSecondary : Color.primary.opacity(0.08))
 
                     Capsule()
                         .fill(
@@ -66,6 +67,7 @@ struct LeanUpProgressTrack: View {
 struct LeanUpStatusChip: View {
     let status: LeanUpProgressStatus
     let note: Double?
+    @Environment(\.colorScheme) private var scheme
 
     var body: some View {
         HStack(spacing: 6) {
@@ -84,13 +86,13 @@ struct LeanUpStatusChip: View {
     private var backgroundColor: Color {
         switch status {
         case .pending:
-            return Color.primary.opacity(0.08)
+            return scheme == .dark ? Color.unadDarkSurfaceSecondary : Color.primary.opacity(0.08)
         case .inProgress:
-            return Color.unadCyan.opacity(0.16)
+            return scheme == .dark ? Color.unadCyan.opacity(0.22) : Color.unadCyan.opacity(0.16)
         case .approved:
-            return Color.green.opacity(0.14)
+            return scheme == .dark ? Color.green.opacity(0.20) : Color.green.opacity(0.14)
         case .failed:
-            return Color.red.opacity(0.14)
+            return scheme == .dark ? Color.red.opacity(0.20) : Color.red.opacity(0.14)
         }
     }
 
@@ -110,20 +112,22 @@ struct LeanUpStatusChip: View {
 
 struct LeanUpTag: View {
     let text: String
+    @Environment(\.colorScheme) private var scheme
 
     var body: some View {
         Text(text)
             .font(.caption.weight(.semibold))
             .padding(.horizontal, 10)
             .padding(.vertical, 6)
-            .background(Capsule().fill(Color.primary.opacity(0.08)))
-            .foregroundStyle(.secondary)
+            .background(Capsule().fill(scheme == .dark ? Color.unadDarkSurfaceSecondary : Color.primary.opacity(0.08)))
+            .foregroundStyle(scheme == .dark ? Color.unadDarkTextSecondary : .secondary)
     }
 }
 
 struct LeanUpInlineMetric: View {
     let title: String
     let value: String
+    @Environment(\.colorScheme) private var scheme
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -138,21 +142,38 @@ struct LeanUpInlineMetric: View {
         .padding(12)
         .background(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            Color.white.opacity(0.24),
-                            Color.white.opacity(0.08)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
+                .fill(metricFill)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(Color.white.opacity(0.18), lineWidth: 1)
+                .stroke(metricStroke, lineWidth: 1)
         )
+    }
+
+    private var metricFill: LinearGradient {
+        if scheme == .dark {
+            return LinearGradient(
+                colors: [
+                    Color.unadDarkSurfaceSecondary,
+                    Color.unadDarkSurfacePrimary
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        }
+
+        return LinearGradient(
+            colors: [
+                Color.white.opacity(0.24),
+                Color.white.opacity(0.08)
+            ],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
+
+    private var metricStroke: Color {
+        scheme == .dark ? Color.white.opacity(0.06) : Color.white.opacity(0.18)
     }
 }
 
@@ -180,6 +201,7 @@ struct FlowTagList: View {
 
 struct LeanUpSurfaceCard<Content: View>: View {
     let content: Content
+    @Environment(\.colorScheme) private var scheme
 
     init(@ViewBuilder content: () -> Content) {
         self.content = content()
@@ -197,19 +219,26 @@ struct LeanUpSurfaceCard<Content: View>: View {
                 RoundedRectangle(cornerRadius: 26, style: .continuous)
                     .strokeBorder(cardStroke, lineWidth: 1)
             )
+            .shadow(
+                color: scheme == .dark ? Color.black.opacity(0.28) : Color.unadNavy.opacity(0.04),
+                radius: scheme == .dark ? 10 : 6,
+                x: 0,
+                y: scheme == .dark ? 6 : 3
+            )
     }
 
     private var cardFill: Color {
-        Color.white.opacity(0.98)
+        scheme == .dark ? Color.unadDarkSurfacePrimary.opacity(0.98) : Color.white.opacity(0.98)
     }
 
     private var cardStroke: Color {
-        Color.unadBlue.opacity(0.08)
+        scheme == .dark ? Color.unadDarkSurfaceStroke : Color.unadBlue.opacity(0.08)
     }
 }
 
 struct LeanUpSurfaceInsetCard<Content: View>: View {
     let content: Content
+    @Environment(\.colorScheme) private var scheme
 
     init(@ViewBuilder content: () -> Content) {
         self.content = content()
@@ -221,7 +250,7 @@ struct LeanUpSurfaceInsetCard<Content: View>: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(
                 RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .fill(Color.primary.opacity(0.04))
+                    .fill(scheme == .dark ? Color.unadDarkSurfaceSecondary : Color.primary.opacity(0.04))
             )
     }
 }
@@ -272,6 +301,7 @@ struct LeanUpPriorityRow: View {
 struct LeanUpPill: View {
     let text: String
     let icon: String
+    @Environment(\.colorScheme) private var scheme
 
     var body: some View {
         HStack(spacing: 8) {
@@ -281,7 +311,7 @@ struct LeanUpPill: View {
         .font(.footnote.weight(.semibold))
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
-        .background(Capsule().fill(Color.white.opacity(0.16)))
+        .background(Capsule().fill(scheme == .dark ? Color.white.opacity(0.10) : Color.white.opacity(0.16)))
         .foregroundStyle(.white)
     }
 }
@@ -294,9 +324,9 @@ struct LeanUpPageBackground: View {
             LinearGradient(
                 colors: scheme == .dark
                     ? [
-                        Color.black,
-                        Color.unadNavy.opacity(0.96),
-                        Color(red: 0.03, green: 0.09, blue: 0.18)
+                        Color.unadDarkBackgroundPrimary,
+                        Color.unadDarkBackgroundPrimary,
+                        Color.unadDarkBackgroundSecondary
                     ]
                     : [
                         Color(red: 248 / 255, green: 250 / 255, blue: 255 / 255),
@@ -309,23 +339,23 @@ struct LeanUpPageBackground: View {
 
             RadialGradient(
                 colors: [
-                    Color.unadCyan.opacity(scheme == .dark ? 0.14 : 0.16),
+                    Color.unadBlue.opacity(scheme == .dark ? 0.08 : 0.16),
                     .clear
                 ],
                 center: .topTrailing,
                 startRadius: 24,
-                endRadius: 220
+                endRadius: scheme == .dark ? 180 : 220
             )
             .offset(x: 70, y: -80)
 
             RadialGradient(
                 colors: [
-                    Color.unadGold.opacity(scheme == .dark ? 0.08 : 0.10),
+                    Color.unadGold.opacity(scheme == .dark ? 0.05 : 0.10),
                     .clear
                 ],
                 center: .bottomLeading,
                 startRadius: 20,
-                endRadius: 180
+                endRadius: scheme == .dark ? 140 : 180
             )
             .offset(x: -50, y: 140)
         }
@@ -347,12 +377,18 @@ struct LeanUpPrimaryButtonStyle: ButtonStyle {
 }
 
 struct LeanUpSecondaryButtonStyle: ButtonStyle {
+    @Environment(\.colorScheme) private var scheme
+
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .foregroundStyle(.primary)
             .background(
                 RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .fill(Color.primary.opacity(0.08))
+                    .fill(scheme == .dark ? Color.unadDarkSurfaceSecondary : Color.primary.opacity(0.08))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .stroke(scheme == .dark ? Color.white.opacity(0.05) : Color.clear, lineWidth: 1)
             )
             .scaleEffect(configuration.isPressed ? 0.98 : 1)
             .animation(.spring(response: 0.2, dampingFraction: 0.7), value: configuration.isPressed)

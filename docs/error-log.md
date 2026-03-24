@@ -1272,3 +1272,27 @@ Como se corrige:
 Regla:
 
 - El copy visible no debe sonar a comentario de disenio o arquitectura; debe sonar a producto terminado.
+
+## Actualizacion 2026-03-24 - El dark mode no puede depender de opacidades pensadas para modo claro
+
+Problema:
+
+- Varias superficies compartidas seguian usando blancos transluidos o `Color.primary.opacity(...)` pensados desde modo claro.
+- En dark eso hacia que partes de la app se vieran lavadas, azuladas de mas o directamente claras cuando la intencion era un tono casi negro.
+
+Por que pasa:
+
+- Si el sistema oscuro se resuelve solo con invertir texto y fondo, pero sin una paleta semantica propia, las cards y controles heredan opacidades que no expresan profundidad real.
+
+Como se corrige:
+
+- Definir una paleta dark especifica:
+  - fondo casi negro
+  - surfaces grafito
+  - stroke tenue
+  - acentos solo para estados y acciones
+- Rehacer primero los componentes compartidos y luego corregir residuos blancos en las pantallas mas visibles.
+
+Regla:
+
+- El dark mode de LeanUp debe sentirse intencional y profundo; no como una inversion automatica del modo claro.

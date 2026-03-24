@@ -500,6 +500,7 @@ struct LeanUpDashboardAccentStat: View {
     let value: String
     let caption: String
     let tint: Color
+    @Environment(\.colorScheme) private var scheme
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -524,7 +525,7 @@ struct LeanUpDashboardAccentStat: View {
         .padding(14)
         .background(
             RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(tint.opacity(0.10))
+                .fill(scheme == .dark ? tint.opacity(0.16) : tint.opacity(0.10))
         )
     }
 }
@@ -583,6 +584,7 @@ struct LeanUpDashboardPerformanceColumn: View {
 
 struct LeanUpDashboardAchievementBadge: View {
     let achievement: LeanUpAchievement
+    @Environment(\.colorScheme) private var scheme
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -608,7 +610,7 @@ struct LeanUpDashboardAchievementBadge: View {
         .padding(14)
         .background(
             RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .fill(Color.primary.opacity(0.05))
+                .fill(scheme == .dark ? Color.unadDarkSurfaceSecondary : Color.primary.opacity(0.05))
         )
     }
 
@@ -630,6 +632,7 @@ struct LeanUpDashboardAchievementBadge: View {
 
 struct LeanUpDashboardLineChart: View {
     let points: [LeanUpPeriodAveragePoint]
+    @Environment(\.colorScheme) private var scheme
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -659,13 +662,13 @@ struct LeanUpDashboardLineChart: View {
                         style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round)
                     )
 
-                    ForEach(Array(chartPoints.enumerated()), id: \.offset) { index, point in
-                        Circle()
-                            .fill(Color.white)
-                            .frame(width: 12, height: 12)
-                            .overlay(
-                                Circle()
-                                    .stroke(Color.unadBlue, lineWidth: 3)
+                      ForEach(Array(chartPoints.enumerated()), id: \.offset) { index, point in
+                          Circle()
+                              .fill(scheme == .dark ? Color.unadDarkSurfacePrimary : Color.white)
+                              .frame(width: 12, height: 12)
+                              .overlay(
+                                  Circle()
+                                      .stroke(Color.unadBlue, lineWidth: 3)
                             )
                             .position(point)
                     }
@@ -712,6 +715,7 @@ struct LeanUpDashboardLineChart: View {
 struct LeanUpDashboardEmptyState: View {
     let icon: String
     let text: String
+    @Environment(\.colorScheme) private var scheme
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
@@ -732,7 +736,7 @@ struct LeanUpDashboardEmptyState: View {
         .padding(14)
         .background(
             RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(Color.primary.opacity(0.05))
+                .fill(scheme == .dark ? Color.unadDarkSurfaceSecondary : Color.primary.opacity(0.05))
         )
     }
 }

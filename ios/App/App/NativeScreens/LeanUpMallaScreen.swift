@@ -224,6 +224,7 @@ private extension LeanUpMallaView {
 struct LeanUpMallaBannerCard<Content: View>: View {
     let compact: Bool
     let content: Content
+    @Environment(\.colorScheme) private var scheme
 
     init(compact: Bool = false, @ViewBuilder content: () -> Content) {
         self.compact = compact
@@ -236,11 +237,11 @@ struct LeanUpMallaBannerCard<Content: View>: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(
                 RoundedRectangle(cornerRadius: compact ? 22 : 26, style: .continuous)
-                    .fill(Color.white)
+                    .fill(scheme == .dark ? Color.unadDarkSurfacePrimary : Color.white)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: compact ? 22 : 26, style: .continuous)
-                    .stroke(Color.unadBlue.opacity(0.08), lineWidth: 1)
+                    .stroke(scheme == .dark ? Color.unadDarkSurfaceStroke : Color.unadBlue.opacity(0.08), lineWidth: 1)
             )
     }
 }
@@ -1260,6 +1261,7 @@ struct LeanUpCourseRow: View {
     let course: LeanUpCourse
     let note: Double?
     let status: LeanUpProgressStatus
+    @Environment(\.colorScheme) private var scheme
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
@@ -1331,14 +1333,14 @@ struct LeanUpCourseRow: View {
 
     private var backgroundFill: Color {
         if isFailed {
-            return Color.red.opacity(0.08)
+            return scheme == .dark ? Color.red.opacity(0.18) : Color.red.opacity(0.08)
         }
 
         if isInProgress {
-            return Color.unadCyan.opacity(0.08)
+            return scheme == .dark ? Color.unadCyan.opacity(0.18) : Color.unadCyan.opacity(0.08)
         }
 
-        return Color.primary.opacity(0.04)
+        return scheme == .dark ? Color.unadDarkSurfaceSecondary : Color.primary.opacity(0.04)
     }
 }
 
@@ -1347,6 +1349,7 @@ struct LeanUpElectiveGroupRow: View {
     let selectedOption: LeanUpElectiveOption?
     let note: Double?
     let status: LeanUpProgressStatus
+    @Environment(\.colorScheme) private var scheme
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
@@ -1387,11 +1390,11 @@ struct LeanUpElectiveGroupRow: View {
         .padding(14)
         .background(
             RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(Color.unadGold.opacity(0.10))
+                .fill(scheme == .dark ? Color.unadGold.opacity(0.16) : Color.unadGold.opacity(0.10))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .stroke(Color.unadGold.opacity(0.18), lineWidth: 1)
+                .stroke(scheme == .dark ? Color.unadGold.opacity(0.24) : Color.unadGold.opacity(0.18), lineWidth: 1)
         )
     }
 }

@@ -982,3 +982,14 @@ Migrar LeanUp desde una base hibrida/web hacia una app nativa de iPhone con `Swi
 
 - Se ajustaron textos de `Perfil` y `Configuracion` para evitar referencias meta a "esta pantalla", "otra seccion" u otras frases que recuerdan la arquitectura interna de la app.
 - El copy ahora habla mas desde la experiencia de la persona y menos desde la estructura del producto.
+
+## Actualizacion 2026-03-24 - Base de modo oscuro `negro profundo`
+
+- Se implemento una base visual dark para toda la app usando una paleta semantica compartida:
+  - fondo casi negro
+  - superficies grafito
+  - bordes muy sutiles
+  - acentos de marca solo en focos importantes
+- `LeanUpSharedUI` ahora adapta cards, inset cards, metricas, chips, tags, pills, tracks y botones secundarios al nuevo tono oscuro.
+- `NativeRoot` ahora acompana el dark mode con una configuracion mas coherente de tab bar y navigation bar.
+- `Dashboard` y `Malla` recibieron ajustes directos en los bloques mas visibles para eliminar superficies blancas residuales en dark mode.

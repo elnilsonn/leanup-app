@@ -6,6 +6,12 @@ extension Color {
     static let unadBlue = Color(red: 0 / 255, green: 70 / 255, blue: 173 / 255)
     static let unadCyan = Color(red: 0 / 255, green: 157 / 255, blue: 196 / 255)
     static let unadGold = Color(red: 255 / 255, green: 184 / 255, blue: 28 / 255)
+    static let unadDarkBackgroundPrimary = Color(red: 5 / 255, green: 6 / 255, blue: 8 / 255)
+    static let unadDarkBackgroundSecondary = Color(red: 12 / 255, green: 14 / 255, blue: 18 / 255)
+    static let unadDarkSurfacePrimary = Color(red: 22 / 255, green: 24 / 255, blue: 28 / 255)
+    static let unadDarkSurfaceSecondary = Color(red: 31 / 255, green: 34 / 255, blue: 39 / 255)
+    static let unadDarkSurfaceStroke = Color.white.opacity(0.07)
+    static let unadDarkTextSecondary = Color(red: 173 / 255, green: 179 / 255, blue: 190 / 255)
 }
 
 @objc(NativeRootViewController)
@@ -60,6 +66,45 @@ final class NativeRootViewController: UIViewController {
 
         overrideUserInterfaceStyle = style
         hostingController?.overrideUserInterfaceStyle = style
+        configureSystemChrome(for: style)
+    }
+
+    private func configureSystemChrome(for style: UIUserInterfaceStyle) {
+        let tabAppearance = UITabBarAppearance()
+        tabAppearance.configureWithTransparentBackground()
+
+        if style == .dark {
+            tabAppearance.backgroundEffect = UIBlurEffect(style: .systemUltraThinMaterialDark)
+            tabAppearance.backgroundColor = UIColor.black.withAlphaComponent(0.72)
+        } else {
+            tabAppearance.backgroundEffect = UIBlurEffect(style: .systemUltraThinMaterialLight)
+            tabAppearance.backgroundColor = UIColor.white.withAlphaComponent(0.72)
+        }
+
+        let selected = UIColor(red: 0 / 255, green: 70 / 255, blue: 173 / 255, alpha: 1)
+        let normal = style == .dark ? UIColor(white: 0.82, alpha: 1) : UIColor(white: 0.35, alpha: 1)
+
+        [tabAppearance.stackedLayoutAppearance,
+         tabAppearance.inlineLayoutAppearance,
+         tabAppearance.compactInlineLayoutAppearance].forEach { appearance in
+            appearance.selected.iconColor = selected
+            appearance.selected.titleTextAttributes = [.foregroundColor: selected]
+            appearance.normal.iconColor = normal
+            appearance.normal.titleTextAttributes = [.foregroundColor: normal]
+        }
+
+        UITabBar.appearance().standardAppearance = tabAppearance
+        UITabBar.appearance().scrollEdgeAppearance = tabAppearance
+
+        let navigationAppearance = UINavigationBarAppearance()
+        navigationAppearance.configureWithTransparentBackground()
+        navigationAppearance.backgroundColor = .clear
+        navigationAppearance.largeTitleTextAttributes = [.foregroundColor: UIColor.label]
+        navigationAppearance.titleTextAttributes = [.foregroundColor: UIColor.label]
+
+        UINavigationBar.appearance().standardAppearance = navigationAppearance
+        UINavigationBar.appearance().scrollEdgeAppearance = navigationAppearance
+        UINavigationBar.appearance().compactAppearance = navigationAppearance
     }
 }
 
